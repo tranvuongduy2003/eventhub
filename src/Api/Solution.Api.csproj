@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <UserSecretsId>trading-simulator-api</UserSecretsId>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
+    <OpenApiDocumentsDirectory>$(MSBuildThisFileDirectory)..\..\contracts\openapi\.build</OpenApiDocumentsDirectory>
+    <OpenApiGenerateDocumentsOptions>--file-name api-v1</OpenApiGenerateDocumentsOptions>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Scalar.AspNetCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application\Solution.Application.csproj" />
+    <ProjectReference Include="..\Infrastructure\Solution.Infrastructure.csproj" />
+    <ProjectReference Include="..\Contracts\Solution.Contracts.csproj" />
+    <ProjectReference Include="..\ServiceDefaults\Solution.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+</Project>

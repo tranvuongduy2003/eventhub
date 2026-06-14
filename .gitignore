@@ -1,0 +1,132 @@
+# Build outputs
+bin/
+obj/
+out/
+dist/
+build/
+
+# .NET
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Node / frontend
+node_modules/
+web/dist/
+web/src/generated/
+
+# OpenAPI build output (committed contract is contracts/openapi/api.v1.yaml)
+contracts/openapi/.build/
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment and secrets (commit only *.example templates)
+.env
+.env.*
+!.env.example
+!**/.env.example
+.envrc
+.envrc.local
+
+# MCP / local tool configs (connection strings, machine paths)
+.mcp.json
+!.mcp.json.example
+
+# ASP.NET / .NET local configuration
+appsettings.*.local.json
+appsettings.local.json
+appsettings.Secrets.json
+secrets.json
+**/secrets/
+**/UserSecrets/
+
+# Certificates and private keys
+*.pfx
+*.p12
+*.key
+*_key.pem
+
+# Credential and key files (cloud, SSH, service accounts)
+**/credentials.json
+**/credentials*.json
+**/*-credentials.json
+**/service-account*.json
+**/serviceAccountKey.json
+**/id_rsa
+**/id_rsa.*
+**/id_ed25519
+**/id_ed25519.*
+.netrc
+_netrc
+
+# Docker Compose local overrides (often contain passwords)
+docker-compose.override.yml
+compose.override.yml
+**/docker-compose.override.yml
+
+# Database dumps (may contain production data)
+*.sql.gz
+*.dump
+*.bak
+
+# IDE / editors
+.vs/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Aspire / Docker local state
+.aspire/
+*.dcproj.user
+
+# Logs
+*.log
+logs/
+
+# GitHub Project board target (copy from .github/github-project.json.example)
+.github/github-project.json
+
+# Misc
+*.tmp
+*.temp
+.cache/

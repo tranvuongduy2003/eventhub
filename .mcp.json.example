@@ -1,0 +1,17 @@
+{
+  "aspire": {
+    "command": "aspire",
+    "args": [
+      "agent",
+      "mcp"
+    ]
+  },
+  "postgres": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "@modelcontextprotocol/server-postgres",
+      "postgresql://postgres:YOUR_PASSWORD@localhost:5432/app?sslmode=disable"
+    ]
+  }
+}

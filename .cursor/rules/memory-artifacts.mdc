@@ -1,0 +1,58 @@
+---
+alwaysApply: false
+description: Rules for searchable spec/plan memory artifacts and filename conventions.
+---
+
+# MEMORY ARTIFACTS — SPECS AND PLANS
+
+Governs planning artifacts and how they sync with project memory. Always consult `core.mdc` first.
+
+## REQUIRED LOCATIONS
+
+- **Specs:** `docs/specs/`
+- **Plans:** `docs/plans/`
+
+Do **not** save new specs/plans under `docs/memory/specs/` or `docs/memory/plans/` (legacy — use paths above).
+
+Ongoing session memory (not full specs):
+
+- `docs/memory/current-status.md` — active focus, blockers, checklist
+- `docs/memory/decisions.md` — ADR-style decisions
+- `docs/memory/known-issues.md` — bugs and workarounds
+
+## REQUIRED FILENAME TEMPLATE
+
+`<timestamp>-<name>.md`
+
+- `timestamp`: `YYYYMMDD-HHmmss` (project local time)
+- `name`: lowercase kebab-case, concise
+- Example: `20260523-143000-place-order-validation.md`
+
+## REQUIRED METADATA FRONTMATTER
+
+Every spec/plan starts with YAML:
+
+- `artifact_type` (`spec` | `plan`)
+- `artifact_version`, `id`, `title`, `slug`, `filename_template`
+- `created_at`, `updated_at` (ISO-8601 with timezone)
+- `status`, `owner`, `tags` (3–8)
+- `prd_refs`, `tech_refs`, `db_refs` (paths or section refs)
+- `search_index`: `keywords`, `bounded_contexts` (e.g. `Trading`), optional persona/task fields
+
+## LINKING
+
+- Plan → spec via `related_spec` in plan frontmatter
+- Spec → plan via `related_plan` once a plan exists
+- Use project-relative paths for cross-links
+
+## INDEXING FOR CURSOR
+
+Maximize retrieval in frontmatter: domain keywords (`order`, `matching`, `wallet`), bounded context `Trading`, task/persona signals for plans.
+
+## CHANGELOG + MEMORY SYNC
+
+When creating or materially updating a spec/plan:
+
+1. Append one line to [`docs/CHANGELOG.md`](docs/CHANGELOG.md) with artifact path and date
+2. Update [`docs/memory/current-status.md`](docs/memory/current-status.md) (latest completed or active focus)
+3. If the artifact records an architecture choice, add or update [`docs/memory/decisions.md`](docs/memory/decisions.md)

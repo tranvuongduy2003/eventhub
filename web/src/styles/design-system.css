@@ -1,0 +1,37 @@
+/* Shared layout and typography utilities — use semantic tokens from globals.css */
+
+@layer utilities {
+  .terminal-density {
+    @apply text-sm leading-snug;
+  }
+
+  .price-tabular {
+    font-variant-numeric: tabular-nums;
+    @apply font-mono;
+  }
+
+  .surface-panel {
+    @apply bg-card text-card-foreground border-border rounded-lg border;
+  }
+
+  .text-bid-accent {
+    @apply text-bid;
+  }
+
+  .text-ask-accent {
+    @apply text-ask;
+  }
+
+  .bg-bid-muted {
+    @apply bg-bid/10 text-bid border-bid/30 border;
+  }
+
+  .bg-ask-muted {
+    @apply bg-ask/10 text-ask border-ask/30 border;
+  }
+}
+
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}

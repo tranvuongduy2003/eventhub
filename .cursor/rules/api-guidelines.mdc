@@ -1,0 +1,52 @@
+# API GUIDELINES
+
+Source: [`docs/CONSTITUTION.md`](docs/CONSTITUTION.md) IV, [`docs/TECHNICAL.md`](docs/TECHNICAL.md) §7. Consult `core.mdc`, `backend.mdc`.
+
+**OpenAPI workflow:** `openapi-contract-sync` skill (export/codegen commands not in TECHNICAL).
+
+## Scope
+
+`Solution.Api` — thin HTTP. **MediatR only** in handlers; map to `Solution.Contracts` DTOs — never serialize domain entities.
+
+## REST surface (sample)
+
+| Area | Method / path | Handler |
+|------|---------------|---------|
+| Auth | `POST /api/users` | RegisterUser |
+| Auth | `POST /api/auth/login` | LoginUser |
+| Auth | `POST /api/auth/logout` | LogoutUser |
+| Auth | `GET /api/auth/me` | GetCurrentUser |
+| Health | `GET /health` | Aspire defaults |
+
+## Success response
+
+Return the resource DTO directly (no custom `{ data, meta }` envelope).
+
+## Errors — RFC 7807
+
+- `code` — stable machine identifier
+- Validation failures → field extensions in `errors`
+
+## Status mapping
+
+| Status | Use |
+|--------|-----|
+| `200` | Read success |
+| `201` | Created (user registered) |
+| `204` | Logout / no body |
+| `400` | Malformed JSON / binding failure |
+| `401` | No session |
+| `404` | Resource not found |
+| `422` | Domain / validation rejection |
+| `500` | Unhandled — generic client message |
+
+## Auth
+
+- Cookie session; Redis cache, PG `user_sessions` authoritative
+- Public: register + login only
+- Ownership enforced in **Application** handlers (Constitution II.7)
+
+## DON'TS
+
+- ❌ No `200` with error body — use correct status
+- ❌ No domain types in OpenAPI/JSON responses

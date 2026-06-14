@@ -1,0 +1,73 @@
+---
+description: Trading terminal UI — Tailwind v4, shadcn/ui, accessibility, charts.
+globs: web/**/*.tsx,web/**/*.css,web/**/components/**,web/**/styles/**
+alwaysApply: false
+---
+
+# DESIGN SYSTEM
+
+Apply under `web/`. Consult `core.mdc`, `frontend.mdc` first.
+
+## Skills (read first)
+
+`shadcn`, `tailwind-patterns`
+
+## Principles
+
+- **Density with clarity** — trading terminal layout; numbers legible at a glance
+- **Latency felt** — skeletons within ~100ms; optimistic UI only when API contract allows
+- **Buy vs Sell** — never color-only; pair hue with label/icon
+- **WCAG 2.1 AA floor** — labels, focus rings, contrast on tables and forms
+
+## Stack
+
+- Tailwind v4 `@theme` tokens in `styles/globals.css`
+- shadcn primitives in `components/ui/` — add via CLI, customize in repo
+- Icons: **lucide-react** only
+- Charts: **lightweight-charts** for OHLCV
+
+## Layout (MVP)
+
+Align with [`docs/PRD.md`](docs/PRD.md) §8.1 (desktop ≥1280px).
+
+| Zone | Content |
+|------|---------|
+| Top bar | Logo, symbol (AAPL), last trade price, daily change, user menu |
+| Left | Order book (bid/ask depth) |
+| Center | Candlestick chart + timeframe selector (1m, 5m, 15m, 1h) |
+| Right | Order form (limit / market tabs) |
+| Bottom (tabbed) | Open orders, order history, trade history, holdings |
+
+Wallet and P&L appear in holdings / account areas per PRD §6.6, not a separate primary column.
+
+Prices: 4 decimals · Quantities: integers · Currency: USD
+
+## Tokens
+
+Use semantic classes — **no raw hex in JSX**:
+
+`bg-background`, `text-foreground`, `border-border`, `text-muted-foreground`, `bg-primary`, `text-destructive`
+
+Buy/sell accents via dedicated utilities or CSS variables (e.g. `--color-bid`, `--color-ask`) defined in `@theme`, not inline `#…`.
+
+## Components
+
+- Tables: compact rows, sticky header, monospace optional for prices/qty
+- Order status: pill with text + color
+- Loading: shadcn `Skeleton` / Query `isPending` — avoid layout shift on book updates
+- Errors: inline `FormMessage` + border — not color-only
+
+## Accessibility checklist
+
+- [ ] Every input has `<Label>` / `htmlFor`
+- [ ] Icon-only buttons have `aria-label`
+- [ ] Focus visible (`focus-visible:ring-2`)
+- [ ] Status changes use `aria-live="polite"` where appropriate
+- [ ] Keyboard-operable order form
+
+## DON'TS
+
+- ❌ No second component library
+- ❌ No bespoke modal/dialog — shadcn primitives
+- ❌ No generic “AI dashboard” aesthetic — restrained financial terminal
+- ❌ No emojis as primary affordances
