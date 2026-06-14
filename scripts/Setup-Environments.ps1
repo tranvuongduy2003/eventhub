@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  First-time local setup for the Clean Architecture boilerplate repository.
+  First-time local setup for the EventHub repository.
 
 .DESCRIPTION
   Verifies prerequisites, restores .NET dependencies, seeds optional
@@ -430,7 +430,7 @@ Next steps:
        API:    $ApiHttpsUrl  (HTTP $ApiHttpUrl)
        Web UI: $WebHttpsUrl
 
-Docs: README.md, docs/TECHNICAL.md
+Docs: README.md, docs/technical.md
 MCP: .mcp.json is local-only (copy from .mcp.json.example); Postgres URI must match .env / AppHost.
 Re-run with -ForceEnvCopy to refresh .env, web\.env, and .mcp.json from templates.
 

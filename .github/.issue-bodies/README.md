@@ -1,19 +1,16 @@
-# Issue body templates (`/spec` Step 3)
+# Issue body template (`/spec` Step 3)
 
-Canonical markdown skeletons for **`gh issue create --body-file`** when running the `/spec` command.
+Skeleton for **`gh issue create --body-file`** when running `/spec`.
 
-Agents must **fill every section** from the spec artifact — do not commit filled copies here (only these templates stay in git).
+**One issue per spec** — not epic + per-story issues.
 
 | File | Use |
 |------|-----|
-| `epic.template.md` | Parent tracking issue (one per feature) |
-| `story.template.md` | One issue per §2 story |
+| `spec.template.md` | Single tracking issue for the whole feature spec |
 
 **Workflow**
 
-1. Copy template to a temp path (e.g. `$env:TEMP\gh-epic.md`).
-2. Replace all `<placeholders>` with content from `docs/specs/<timestamp>-<feature>.md`.
-3. `gh issue create --body-file $path ...`
-4. Delete the temp file.
-
-**Related:** [`.github/ISSUE_TEMPLATE/`](../ISSUE_TEMPLATE/) — same structure for manual “New issue” in GitHub UI.
+1. Copy `spec.template.md` to a temp path.
+2. Fill from `docs/specs/<YYYYMMDDHHmmss>-<feature>.md` (problem, AC list, links).
+3. `gh issue create --title "Spec: …" --label "spec,enhancement" --body-file $path`
+4. Set spec frontmatter `github_issue: <number>`.

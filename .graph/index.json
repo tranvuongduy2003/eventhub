@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "description": "Lightweight path→verification map for agent harness. Extend with full dependency graph later.",
+  "skipPatterns": [
+    ".cursor/**",
+    "docs/**",
+    ".github/**",
+    "**/*.md",
+    "**/web/src/generated/**",
+    "**/contracts/openapi/.build/**",
+    "**/Migrations/**",
+    "**/bin/**",
+    "**/obj/**"
+  ],
+  "layers": {
+    "src/Domain/": {
+      "postEditAction": "test",
+      "testProject": "tests/Domain.UnitTests/Solution.Domain.UnitTests.csproj",
+      "namespaceFromSegment": true
+    },
+    "src/Application/": {
+      "postEditAction": "build",
+      "buildProject": "src/Application/Solution.Application.csproj"
+    },
+    "src/Infrastructure/": {
+      "postEditAction": "build",
+      "buildProject": "src/Infrastructure/Solution.Infrastructure.csproj"
+    },
+    "src/Api/": {
+      "postEditAction": "build",
+      "buildProject": "src/Api/Solution.Api.csproj"
+    },
+    "src/Contracts/": {
+      "postEditAction": "build",
+      "buildProject": "src/Contracts/Solution.Contracts.csproj"
+    },
+    "tests/Domain.UnitTests/": {
+      "postEditAction": "test",
+      "testProject": "tests/Domain.UnitTests/Solution.Domain.UnitTests.csproj"
+    },
+    "tests/Api.IntegrationTests/": {
+      "postEditAction": "test",
+      "testProject": "tests/Api.IntegrationTests/Solution.Api.IntegrationTests.csproj",
+      "namespaceFromSegment": true
+    }
+  }
+}

@@ -6,7 +6,7 @@ alwaysApply: false
 
 # FRONTEND (web/)
 
-Source: [`docs/PRD.md`](docs/PRD.md) §8 (UI), [`docs/TECHNICAL.md`](docs/TECHNICAL.md) §11. See `design-system.mdc`, `api-guidelines.mdc`, [`docs/TRACEABILITY.md`](docs/TRACEABILITY.md). Consult `core.mdc` first.
+Source: [`docs/features.md`](docs/features.md), [`docs/prd.md`](docs/prd.md) (QG-4 mobile), [`docs/technical.md`](docs/technical.md) §7. See `design-system.mdc`, `api-guidelines.mdc`. Consult `core.mdc` first.
 
 ## Skills (read first)
 
@@ -28,7 +28,7 @@ React 19, TypeScript, Vite, Tailwind v4, shadcn/ui, **TanStack Query**, **Zustan
 
 ## API access
 
-- Frontends call **Api directly** (no BFF in MVP) — cookie session, `credentials: 'include'`
+- Frontends call **Api directly** — cookie session for organizers; guest flows without account where `features.md` allows
 - Base URL from Vite env (`VITE_*` injected by Aspire)
 - Centralize HTTP in `web/src/lib/` — feature code does not hardcode URLs
 
@@ -55,7 +55,7 @@ const sessionQuery = useQuery({
 ```
 web/src/
   app/           providers, router
-  features/      auth | home
+  features/      auth | events | checkout | tickets | check-in | …
   components/    shared + ui/ (shadcn)
   lib/           api client, utils
   store/         zustand
@@ -67,6 +67,10 @@ One feature = one folder. Cross-feature imports via `components/` or `lib/` only
 ## Forms
 
 react-hook-form + zod in `types/` — same schema for inference and validation.
+
+## Realtime (EP-11)
+
+SignalR for live sales and check-in counts. Subscribe in feature hooks; invalidate Query cache on events.
 
 ## Testing
 

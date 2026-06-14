@@ -1,0 +1,9 @@
+{
+  "tool_name": "Shell",
+  "tool_input": {
+    "command": "npm install",
+    "working_directory": "{{PROJECT_ROOT}}/web"
+  },
+  "conversation_id": "eval-block-npm",
+  "hook_event_name": "preToolUse"
+}

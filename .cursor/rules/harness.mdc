@@ -1,0 +1,37 @@
+---
+alwaysApply: true
+description: Cursor hooks in .cursor/hooks.json — preToolUse guards, afterFileEdit verify gate, stop-gate objective checks, preCompact backup. Consult when edits blocked or agent cannot stop.
+---
+
+# Agent harness (hooks)
+
+Deterministic enforcement in `.cursor/hooks.json` — not prompt advice.
+
+## Hook map
+
+| Event | Script | Behavior |
+|-------|--------|----------|
+| `preToolUse` | `pre-tool-guard.ps1` | Deny Write to `web/src/generated/`, `.env`, `.mcp.json`; deny dangerous Shell |
+| `beforeShellExecution` | `before-shell-guard.ps1` | Deny `rm -rf`, `git push --force`, `git reset --hard`, `git config`, `npm install` |
+| `afterFileEdit` | `post-edit-verify.ps1` | lint/format + affected test/build via `scripts/affected-tests.mjs`; sets verify gate on fail |
+| `stop` | `stop-gate.ps1` | `followup_message` if verify gate active or git-diff checks fail (tsc + affected steps) |
+| `preCompact` | `pre-compact-backup.ps1` | Backup transcript + `progress.md` to `.cursor/notes/backups/` |
+
+## Verify gate
+
+Failure writes `.cursor/hooks/state/verify-gate.json` → blocks `Shell`, `Task`, `Delete` until next green edit verification. `Write`/`Read`/`Grep` still allowed.
+
+Clear manually: delete `verify-gate.json`.
+
+## Affected checks
+
+| Changed path | Checks |
+|--------------|--------|
+| `web/**/*.{ts,tsx}` | eslint + tsc at stop if web touched |
+| `src/Domain/**` | dotnet format + filtered Domain.UnitTests |
+| `src/Application\|Infrastructure\|Api\|Contracts/**` | dotnet format + layer build |
+| Map source | `.graph/index.json` + `node scripts/affected-tests.mjs <path>` |
+
+## Regression
+
+After hook changes: `.\evals\run.ps1` (CI job `agent-evals`).

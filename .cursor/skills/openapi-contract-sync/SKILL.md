@@ -5,7 +5,7 @@ description: Keeps the REST OpenAPI contract and frontend TypeScript types in sy
 
 # OpenAPI contract sync (REST)
 
-HTTP contract flow for **eventhub boilerplate**.
+HTTP contract flow for **EventHub**.
 
 ## Source of truth
 

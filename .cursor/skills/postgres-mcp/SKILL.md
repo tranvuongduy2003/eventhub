@@ -3,7 +3,7 @@ name: postgres-mcp
 description: Inspects and queries the local PostgreSQL database via the Cursor MCP server (read-only). Use when verifying data, debugging persistence, exploring schema, writing SELECT diagnostics, or when the user mentions Postgres MCP, database rows, or SQL inspection.
 ---
 
-# Postgres MCP (eventhub boilerplate)
+# Postgres MCP (EventHub)
 
 Read-only PostgreSQL access through the **`postgres`** MCP server in [`.mcp.json`](../../../.mcp.json).
 
@@ -56,7 +56,7 @@ If MCP connection fails, compare the URL to the Aspire dashboard connection stri
 | Task | Use |
 |---|---|
 | Inspect live rows, counts, joins, explain plans | **This skill** → MCP `query` |
-| Table/column meaning, invariants, indexes | [`docs/TECHNICAL.md`](../../../docs/TECHNICAL.md) §6 first, then MCP to confirm |
+| Table/column meaning, invariants, indexes | [`docs/technical.md`](../../../docs/technical.md) §6 and [`docs/ddd.md`](../../../docs/ddd.md) first, then MCP to confirm |
 | Add/change schema, EF migrations | Constitution III · Tech §6 · `migration.mdc` — **not** MCP (no writes) |
 | AppHost / container not up | `aspire.mdc`, `env-doctor` |
 | Integration tests | Constitution VII · Tech §10 · `backend-testing.mdc` |
@@ -74,7 +74,7 @@ The server exposes per-table schema resources (URI pattern like `postgres://…/
 
 ## Project conventions (always apply in SQL)
 
-From [`docs/TECHNICAL.md`](../../../docs/TECHNICAL.md) §6:
+From [`docs/technical.md`](../../../docs/technical.md) §6 and [`docs/ddd.md`](../../../docs/ddd.md):
 
 - Application schema: **`app`** (not `public` for app tables)
 - Qualify tables: `app.users`, `app.user_sessions`, …
@@ -85,7 +85,7 @@ Core tables: `users`, `user_sessions`.
 ## Workflow
 
 1. Confirm Postgres is up (Aspire dashboard or `env-doctor`).
-2. Read [`docs/TECHNICAL.md`](../../../docs/TECHNICAL.md) §6 for the question (FKs, indexes, Redis keys).
+2. Read [`docs/technical.md`](../../../docs/technical.md) §6 and [`docs/ddd.md`](../../../docs/ddd.md) for the question (FKs, indexes, aggregates).
 3. Call MCP **`query`** with qualified `app.*` SQL.
 4. Interpret results against Constitution I–III and Tech §5–6 — MCP shows storage, not business validation.
 

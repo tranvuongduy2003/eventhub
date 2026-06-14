@@ -1,0 +1,5 @@
+{
+  "command": "git push --force origin main",
+  "cwd": "{{PROJECT_ROOT}}",
+  "hook_event_name": "beforeShellExecution"
+}

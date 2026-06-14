@@ -1,7 +1,11 @@
 # Technical Design Document
 
-**Project:** Clean Architecture + CQRS + DDD Boilerplate  
-**Last Updated:** June 7, 2026
+**Project:** EventHub
+**Built on:** Clean Architecture + CQRS + DDD (.NET / .NET Aspire)
+**Related documents:** Product intent → [`prd.md`](prd.md) · Feature specifications → [`features.md`](features.md)
+**Last Updated:** June 14, 2026
+
+> **Scope of this document.** This is `technical.md`: it describes **how EventHub is built** — architecture, patterns, infrastructure, and conventions. It is purely technical; business behavior and domain rules belong to `features.md`.
 
 ---
 
@@ -11,40 +15,20 @@
 
 - Keep business rules in a **pure Domain** layer with no framework dependencies.
 - Separate **commands** (writes) from **queries** (reads) via CQRS and MediatR.
-- Persist through **ports** (Application abstractions) implemented in Infrastructure.
-- Run locally with **.NET Aspire** as the topology source of truth.
+- Persist and integrate through **ports** (Application abstractions) implemented as **adapters** in Infrastructure.
+- Guarantee **write consistency under concurrent access** via optimistic concurrency (no distributed locks).
+- Run locally with **.NET Aspire** as the topology source of truth, with every backing service provisioned and discoverable.
 
 ### 1.2 Styles
 
 1. **Clean Architecture** — dependency rule: inner layers never reference outer layers.
-2. **DDD (tactical)** — aggregates, value objects, domain events.
+2. **DDD (tactical)** — the Domain layer is structured with aggregates, value objects, and domain events. (Concrete models are not described here; they belong to the feature docs.)
 3. **CQRS** — distinct command/query handlers; shared PostgreSQL source of truth.
+4. **Ports & adapters** — external systems (cache, storage, messaging, realtime) sit behind Application ports and are implemented in Infrastructure.
 
 ### 1.3 Logical view
 
-```
-┌─────────────────────────────────────┐
-│           Api (ASP.NET Core)        │
-│     REST endpoints + OpenAPI        │
-└─────────────────────────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────┐
-│         Application (CQRS)          │
-│   Handlers, validators, ports       │
-└─────────────────────────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────┐
-│     Infrastructure (adapters)       │
-│      EF Core, Redis, auth           │
-└─────────────────────────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────┐
-│         Domain (pure C#)            │
-└─────────────────────────────────────┘
-```
+Requests flow top-down through the layers — **Api** (REST endpoints, OpenAPI, SignalR hubs) → **Application** (CQRS handlers, validators, ports) → **Infrastructure** (EF Core, Redis, MinIO, RabbitMQ adapters) → **Domain** (pure C#) — while the dependency rule points the opposite way: only outer layers reference inner ones (see §3). Logging, telemetry, and health checks are cross-cutting via `ServiceDefaults` (OpenTelemetry → Seq).
 
 ---
 
@@ -52,12 +36,12 @@
 
 ```
 src/
-  AppHost/           Aspire orchestration
-  ServiceDefaults/   Shared logging, health, service discovery
-  Api/               HTTP host, endpoints, auth middleware
+  AppHost/           Aspire orchestration (EventHub.AppHost.csproj)
+  ServiceDefaults/   Shared logging, telemetry, health, service discovery
+  Api/               HTTP host, endpoints, SignalR hubs, auth middleware
   Application/       Commands, queries, behaviors, ports
-  Domain/            Aggregates, value objects, domain events
-  Infrastructure/    EF Core, Redis, repository implementations
+  Domain/            Aggregates, value objects, domain events (pure C#)
+  Infrastructure/    EF Core, Redis, MinIO, RabbitMQ adapters, repositories
   Contracts/         HTTP request/response DTOs
 tests/
   Domain.UnitTests/
@@ -82,115 +66,52 @@ Every project includes `AssemblyReference.cs`. Use `AssemblyReference.Assembly` 
 
 ## 4. CQRS and MediatR pipeline
 
-Handlers live in Application. Registration in `DependencyInjection.AddApplication`:
+Handlers live in Application. Commands implement `ICommand` / `ICommand<T>`; queries implement `IQuery<T>`. Handlers return `Result` or `Result<T>`.
 
-1. `DomainEventDispatchBehavior` — dispatch events after successful handler
-2. `ValidationBehavior` — FluentValidation before handler
+Pipeline behaviors, registered in `DependencyInjection.AddApplication` (order matters):
+
+1. `DomainEventDispatchBehavior` — dispatch **in-process** domain events after a successful handler
+2. `ValidationBehavior` — FluentValidation before the handler
 3. `LoggingBehavior`
-4. `UnitOfWorkBehavior` — transaction + optimistic concurrency retry for commands
-5. `PostCommitSessionCacheBehavior` — Redis session cache after commit
+4. `UnitOfWorkBehavior` — transaction boundary + optimistic-concurrency retry for commands
+5. `PostCommitSessionCacheBehavior` — write-through to the Redis cache after commit
 
-Commands implement `ICommand` / `ICommand<T>`; queries implement `IQuery<T>`. Handlers return `Result` or `Result<T>`.
-
-### Sample handlers
-
-| Type | Handler | Notes |
-|------|---------|-------|
-| Command | `RegisterUserCommand` | Creates user, session, domain event |
-| Command | `LoginUserCommand` | Validates credentials, creates session |
-| Command | `LogoutUserCommand` | Invalidates session |
+**In-process vs out-of-process events.** Domain events are handled synchronously inside the request's unit of work. Side effects that are slow, external, or better decoupled are emitted as **integration messages onto RabbitMQ** and processed asynchronously by consumers (see §5).
 
 ---
 
-## 5. Domain model (sample)
+## 5. Infrastructure & runtime components
 
-The template ships one bounded context to demonstrate DDD patterns:
+External systems are provisioned by Aspire and accessed through Application ports (except hosting-level concerns such as SignalR and telemetry).
 
-| Aggregate | Responsibility |
-|-----------|----------------|
-| `User` | Registration invariants; raises `UserRegisteredEvent` |
+| Component | Technology | Role | Where it lives |
+|-----------|------------|------|----------------|
+| Relational store | **PostgreSQL** | Authoritative state (`app` schema) | Infrastructure (EF Core) |
+| Cache | **Redis** | Response/session caching and rebuildable derived data; optional SignalR backplane | Infrastructure adapter behind a cache port |
+| Object storage | **MinIO** (S3-compatible) | Binary assets such as image uploads; PostgreSQL stores only the object key/URL, never the bytes | Infrastructure adapter behind a storage port |
+| Messaging | **RabbitMQ** | Asynchronous/background work and integration events; decouples slow or external side effects from the request path | Infrastructure (publisher + consumers) |
+| Realtime | **SignalR** | Server→client push over WebSockets via hubs | Api host (Redis backplane when scaled out) |
+| Logging & telemetry | **Seq** | Sink for structured logs (and traces/metrics) emitted via ServiceDefaults / OpenTelemetry | Cross-cutting |
+| Orchestration | **.NET Aspire** | Local topology, service discovery, connection-string/env injection | AppHost |
 
-Value objects: `Username`, `EmailAddress`, `Password`, `PasswordHash`, typed `UserId`.
-
-Replace or extend this with your own aggregates. Keep domain logic inside aggregates — no anemic models.
+**Notes**
+- **Redis** is never a source of truth; anything cached must be rebuildable from PostgreSQL.
+- **MinIO** keeps large binaries out of the relational database; uploads go through the storage port and only references are persisted.
+- **RabbitMQ** carries integration messages between background consumers and the request path; consumers are idempotent so redelivered messages are safe.
+- **SignalR** hubs are hosted alongside REST endpoints; a Redis backplane coordinates connections if more than one instance runs.
 
 ---
 
 ## 6. Persistence
 
 - **PostgreSQL** — authoritative state (`app` schema).
-- **Redis** — optional rebuildable session cache (not source of truth).
+- **Redis** — optional, rebuildable cache (not source of truth).
+- **MinIO** — object storage for binary/large assets; the relational schema holds only keys/URLs.
 - EF Core: `NoTracking` by default; configurations in Infrastructure.
+- **Optimistic concurrency:** mutable aggregates carry a row version; the `UnitOfWorkBehavior` retry (configured under `Concurrency`) resolves concurrent-write races without locks.
 - Migrations apply on startup in Development.
 
-### 6.1 Design principles
-
-1. **Aggregate-aligned storage** — one primary table per aggregate root.
-2. **PostgreSQL is authoritative** — Redis holds rebuildable cache only.
-3. **Declarative constraints** — enforce invariants at the database where possible.
-4. **Optimistic concurrency** — `row_version` on mutable aggregates.
-5. **UTC timestamps** — store as `TIMESTAMPTZ`.
-
-### 6.2 Schema (`app`)
-
-```
-users 1:N user_sessions
-```
-
-**`app.users`**
-
-| Column | Type | Notes |
-|--------|------|-------|
-| `id` | `uuid` | PK |
-| `username` | `varchar(32)` | unique |
-| `email` | `varchar(254)` | unique, normalized |
-| `password_hash` | `varchar(255)` | required |
-| `created_at` | `timestamptz` | |
-| `updated_at` | `timestamptz` | |
-| `row_version` | `bigint` | concurrency token |
-
-Indexes: `ux_users_username`, `ux_users_email`.
-
-**`app.user_sessions`**
-
-| Column | Type | Notes |
-|--------|------|-------|
-| `id` | `uuid` | PK (session id) |
-| `user_id` | `uuid` | FK → users |
-| `expires_at` | `timestamptz` | |
-| `created_at` | `timestamptz` | |
-
-Index on `user_id` for lookup; expired sessions cleaned by application policy.
-
-### 6.3 Redis keys (session cache)
-
-| Key pattern | Purpose | Rebuildable |
-|-------------|---------|-------------|
-| `session:{sessionId}` | Active session payload | Yes — from `user_sessions` |
-
-Session cache is written **after** PostgreSQL commit (see `PostCommitSessionCacheBehavior`).
-
-### 6.4 Migrations
-
-- Location: `src/Infrastructure/Migrations/`
-- Generate:
-
-```bash
-dotnet ef migrations add <Name> \
-  -p src/Infrastructure/Solution.Infrastructure.csproj \
-  -s src/Api/Solution.Api.csproj
-```
-
-- **Never edit** merged migrations — add a new migration instead.
-- Development: applied on Api startup.
-
-### 6.5 Transaction boundaries
-
-| Operation | Boundary |
-|-----------|----------|
-| Register user | Insert user + session in one unit of work; cache session after commit |
-| Login | Validate user; insert/replace session; cache after commit |
-| Logout | Delete/invalidate session; remove cache entry |
+See [`DATABASE.md`](DATABASE.md) for the schema, tables, and indexes.
 
 ---
 
@@ -200,15 +121,7 @@ dotnet ef migrations add <Name> \
 - RFC 7807 problem details for errors (`ApiProblemDetails`).
 - Two-layer validation: JSON binding (400) vs FluentValidation (422).
 - Cookie-based session auth for browser clients; `ICurrentUserAccessor` in handlers.
-
-### Routes (sample)
-
-| Method | Path | Handler |
-|--------|------|---------|
-| POST | `/api/users` | RegisterUser |
-| POST | `/api/auth/login` | LoginUser |
-| POST | `/api/auth/logout` | LogoutUser |
-| GET | `/health` | Health check |
+- Realtime updates are delivered through **SignalR hubs** hosted next to the REST endpoints; clients authenticate with the same session.
 
 ---
 
@@ -220,31 +133,45 @@ Layering (later wins): `appsettings.json` → `appsettings.Development.json` →
 |---------|---------|
 | `Session` | Cookie name, expiration |
 | `Concurrency` | Unit-of-work retry for optimistic concurrency |
+| `Cache` | Redis usage and TTLs |
+| `Storage` | MinIO endpoint and bucket (credentials kept in user secrets) |
+| `Messaging` | RabbitMQ exchanges/queues and consumer settings |
+| `Realtime` | SignalR hub options and backplane |
+| `Logging` | Seq endpoint and minimum levels |
 
-Connection strings (Aspire-injected): `ConnectionStrings__app`, `ConnectionStrings__cache`.
+Connection strings / endpoints are **Aspire-injected** and named after the AppHost resources, e.g. `ConnectionStrings__app` (PostgreSQL), `ConnectionStrings__cache` (Redis), plus the RabbitMQ, MinIO, and Seq resources. Secrets are never committed.
 
 ---
 
-## 9. Local development
+## 9. Observability & logging
+
+- **Structured logging** plus **OpenTelemetry** traces and metrics are configured once in `ServiceDefaults` and exported to **Seq**.
+- **Health checks** are exposed at `/health` and surfaced in the Aspire dashboard.
+- Correlation/trace IDs flow through the MediatR `LoggingBehavior` so a request can be followed end to end in Seq.
+
+---
+
+## 10. Local development
 
 1. Docker Desktop running
-2. `dotnet run --project src/AppHost/Solution.AppHost.csproj`
-3. Aspire dashboard for logs and health
-4. API Scalar UI at `/scalar` (Development)
+2. `dotnet run --project src/AppHost/EventHub.AppHost.csproj`
+3. Aspire provisions PostgreSQL, Redis, MinIO, RabbitMQ, and Seq as containers and wires connection strings automatically
+4. Dashboards: **Aspire** (logs/health/topology), **Seq** (logs/traces), **MinIO console** (objects), **RabbitMQ management UI** (queues)
+5. API Scalar UI at `/scalar` (Development)
 
 ---
 
-## 10. Testing
+## 11. Testing
 
 | Project | Focus |
 |---------|-------|
-| `Domain.UnitTests` | Aggregates and value objects (pure, no DI) |
-| `Api.IntegrationTests` | HTTP + Testcontainers PostgreSQL/Redis |
+| `Domain.UnitTests` | Domain layer logic (pure, no DI) |
+| `Api.IntegrationTests` | HTTP + Testcontainers for PostgreSQL, Redis, RabbitMQ, and MinIO |
 
-Integration tests use fakes at Application **ports**, not domain mocks.
+Integration tests use **fakes at Application ports**, not domain mocks. External services with no in-process fake are exercised through Testcontainers so the adapters are covered against real engines.
 
 ---
 
-## 11. OpenAPI contract
+## 12. OpenAPI contract
 
 REST shapes are maintained in [`contracts/openapi/api.v1.yaml`](../contracts/openapi/api.v1.yaml). Export from the API build via scripts in `contracts/openapi/README.md`.

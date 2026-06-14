@@ -1,0 +1,17 @@
+{
+  "id": "graph-affected-application-build",
+  "layer": "graph",
+  "description": "Application layer file maps to dotnet format + build (not full integration test)",
+  "run": {
+    "type": "command",
+    "command": "node scripts/affected-tests.mjs src/Application/Users/Commands/RegisterUserCommand.cs"
+  },
+  "assert": {
+    "exitCode": 0,
+    "jsonStdout": {
+      "skip": "False",
+      "steps.1.kind": "dotnet-build"
+    },
+    "stdoutContains": ["Solution.Application.csproj"]
+  }
+}

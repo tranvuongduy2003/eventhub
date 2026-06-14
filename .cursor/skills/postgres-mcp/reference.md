@@ -1,6 +1,6 @@
 # Postgres MCP — query reference
 
-Starter **read-only** queries for the eventhub boilerplate. Adjust limits and filters as needed.
+Starter **read-only** queries for EventHub. Adjust limits and filters as needed.
 
 ## Schema discovery
 

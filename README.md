@@ -1,41 +1,37 @@
-# Clean Architecture + CQRS + DDD Boilerplate
+# EventHub
 
-Local-first template with .NET backend and React frontend. Orchestrated by [.NET Aspire](https://aspire.dev).
+Local-first event management and ticketing platform. .NET backend (Clean Architecture + CQRS + DDD) and React frontend. Orchestrated by [.NET Aspire](https://aspire.dev).
 
 ## About
 
-A **Cursor-native boilerplate** for building .NET backends with AI-assisted development. You get a working Clean Architecture codebase *and* the agent configuration to extend it correctly—rules, skills, commands, and memory artifacts wired to this repo's layout and conventions.
+**EventHub** connects organizers and attendees for small events — transparent pricing, valid tickets, check-in, and basic results. Built as a pet project with Cursor-native agent configuration.
 
 ### Cursor agent setup (`.cursor/`)
 
 | Piece | Purpose |
 |-------|---------|
-| **Rules** (`rules/`) | Always-on and scoped guidance—layer boundaries, CQRS, Aspire, API contracts, testing, frontend |
-| **Skills** (`skills/`) | Procedural playbooks only (OpenAPI sync, MCP, env setup, git/PR, frontend UI) — architecture lives in `docs/` |
-| **Commands** (`commands/`) | Slash workflows: `/spec`, `/plan`, `/build`, `/epic-review` |
-| **Memory** (`docs/memory/`) | Session status, architecture decisions, known issues for long-running agent work |
+| **Rules** (`rules/`) | Layer boundaries, CQRS, Aspire, API contracts, testing, frontend |
+| **Skills** (`skills/`) | OpenAPI sync, MCP (Postgres, Neo4j GraphRAG), env setup, git/PR, UI |
+| **Commands** (`commands/`) | `/spec` → `/plan` → `/build` |
 
-Open the repo in [Cursor](https://cursor.com); agents read `core.mdc` and **`docs/CONSTITUTION.md` + `docs/TECHNICAL.md`** before changing code. Skills cover workflows docs do not spell out.
+Open the repo in [Cursor](https://cursor.com); agents read `core.mdc` and **`docs/constitution.md`** plus companion docs before changing code.
 
-### Application template
+**Agent workflow:** `/spec` (spec in `docs/specs/` + one GitHub issue) → `/plan` (ephemeral plan in `.cursor/plans/`, not committed) → `/build` (implement, then delete plan).
 
-The sample stack demonstrates **Clean Architecture**, **CQRS** (MediatR), and **DDD** (aggregates, value objects, domain events):
+### Stack highlights
 
-- **`User` bounded context** — registration, login, cookie session auth
-- **PostgreSQL** (authoritative) + **Redis** (rebuildable session cache)
+- **Modular monolith** — bounded contexts in [`docs/ddd.md`](docs/ddd.md)
+- **PostgreSQL** (authoritative) + **Redis** (cache) + **MinIO** (images) + **RabbitMQ** (integration events)
 - **React 19 + Vite** frontend with OpenAPI → TypeScript codegen
-- **.NET Aspire** AppHost — PostgreSQL, Redis, API, and web; no hand-authored `docker-compose`
-
-**Included:** layered solution, integration tests, Aspire orchestration, contract-driven API types.
-
-**Out of scope:** production deployment, message brokers, transactional outbox, horizontal scaling.
+- **.NET Aspire** AppHost — no hand-authored `docker-compose`
 
 ## Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 - [Aspire CLI](https://aspire.dev) 13.3+
 - [Node.js 22 LTS](https://nodejs.org/) and [Yarn](https://yarnpkg.com/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (PostgreSQL, Redis containers)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [uv](https://docs.astral.sh/uv/) (optional — for Neo4j GraphRAG MCP via `uvx`)
 
 ## First-time setup
 
@@ -53,6 +49,7 @@ yarn --cwd web install
 
 cp .env.example .env
 cp web/.env.example web/.env
+cp .mcp.json.example .mcp.json
 
 dotnet dev-certs https
 dotnet dev-certs https --trust
@@ -60,62 +57,53 @@ dotnet dev-certs https --trust
 
 ## Run locally
 
-### Full stack (Aspire)
-
-Start PostgreSQL, Redis, API, and Vite:
-
 ```bash
-dotnet run --project src/AppHost/Solution.AppHost.csproj
+dotnet run --project src/AppHost/EventHub.AppHost.csproj
 ```
 
-Or with the Aspire CLI:
+Or:
 
 ```bash
-aspire run --project src/AppHost/Solution.AppHost.csproj
+aspire run --project src/AppHost/EventHub.AppHost.csproj
 ```
 
 | Service | URL / port |
 |---------|------------|
 | Web (Vite) | `https://localhost:5000` |
 | API (HTTPS) | `https://localhost:8000` |
-| API (HTTP) | `http://localhost:8001` |
 | PostgreSQL | `localhost:5432` |
 | Redis | `localhost:6379` |
 
-Aspire injects `ConnectionStrings__app` and `ConnectionStrings__cache` into the Api, and sets `VITE_API_URL` for the `web` resource.
+## MCP servers
 
-### Frontend only (`yarn`)
+Copy [`.mcp.json.example`](.mcp.json.example) to `.mcp.json` and set credentials in `.env`:
 
-Use this instead of the AppHost `web` resource (do not run both on port 5000):
+| Server | Purpose |
+|--------|---------|
+| `aspire` | Aspire dashboard resources, logs |
+| `postgres` | Read-only SQL against local `app` database |
+| `neo4j-graphrag` | Cypher, vector/fulltext search, GraphRAG |
 
-```bash
-cp web/.env.example web/.env   # once
-yarn --cwd web dev
-```
+See `.cursor/skills/postgres-mcp/SKILL.md` and `.cursor/skills/neo4j-graphrag/SKILL.md`.
 
-## Solution layout
+## Docs
 
-```
-src/       AppHost, ServiceDefaults, Api, Application, Domain, Infrastructure, Contracts
-tests/     Unit and integration test projects
-web/       React 19 + Vite frontend (outside .slnx)
-```
+| Document | Role |
+|----------|------|
+| [`docs/constitution.md`](docs/constitution.md) | Immutable principles |
+| [`docs/prd.md`](docs/prd.md) | Product intent and decisions |
+| [`docs/features.md`](docs/features.md) | Epics, features, acceptance criteria |
+| [`docs/ddd.md`](docs/ddd.md) | Domain model |
+| [`docs/technical.md`](docs/technical.md) | Architecture and infrastructure |
+| [`docs/specs/`](docs/specs/) | Product specs (committed) |
 
-## API contract (OpenAPI → TypeScript)
+Ephemeral plans live in `.cursor/plans/` (gitignored; deleted after `/build`).
 
-REST shapes are in [`contracts/openapi/api.v1.yaml`](contracts/openapi/api.v1.yaml). The web app generates types into `web/src/generated/` (gitignored).
-
-After changing API endpoints:
+## API contract
 
 ```bash
 yarn --cwd web api:export
 yarn --cwd web api:codegen
 ```
 
-CI runs `yarn --cwd web api:verify`. See [`contracts/openapi/README.md`](contracts/openapi/README.md).
-
-## Docs
-
-- [`docs/PRD.md`](docs/PRD.md) — boilerplate scope
-- [`docs/TECHNICAL.md`](docs/TECHNICAL.md) — architecture and persistence
-- [`docs/CONSTITUTION.md`](docs/CONSTITUTION.md) — immutable principles
+See [`contracts/openapi/README.md`](contracts/openapi/README.md).

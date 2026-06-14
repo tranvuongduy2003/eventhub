@@ -1,35 +1,14 @@
 # BACKEND (.NET)
 
-Source: [`docs/CONSTITUTION.md`](docs/CONSTITUTION.md), [`docs/TECHNICAL.md`](docs/TECHNICAL.md). Consult `core.mdc` first. Tests → `backend-testing.mdc`.
+Source: [`docs/constitution.md`](docs/constitution.md), [`docs/technical.md`](docs/technical.md). Consult `core.mdc` and **`architecture.mdc`** first. Tests → `backend-testing.mdc`.
 
-**Do not load architecture/CQRS/EF skills** — those topics are fully covered in Constitution and Tech §2–6.
-
-## Naming and documentation
-
-From Constitution VI — also summarized in `core.mdc`:
-
-- No `/// <summary>` (or other XML doc) on types or members.
-- No abbreviations in identifiers (`ApplicationDatabaseContext`, `userIdentifier`, `cancellationToken`; not `*Db*`, not `ct`).
-- No `Trading` prefix on types or files.
-- Each project has `AssemblyReference.cs`; register handlers, validators, and EF configurations via `AssemblyReference.Assembly`.
+Architecture, CQRS, DDD, and layer rules live in **`architecture.mdc`** — do not duplicate here.
 
 ## Stack
 
 - **.NET 10**, nullable on, warnings as errors where project enables it
-- **MediatR** — commands/queries; pipeline order in Constitution II.5 / Tech §4
-- **FluentValidation** — every command; failures never reach handler
+- **MediatR** + **FluentValidation** — see `architecture.mdc` §4
 - **EF Core** — Infrastructure only; read queries `AsNoTracking` by default (Tech §6)
-
-## Layer layout
-
-See Tech §2–3. Match existing `AddApplication` / `AddInfrastructure` extension patterns in the codebase when wiring DI.
-
-## Application (CQRS)
-
-Sample commands: `RegisterUser`, `LoginUser`, `LogoutUser` (Tech §4).
-
-- Queries return **Contracts DTOs** — never domain entities on the read side
-- **Concurrency:** `row_version` + bounded retry at handler boundary (Constitution III.9)
 
 ## DON'TS
 

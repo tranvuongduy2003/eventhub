@@ -1,12 +1,12 @@
 # MIGRATIONS & DATA
 
-Source: [`docs/CONSTITUTION.md`](docs/CONSTITUTION.md) III, [`docs/TECHNICAL.md`](docs/TECHNICAL.md) §6. Consult `core.mdc` first.
+Source: [`docs/constitution.md`](docs/constitution.md) III, [`docs/technical.md`](docs/technical.md) §6, [`docs/ddd.md`](docs/ddd.md). Consult `core.mdc` first.
 
-**Do not load EF or database-performance skills** — schema rules live in Constitution III and Tech §6.
+**Do not load EF or database-performance skills** — schema rules live in Constitution III, Tech §6, and `architecture.mdc` §7.
 
 - `postgres-mcp` — read-only MCP queries against running Postgres (procedure only)
 
-**Engine:** PostgreSQL 17 · **Schema:** `app` · **Redis:** session cache only (not migrated via EF)
+**Engine:** PostgreSQL · **Schema:** `app` · **Redis:** rebuildable cache (not migrated via EF) · **MinIO:** binary assets
 
 ## EF Core rules
 
@@ -24,12 +24,14 @@ dotnet ef migrations add <Name> \
 
 ## Schema essentials
 
-- Tables: `users`, `user_sessions`
-- `row_version` on `users`
+- Tables follow aggregate boundaries in `ddd.md` §4
+- `row_version` on mutable aggregate roots (especially `Event` for inventory concurrency)
+
+See [`docs/DATABASE.md`](docs/DATABASE.md) when present, or Tech §6.
 
 ## Migration checklist (PR)
 
-- [ ] Matches Tech §6 and EF configurations
+- [ ] Matches Tech §6, `ddd.md` invariants, and EF configurations
 - [ ] Additive where possible
 - [ ] EF model uses `app` schema; concurrency tokens mapped
 - [ ] Handler transaction boundaries still valid

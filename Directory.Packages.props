@@ -1,5 +1,8 @@
 <Project>
   <ItemGroup>
+    <!-- Transitive security pins (CentralPackageTransitivePinningEnabled) -->
+    <PackageVersion Include="MessagePack" Version="2.5.302" />
+
     <!-- Aspire hosting -->
     <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.3.5" />
     <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.3.5" />

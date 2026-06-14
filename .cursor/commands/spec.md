@@ -1,60 +1,46 @@
+---
+description: >-
+  Slash /spec — prompt chaining. Write one implementation-ready product spec to docs/specs/
+  from feature id (F-*) or user description. No file paths or class names. Output feeds /plan.
+---
 # /spec — Implementation-ready feature spec
 
-You are a Senior Product Manager writing **implementation-ready** specs for the **Real-time Stock Trading Simulator** (MVP v1.0). The output is a durable markdown artifact that `/plan` can consume without ambiguity.
+You are a Senior Product Manager writing **one detailed, implementation-ready spec** for **EventHub**. The output is a single markdown file in `docs/specs/` that `/plan` can turn into an engineering plan.
 
-Specs are **product-driven** — user value, behavior, domain rules, edge cases. They DO NOT contain file paths, framework calls, or class names — that's `/plan` and `/build`.
+Specs are **product-driven** — user value, behavior, domain rules, edge cases. They DO NOT contain file paths, framework calls, or class names — that belongs in `/plan` and `/build`.
 
 ## INPUT
 
-The feature description after the command (one sentence to several paragraphs), plus optional `$ARGUMENTS`.
+Feature description after the command, plus optional `$ARGUMENTS` (e.g. `F-5.3`, `EP-5`, or a short feature name).
 
-## MEMORY ARTIFACT CONTRACT (MANDATORY)
+## ARTIFACT CONTRACT
 
-Follow [`.cursor/rules/memory-artifacts.mdc`](mdc:.cursor/rules/memory-artifacts.mdc).
+Follow [`.cursor/rules/spec-artifacts.mdc`](mdc:.cursor/rules/spec-artifacts.mdc).
 
 - **Directory:** `docs/specs/`
-- **Filename:** `<timestamp>-<name>.md`
-- **Timestamp format:** `YYYYMMDD-HHmmss` (local project time)
-- **Name format:** lowercase kebab-case, stable for the feature
-- **Metadata:** required YAML frontmatter (see Step 1 template); do not omit keys
-
-Do **not** save new specs under `docs/memory/specs/` (legacy).
+- **Filename:** `<YYYYMMDDHHmmss>-<feature-kebab>.md`
+- **One spec file per feature slice** — comprehensive, not split across multiple files or user-story issues
 
 ## CONTEXT — read before writing
 
-When sources conflict, the higher one wins:
+When sources conflict, higher wins:
 
-1. [`docs/PRD.md`](docs/PRD.md) — product scope, user flows, acceptance criteria (`PRD §N`)
-2. [`docs/TECHNICAL.md`](docs/TECHNICAL.md) — architecture, services, CQRS, real-time (`Tech §N`)
-3. [`docs/TECHNICAL.md`](docs/TECHNICAL.md) §6 — schema, indexes, Redis keys (`Tech §6`)
-4. [`.cursor/rules/core.mdc`](mdc:.cursor/rules/core.mdc) — non-negotiable invariants
-5. Other rule files in [`.cursor/rules/`](mdc:.cursor/rules/) as relevant (`api-guidelines`, `design-system`, `frontend`, `backend`, `migration`, `aspire`)
+1. [`docs/constitution.md`](docs/constitution.md)
+2. [`docs/prd.md`](docs/prd.md) — `DEC-*`, `QG-*`
+3. [`docs/features.md`](docs/features.md) — `EP-*`, `F-*`, acceptance criteria
+4. [`docs/ddd.md`](docs/ddd.md) — aggregates, `INV-*`, events
+5. [`docs/technical.md`](docs/technical.md)
+6. [`.cursor/rules/core.mdc`](mdc:.cursor/rules/core.mdc)
 
-Also read when present:
+## STEP 0 — CLARIFY
 
-- [`docs/memory/current-status.md`](docs/memory/current-status.md)
-- [`docs/memory/decisions.md`](docs/memory/decisions.md)
-- [`docs/memory/known-issues.md`](docs/memory/known-issues.md)
+Use `AskQuestion` only if you would otherwise make >3 major assumptions. Do not ask implementation questions.
 
-**MVP constraints (from core):** single symbol (`AAPL`), virtual USD, local-only Aspire, one bounded context (**Trading**), no multi-tenant SaaS.
+## STEP 1 — WRITE ONE DETAILED SPEC
 
-## STEP 0 — CLARIFY (only if you'd otherwise make >3 major assumptions)
+Save to `docs/specs/<timestamp>-<feature-kebab>.md`.
 
-Ask narrow questions via `AskQuestion`. Never ask about implementation choices — those belong in `/plan`.
-
-## SCOPE CONTROL
-
-If the feature would need >7 user stories, **do not** spec it all. Split into Phase 1 (MVP) + Phase 2+. Detail Phase 1 only and list Phase 2+ as one-liners under "Future scope".
-
-Always answer first: **"What's the smallest version that delivers value?"**
-
-Stay within **out of scope** unless the user explicitly expands: message broker, transactional outbox, multi-symbol, production CD, horizontal scaling, fractional shares.
-
-## STEP 1 — GENERATE THE SPEC
-
-Save to: `docs/specs/<timestamp>-<feature-kebab>.md`. Use this structure verbatim — omit a section only with explicit justification:
-
----
+**Do not** structure the spec as many separate user stories with individual GitHub issues. Use **one cohesive document** with a unified acceptance-criteria list.
 
 ```markdown
 ---
@@ -64,291 +50,138 @@ id: spec-<timestamp>-<feature-kebab>
 title: <feature name>
 slug: <feature-kebab>
 filename_template: <timestamp>-<name>.md
-created_at: <ISO-8601 datetime with timezone>
-updated_at: <ISO-8601 datetime with timezone>
+created_at: <ISO-8601>
+updated_at: <ISO-8601>
 status: draft
 owner: product
-tags: [spec, feature, trading-simulator]
-related_plan: null
-related_specs: []
-github_epic_issue: null
-github_story_issues: []
-prd_refs: [<PRD §sections or requirement IDs>]
-tech_refs: [<Tech §sections>]
-db_refs: [<Tech §6 subsections or "None">]
+tags: [spec, eventhub, <epic-slug>]
+feature_refs: [<F-*>]
+ddd_refs: [<BC-*, AGG-*, INV-*>]
+prd_refs: [<DEC-*, QG-*, PRD §>]
+tech_refs: [<Tech §>]
+db_refs: [<Tech §6 or None>]
+github_issue: null
 search_index:
-  keywords: [<5-12 domain terms: order, wallet, matching, signalr, …>]
-  bounded_contexts: [Trading]
-  user_personas: [<Trader|Guest|Operator — or MVP default>]
+  keywords: [<5-12 terms>]
+  bounded_contexts: [<from ddd.md>]
+  user_personas: [<PER-*>]
 ---
 
 # Feature: <name>
-> Status: DRAFT  |  Date: <today>
-> PRD: <PRD §refs>
-> Tech: <Tech §refs>
-> DB: <Tech §6 refs or None>
-> Owner: Product
+
+> Features: <F-*>  |  Status: DRAFT  |  Date: <today>
+> PRD: …  |  DDD: …  |  Tech: …
 
 ## 1. Problem & Solution
-**Problem:** <1–2 sentences — current user pain>
-**Solution:** <1–2 sentences — what this feature does>
-**Persona:** <who benefits — MVP trader using local simulator>
 
-## 2. User Stories & Acceptance Criteria
+**Problem:** …
+**Solution:** …
+**Personas:** …
+**Scope:** Which `F-*` ids are in / out for this slice.
 
-### Story 1: <short title>
-> As a **<role>**, I want to **<action>**, so that **<benefit>**.
+## 2. Acceptance Criteria
 
-**Happy path:**
-- GIVEN <precondition> → WHEN <action> → THEN <observable outcome>
+Numbered, observable, testable — happy and failure paths in one list:
 
-**Failure / edge path:**
-- GIVEN <precondition> → WHEN <bad input or fault> → THEN <observable error or fallback>
+**AC-01:** GIVEN … WHEN … THEN …
+**AC-02:** …
 
-Rules:
-- Every THEN is observable (UI element, API response, SignalR push, persisted state).
-- Use concrete values: `AAPL`, whole shares, `NUMERIC(18,4)` money, `≤ 50` rows, `within 2 s` for local MVP.
-- Every story has at least one failure path.
-- Stories are ordered so Story 1 is the foundation.
-- Respect domain invariants: async matching (API persists + enqueues; engine matches later), PostgreSQL authoritative, Redis rebuildable.
+Cover all relevant criteria from `features.md` for the scoped `F-*` ids. Every AC must be verifiable without reading code.
 
 ## 3. Domain & Business Rules
-```
-BR-01: <rule>. Example: <concrete AAPL / USD example>.
-BR-02: …
-```
-Cover wallet reserve/release, order state machine, matching semantics, portfolio weighted average — cite PRD/Tech where applicable.
+
+Reference `ddd.md` (`INV-*`, lifecycles, events). No class or file names.
 
 ## 4. UI Behavior **or** API Contract
 
-### 4a. UI Behavior — one block per screen (`web/`)
-```
-Screen: <name> (Trading dashboard)
-- Arrival: user sees <what>
-- Action: user does <X> → system shows <Y>
-- Loading: <skeleton / inline spinner>
-- Empty: <copy + CTA>
-- Error: <RFC 7807 type/title> → <human message>
-- Real-time: <SignalR hub event + payload shape at product level>
-```
-Do **not** specify colors/fonts — see `design-system.mdc`.
-
-### 4b. API Contract — when API touched
-- **Endpoint(s):** `METHOD /api/...` (align with `api-guidelines.mdc`)
-- **Request / response:** brief JSON sketch (contracts layer, not domain entities)
-- **Errors:** stable `type` URI + HTTP status (422 domain, 409 concurrency, 401/403 auth)
-- **Auth:** session required? which routes are public?
-- **Idempotency:** needed for writes? Why or why not?
-- **Pagination / filtering:** contract if list endpoints
-
-If backend-only, replace 4a with `API only` and complete 4b in detail.
+Product-level only (screens, flows, endpoints at contract level). See `design-system.mdc` for UI patterns.
 
 ## 5. Data & Storage Impact
 
-| Concern | Answer |
-|---|---|
-| PostgreSQL tables / columns | <per DB doc> or `None` |
-| Redis keys / projections | <order book, tape, candles, session> or `None` |
-| Matching / channel behavior | <enqueue vs match timing> or `None` |
-| Migration needed | `Yes — describe` or `No` |
-| Rebuild strategy if Redis cleared | <how projections recover> or `N/A` |
-
-Cross-check [`docs/TECHNICAL.md`](docs/TECHNICAL.md) §6 for constraints and indexes.
+PostgreSQL / Redis / MinIO / RabbitMQ — align with `technical.md` §5–6.
 
 ## 6. Real-Time & Consistency
 
-- **SignalR events:** names and when emitted (order accepted, trade executed, book update, …)
-- **Read-your-writes:** what the user sees immediately after place/cancel vs after match
-- **Stale UI handling:** reconnect, snapshot refresh endpoints
+SignalR, integration events, consistency expectations — or `N/A`.
 
-## 7. Security & Privacy (MVP)
+## 7. Security & Privacy
 
-- **Authn / Authz:** session model; no cross-user data leakage
-- **Sensitive fields:** passwords hashed; no secrets in logs
-- **Threat surface:** replay, overspend, cancel others' orders — mitigations at product level
+Session vs guest; payment boundary (`DEC-1`, QG-6).
 
-## 8. Observability (local MVP)
+## 8. Edge Cases
 
-| Signal | What to emit |
-|---|---|
-| Structured logs | Key business events (order placed, trade, reject reason) — no passwords |
-| Traces | Span per command/handler where ServiceDefaults applies |
-| Metrics | Optional counters/histograms or `minimal for MVP` |
-| Audit | `N/A` or privileged actions logged |
+EC-01: …
 
-## 9. Edge Cases
-```
-EC-01: <scenario> → <behavior>
-EC-02: …
-```
-Cover at minimum: insufficient funds/shares, invalid symbol (non-AAPL), cancel filled order, duplicate submit, optimistic concurrency conflict, engine down / channel backlog, empty book, market order with no liquidity, session expired.
+## 9. Dependencies & Risks
 
-## 10. Dependencies, Risks, Decision Triggers
+Upstream `F-*` dependencies from `features.md`; key delivery risks.
 
-- **Depends on:** <existing features> or `None`
-- **Impacts:** <features that may regress> or `None`
-- **External services:** PostgreSQL, Redis, Aspire resources — or `None` beyond stack
-- **Key risk:** <single biggest delivery risk>
-- **Decision triggers:** <new pattern → add to docs/memory/decisions.md> or `None`
+## 10. Assumptions
 
-## 11. Assumptions
-[Decisions made without explicit user input. They will confirm or correct.]
+## 11. Out of Scope
 
-## 12. Out of Scope
-[Explicit exclusions so `/plan` doesn't drift — include global MVP exclusions where relevant.]
+## 12. Open Questions
 
-## 13. Open Questions
-| # | Question | Source | Answer | Status |
-|---|---|---|---|---|
-| 1 | … | spec / AC / … | — | ❓ |
-
-`Status:` ❓ Unanswered  ✅ Answered  ⏳ Deferred
+| # | Question | Status |
+|---|----------|--------|
+| 1 | … | ❓ |
 ```
 
----
+## STEP 2 — SAVE
 
-## STEP 2 — SAVE & SYNC (docs)
+Spec file is saved to `docs/specs/<timestamp>-<feature-kebab>.md`.
 
-After writing the spec file:
+## STEP 3 — ONE GITHUB ISSUE (when `gh` works)
 
-1. Append one line to [`docs/CHANGELOG.md`](docs/CHANGELOG.md): `- spec: <feature> (docs/specs/<timestamp>-<feature-kebab>.md)`.
-2. Update [`docs/memory/current-status.md`](docs/memory/current-status.md) — `Latest completed: spec <feature>`.
-3. Set spec frontmatter `github_epic_issue` / `github_story_issues` after Step 3 completes.
+Create **exactly one issue** for the whole spec — not per user story, not an epic + stories.
 
-## STEP 3 — GITHUB EPIC, STORY ISSUES & PROJECT BOARD (MANDATORY when `gh` works)
-
-After Step 2, sync GitHub so every **Story** in spec §2 has its own trackable issue on the **Project board**. Read [`.cursor/skills/github-cli/SKILL.md`](mdc:.cursor/skills/github-cli/SKILL.md) and [`.cursor/skills/github-cli/ISSUES.md`](mdc:.cursor/skills/github-cli/ISSUES.md).
-
-**Skip entire step only if:** `gh auth status` fails, the repo has no `origin` remote, or the user explicitly says to skip GitHub. When skipping, say why in the completion summary.
-
-### 3.0 Prerequisites — auth scopes & project config
-
-**Token scopes** (Projects v2 requires both):
-
-```bash
-gh auth status
-gh auth refresh -h github.com -s read:project,project
-```
-
-If refresh starts device flow, tell the user to complete https://github.com/login/device before continuing.
-
-**Project target** — resolve in this order:
-
-1. [`.github/github-project.json`](mdc:.github/github-project.json) if present:
-   ```json
-   {
-     "owner": "tranvuongduy2003",
-     "projectNumber": 1,
-     "projectTitle": "Optional display name for logs"
-   }
-   ```
-2. Environment: `GH_PROJECT_OWNER`, `GH_PROJECT_NUMBER` (optional `GH_PROJECT_TITLE`).
-3. If still unknown: `gh project list --owner @me` (and `--owner <org>` if applicable); if multiple matches, use `AskQuestion` once — do not guess.
-
-Copy [`.github/github-project.json.example`](mdc:.github/github-project.json.example) to `.github/github-project.json` locally (gitignored); set `owner` and `projectNumber`.
-
-**Labels** — ensure they exist (create if missing):
-
-```bash
-gh label create "spec" --description "Product spec artifact" --color "0E8A16" 2>/dev/null || true
-```
-
-Default labels on every epic and story issue: `spec`, `enhancement`.
-
-### 3.1 Epic (parent) issue
-
-Create **one epic issue** for the whole feature (not one per story).
+**Skip only if:** `gh auth status` fails, no `origin` remote, or user explicitly says skip GitHub.
 
 | Field | Value |
 |-------|--------|
-| **Title** | `Spec: <feature name> (<PRD US-XX if known>)` |
+| **Title** | `Spec: <feature name> (<F-* refs>)` |
 | **Labels** | `spec`, `enhancement` |
 
-**Epic body** — copy [`.github/.issue-bodies/epic.template.md`](mdc:.github/.issue-bodies/epic.template.md) to a temp file, fill every section from the spec (no unfilled placeholders), then:
+**Body must include** (or copy from [`.github/.issue-bodies/spec.template.md`](mdc:.github/.issue-bodies/spec.template.md)):
 
-```bash
-gh issue create --title "Spec: <feature> (<US-XX>)" --label "spec,enhancement" --body-file <temp-epic.md>
+- Link to `docs/specs/<file>.md`
+- Problem & solution (short)
+- Full **Acceptance Criteria** list (AC-01…)
+- `feature_refs` / epic context
+- Checklist placeholder for `/plan` and `/build`:
+
+```markdown
+## Tracking
+- [ ] Plan: `/plan docs/specs/<file>.md`
+- [ ] Build: `/build docs/specs/<file>.md`
+
+## Acceptance Criteria
+(paste AC-01… from spec)
 ```
-
-Record epic number `EPIC`.
-
-### 3.2 Story issues — one detailed issue per spec §2 story
-
-For **each** `### Story N:` block in spec §2 (Phase 1 only; skip Future scope stories):
-
-| Field | Value |
-|-------|--------|
-| **Title** | `<PRD US-XX if known> / Story N: <short title from spec>` |
-| **Labels** | `spec`, `enhancement` |
-
-**Story body** — copy [`.github/.issue-bodies/story.template.md`](mdc:.github/.issue-bodies/story.template.md) per story, fill from that story’s §2 block plus applicable §3–§9 (verbatim ACs; no placeholder text left in the published issue).
-
-Create issues sequentially; record story issue numbers `S1`, `S2`, …
-
-**PowerShell-friendly creation** (prefer `--body-file` over inline bodies):
 
 ```powershell
-Copy-Item .github/.issue-bodies/story.template.md $env:TEMP\gh-story-1.md
-# Edit $env:TEMP\gh-story-1.md — fill all sections from spec
-gh issue create --title "US-01 / Story 1: <title>" --label "spec,enhancement" --body-file "$env:TEMP\gh-story-1.md"
-Remove-Item $env:TEMP\gh-story-1.md
+gh issue create --title "Spec: <name> (<F-*>)" --label "spec,enhancement" --body-file <temp.md>
 ```
 
-### 3.3 Add all issues to the GitHub Project board
+Then update the spec file:
 
-For the epic and **every** story issue, add to the configured project:
+- Frontmatter: `github_issue: <number>`
+- After frontmatter: `> GitHub: #<number> (<url>)`
 
-```bash
-# Prefer Projects v2 CLI (needs read:project + project scopes)
-gh project item-add <projectNumber> --owner <owner> --url https://github.com/<owner>/<repo>/issues/<number>
-```
+**Do not** create additional issues. **Do not** update the issue during `/plan` or `/build`.
 
-Run once per issue (`EPIC`, `S1`, `S2`, …). If `item-add` fails but `gh issue edit <n> --add-project "<projectTitle>"` works with the exact title from config, use that as fallback.
+## QUALITY CHECKLIST
 
-Do **not** set Project **Status** fields unless the user asked — default column is enough.
-
-### 3.4 Wire epic ↔ stories ↔ spec
-
-1. **Edit epic** `#EPIC`: fill the Stories checklist with `- [ ] #S1 — Story 1: …` for each story issue.
-2. **Comment on epic:** `Story issues created for project board: #S1, #S2, …`
-3. **Update spec file:**
-   - After frontmatter, add: `> GitHub epic: #<EPIC> [<title>](url>)`
-   - Frontmatter: `github_epic_issue: <EPIC>`, `github_story_issues: [<S1>, <S2>, …]`
-4. **Do not** close issues; `/build` moves them. Do not create GitHub issues for Future scope one-liners unless the user asks.
-
-### 3.5 Report to user
-
-In the completion message, include:
-
-| Item | Link |
-|------|------|
-| Epic | `#<EPIC>` + URL |
-| Stories | `#<S1>` … per story |
-| Project | owner + project number/title used |
-| Auth | Remind to run `gh auth refresh -h github.com -s read:project,project` if Project add was skipped |
-
-If Project add failed (missing scope or wrong project name), list created issue URLs and the exact command to run after fixing auth/config.
-
-## QUALITY CHECKLIST (self-verify before presenting)
-
-- [ ] Every AC is observable with concrete MVP values (`AAPL`, whole shares, USD)
-- [ ] Every story has a failure path
-- [ ] §3 domain rules align with PRD/Tech trading invariants
-- [ ] §4 covers loading / empty / error / real-time (or API contract is exhaustive)
-- [ ] §5 cross-references DB doc for any persistence change
-- [ ] §6 addresses async matching vs immediate API response
-- [ ] No file paths, class names, or framework calls in the spec
-- [ ] No multi-tenant or multi-symbol scope creep unless user requested
-- [ ] Spec fits one phase (≤ 7 stories); larger ideas in Future scope
-- [ ] Could `/plan` consume this without asking questions? If not, fix.
-- [ ] GitHub: epic issue exists and body includes spec link, scope, and story checklist
-- [ ] GitHub: one **detailed** issue per Phase 1 story (happy + failure ACs copied, not stubs)
-- [ ] GitHub: epic + all story issues added to Project board (or user told how to fix auth/config)
-
-## DO
-
-Read PRD + Technical first · Stay in product mode · Cite `PRD §`, `Tech §` · Use `AskQuestion` for narrow ambiguity · Save the spec file before reporting · Run Step 3 when `gh` is available · Use `--body-file` for issue bodies
+- [ ] Single cohesive spec — not fragmented user stories
+- [ ] All scoped `F-*` ACs from `features.md` covered
+- [ ] Domain rules align with `ddd.md`
+- [ ] No file paths, class names, or framework APIs
+- [ ] `/plan` could consume this without clarifying questions
+- [ ] One GitHub issue created (or skip reason documented)
 
 ## DO NOT
 
-Specify file paths, class names, or framework APIs in the **spec** (issue bodies may link to `docs/specs/…`) · Spec >7 stories without splitting · Skip §3 / §5 / §6 · Introduce message broker / multi-symbol without explicit approval · Move on without answering "what's the smallest version?" · Create a single monolithic issue instead of epic + per-story issues · Leave story issues as one-line stubs without ACs
+- Split into multiple spec files for one feature slice
+- Create epic + per-story GitHub issues
+- Write implementation plans in the spec (`/plan` writes `.cursor/plans/` — gitignored)
+- Put code-level detail in the spec

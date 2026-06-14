@@ -1,6 +1,6 @@
 ---
 name: env-doctor
-description: Diagnoses and fixes local development environment issues for this boilerplate (.NET Aspire, Docker, PostgreSQL, Redis, Node/Vite). Use when setup fails, prerequisites are missing, Docker or Aspire won't start, connection errors appear, or the user mentions env, environment, prerequisites, or "can't run locally".
+description: Diagnoses and fixes local development environment issues for EventHub (.NET Aspire, Docker, PostgreSQL, Redis, MinIO, RabbitMQ, Node/Vite). Use when setup fails, prerequisites are missing, Docker or Aspire won't start, connection errors appear, or the user mentions env, environment, prerequisites, or "can't run locally".
 ---
 
 # Env Doctor
@@ -18,7 +18,7 @@ Systematically verify and repair the local dev environment for this repository. 
 ## When not to use
 
 - Application logic bugs with a healthy environment (use debugging skills instead)
-- Production or cloud deployment (MVP is local-only per `docs/TECHNICAL.md`)
+- Production or cloud deployment (MVP is local-only per `docs/technical.md`)
 
 ## Workflow
 
@@ -45,7 +45,7 @@ Record:
 
 ### 2. Prerequisite checks
 
-Run version and availability commands. Expected baseline from `docs/TECHNICAL.md` §19.1:
+Run version and availability commands. Expected baseline from `docs/technical.md` §10 and README prerequisites:
 
 | Tool | Expected |
 |------|----------|
@@ -110,7 +110,7 @@ Success criteria for this project:
 
 1. `dotnet build` succeeds for the solution
 2. AppHost starts without immediate crash
-3. Aspire dashboard shows PostgreSQL, Redis, API, Matching Engine, and frontend resources healthy
+3. Aspire dashboard shows PostgreSQL, Redis, MinIO, RabbitMQ, Seq, API, and web resources healthy
 4. Frontend loads and can reach the API URL Aspire injects into Vite
 
 If full run is too heavy, confirm at minimum: prerequisites pass + `dotnet build` + Docker healthy.
@@ -144,11 +144,11 @@ Use this template:
 ## Project-specific notes
 
 - **Orchestration**: .NET Aspire AppHost is the single local entry point; Docker Compose is not used.
-- **Configuration**: Layered `appsettings` + Aspire-injected env vars + user secrets; see `docs/TECHNICAL.md` §13.
+- **Configuration**: Layered `appsettings` + Aspire-injected env vars + user secrets; see `docs/technical.md` §8.
 - **Database**: EF migrations apply on dev startup; migration CLI issues are separate from env prerequisites.
 - **CI vs local**: GitHub Actions may use different agents; compare versions if "CI passes, local fails."
 
 ## Additional resources
 
 - Detailed per-OS and tooling checks: [resources/checklist.md](resources/checklist.md)
-- Architecture and prerequisites: `docs/TECHNICAL.md` §12, §19
+- Architecture and prerequisites: `docs/technical.md` §10, README

@@ -1,0 +1,8 @@
+{
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "{{PROJECT_ROOT}}/.env"
+  },
+  "conversation_id": "eval-block-env",
+  "hook_event_name": "preToolUse"
+}

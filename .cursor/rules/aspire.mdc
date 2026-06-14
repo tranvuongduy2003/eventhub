@@ -1,8 +1,8 @@
 # .NET ASPIRE
 
-Source: [`docs/CONSTITUTION.md`](docs/CONSTITUTION.md) V, [`docs/TECHNICAL.md`](docs/TECHNICAL.md) §8–9. Consult `core.mdc` first.
+Source: [`docs/constitution.md`](docs/constitution.md) V, [`docs/technical.md`](docs/technical.md) §8–10. Consult `core.mdc` first.
 
-**No aspire skill folder** — topology and workflow are in Constitution V and Tech §8–9.
+**No aspire skill folder** — topology and workflow are in Constitution V and Tech §8–10.
 
 ## MCP (local debugging only)
 
@@ -10,27 +10,31 @@ Source: [`docs/CONSTITUTION.md`](docs/CONSTITUTION.md) V, [`docs/TECHNICAL.md`](
 |--------|------|
 | **aspire** (`.mcp.json`) | Running stack: resources, logs, traces |
 | **postgres** (`.mcp.json`) | Read-only SQL against local `app` database · see `postgres-mcp` skill |
+| **neo4j-graphrag** (`.mcp.json`) | Graph queries, vector/fulltext search · see `neo4j-graphrag` skill |
 
 ## Topology (source of truth = AppHost)
 
 | Resource | Role |
 |----------|------|
 | PostgreSQL + volume | Source of truth |
-| Redis | Session cache |
-| Api | REST + OpenAPI |
+| Redis | Session / response cache |
+| MinIO | Object storage (cover images, avatars) |
+| RabbitMQ | Integration events |
+| Seq | Logs / traces |
+| Api | REST + OpenAPI + SignalR |
 | `web/` (Yarn + Vite) | Frontend — `AddViteApp("web", ...).WithYarn(...)` |
 
 **No hand-authored docker-compose** for orchestration.
 
 ## Wiring
 
-- Connection strings → Api (`ConnectionStrings__app`, `ConnectionStrings__cache`)
+- Connection strings → Api (`ConnectionStrings__app`, `ConnectionStrings__cache`, etc.)
 - API URL → `VITE_*` for frontend
 - CORS → `https://localhost:5000` for Vite
 
 ## ServiceDefaults
 
-Api calls ServiceDefaults extensions once — logging, health checks, service discovery.
+Api calls ServiceDefaults extensions once — logging, health checks, service discovery, OpenTelemetry → Seq.
 
 ## Config order (later wins)
 
@@ -40,7 +44,7 @@ Api calls ServiceDefaults extensions once — logging, health checks, service di
 
 1. Docker Desktop running
 2. Run **AppHost** (full stack)
-3. Aspire dashboard for logs/health
+3. Aspire dashboard for logs/health; Seq for structured logs
 4. Trust dev HTTPS cert on first setup
 
 EF migrations apply on startup in Development.

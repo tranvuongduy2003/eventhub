@@ -1,6 +1,6 @@
 # API GUIDELINES
 
-Source: [`docs/CONSTITUTION.md`](docs/CONSTITUTION.md) IV, [`docs/TECHNICAL.md`](docs/TECHNICAL.md) §7. Consult `core.mdc`, `backend.mdc`.
+Source: [`docs/constitution.md`](docs/constitution.md) IV, [`docs/technical.md`](docs/technical.md) §7. Consult `core.mdc`, `backend.mdc`.
 
 **OpenAPI workflow:** `openapi-contract-sync` skill (export/codegen commands not in TECHNICAL).
 
@@ -8,15 +8,19 @@ Source: [`docs/CONSTITUTION.md`](docs/CONSTITUTION.md) IV, [`docs/TECHNICAL.md`]
 
 `Solution.Api` — thin HTTP. **MediatR only** in handlers; map to `Solution.Contracts` DTOs — never serialize domain entities.
 
-## REST surface (sample)
+## REST surface
 
-| Area | Method / path | Handler |
-|------|---------------|---------|
-| Auth | `POST /api/users` | RegisterUser |
-| Auth | `POST /api/auth/login` | LoginUser |
-| Auth | `POST /api/auth/logout` | LogoutUser |
-| Auth | `GET /api/auth/me` | GetCurrentUser |
+Endpoints align with [`docs/features.md`](docs/features.md) epics. Auth sample (EP-1):
+
+| Area | Method / path | Notes |
+|------|---------------|-------|
+| Auth | `POST /api/users` | Register organizer |
+| Auth | `POST /api/auth/login` | Session cookie |
+| Auth | `POST /api/auth/logout` | End session |
+| Auth | `GET /api/auth/me` | Current user |
 | Health | `GET /health` | Aspire defaults |
+
+Add routes per feature spec; export OpenAPI after changes.
 
 ## Success response
 
@@ -32,19 +36,24 @@ Return the resource DTO directly (no custom `{ data, meta }` envelope).
 | Status | Use |
 |--------|-----|
 | `200` | Read success |
-| `201` | Created (user registered) |
+| `201` | Created |
 | `204` | Logout / no body |
 | `400` | Malformed JSON / binding failure |
 | `401` | No session |
 | `404` | Resource not found |
+| `409` | Optimistic concurrency conflict |
 | `422` | Domain / validation rejection |
 | `500` | Unhandled — generic client message |
 
 ## Auth
 
-- Cookie session; Redis cache, PG `user_sessions` authoritative
-- Public: register + login only
+- Cookie session; Redis cache, PostgreSQL authoritative for sessions
+- Guest checkout routes are public where specified in `features.md` (F-5.2)
 - Ownership enforced in **Application** handlers (Constitution II.7)
+
+## Realtime
+
+SignalR hubs for EP-11 (live sales, check-in). Same session auth as REST.
 
 ## DON'TS
 

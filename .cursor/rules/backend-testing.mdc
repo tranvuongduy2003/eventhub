@@ -1,21 +1,21 @@
 # BACKEND TESTING
 
-Source: [`docs/CONSTITUTION.md`](docs/CONSTITUTION.md) VII, [`docs/TECHNICAL.md`](docs/TECHNICAL.md) §10. Consult `core.mdc` and `backend.mdc` first.
+Source: [`docs/constitution.md`](docs/constitution.md) VII, [`docs/technical.md`](docs/technical.md) §11. Consult `core.mdc` and `backend.mdc` first.
 
 **No separate testing skill** — follow Constitution VII and mirror patterns in `tests/`.
 
 ## Tooling
 
 - **xUnit** + **FluentAssertions**
-- **Testcontainers** — real PostgreSQL + Redis in `Api.IntegrationTests`
+- **Testcontainers** — PostgreSQL, Redis, RabbitMQ, MinIO in `Api.IntegrationTests` as needed
 - **Fakes** at Application **ports** only — never mock domain aggregates
 
 ## Layout
 
 ```
 tests/
-├── Domain.UnitTests/           ← aggregates, value objects
-└── Api.IntegrationTests/       ← HTTP + DB + Redis wiring
+├── Domain.UnitTests/           ← aggregates, value objects (see ddd.md)
+└── Api.IntegrationTests/       ← HTTP + infrastructure wiring
 ```
 
 ## Naming
@@ -26,8 +26,8 @@ tests/
 
 | Area | Examples |
 |------|----------|
-| **Domain** | Aggregate invariants, value object validation |
-| **Integration** | Register/login/logout, session persistence |
+| **Domain** | Aggregate invariants (`INV-*` in `ddd.md`), value object validation |
+| **Integration** | HTTP flows per `features.md` acceptance criteria |
 
 ## What not to test
 
@@ -39,8 +39,8 @@ tests/
 
 ```csharp
 // ✅ construct aggregate directly, assert behavior/events
-var user = User.Register(...);
-user.DomainEvents.Should().ContainSingle();
+var order = Order.Place(...);
+order.DomainEvents.Should().ContainSingle();
 
 // ❌ no DI container, no EF, no mocks of domain types
 ```

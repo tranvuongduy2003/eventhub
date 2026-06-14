@@ -1,6 +1,6 @@
 # Constitution
 
-**Project:** Clean Architecture + CQRS + DDD Boilerplate  
+**Project:** EventHub — event management and ticketing platform  
 **Status:** Immutable principles  
 **Last Updated:** June 14, 2026
 
@@ -13,8 +13,8 @@ This document defines the **non-negotiable invariants** of the repository. Every
 When guidance conflicts:
 
 1. **This constitution** wins over all other documents and Cursor rules.
-2. **Product and technical docs** (`PRD.md`, `TECHNICAL.md`) win over scoped Cursor rules.
-3. **Accepted decisions** in [`memory/decisions.md`](memory/decisions.md) win over informal notes or session artifacts.
+2. **Product and technical docs** (`prd.md`, `features.md`, `ddd.md`, `technical.md`) win over scoped Cursor rules.
+3. **Resolved product decisions** in [`prd.md`](prd.md) (`DEC-*`) win over informal notes or session artifacts.
 
 Fix contradictions in lower-level docs or rules — do not weaken these principles without an explicit constitution amendment.
 
@@ -47,9 +47,13 @@ Business rules live in `Solution.Domain` as framework-free C#. No ORM attributes
 
 Aggregates enforce invariants internally. **No anemic domain models** — behavior belongs on aggregates and value objects, not scattered in handlers.
 
-### 3. Sample bounded context is replaceable; patterns are not
+The domain model — bounded contexts, aggregates, invariants, events — is specified in [`ddd.md`](ddd.md). Code must stay aligned with that document.
 
-The `User` aggregate demonstrates DDD tactical patterns. Replace the sample domain with your own bounded contexts, but keep the same layering, CQRS, and port/adapter boundaries.
+### 3. Modular monolith
+
+EventHub runs as a **single deployable** with **logical bounded contexts** inside one Domain project (see `ddd.md` §2). Do not split into microservices unless a future constitution amendment explicitly allows it.
+
+Cross-context integration follows `technical.md` §4–5: in-process domain events within a context; **RabbitMQ integration events** across contexts with idempotent consumers.
 
 ---
 
@@ -77,7 +81,7 @@ Do not bypass the pipeline for writes that need transactions or domain events.
 
 ### 6. Ports in Application; adapters in Infrastructure
 
-Application defines abstractions (repositories, unit of work, external services). Infrastructure implements them. Handlers depend on ports, never on concrete EF or Redis types.
+Application defines abstractions (repositories, unit of work, payment gateway, email, storage, messaging). Infrastructure implements them. Handlers depend on ports, never on concrete EF, Redis, MinIO, or RabbitMQ types.
 
 ### 7. Ownership and authorization live in Application
 
@@ -93,9 +97,11 @@ All authoritative state persists in PostgreSQL (`app` schema). Redis holds **reb
 
 Session cache is written **after** PostgreSQL commit, never before.
 
+Binary assets (cover images, avatars) are stored in **MinIO**; PostgreSQL holds references only.
+
 ### 9. Storage follows aggregate boundaries
 
-- One primary table per aggregate root.
+- One primary table per aggregate root (see `ddd.md` and `technical.md` §6).
 - Declarative constraints enforce invariants at the database where possible.
 - Mutable aggregates use optimistic concurrency (`row_version`).
 - Timestamps are stored as **UTC** (`TIMESTAMPTZ`).
@@ -104,7 +110,7 @@ Session cache is written **after** PostgreSQL commit, never before.
 
 - Generate migrations via EF Core tooling in `src/Infrastructure/Migrations/`.
 - **Never edit merged migrations** — add a new migration instead.
-- Schema changes must stay aligned with [`TECHNICAL.md`](TECHNICAL.md) §6 and EF configurations.
+- Schema changes must stay aligned with [`technical.md`](technical.md) §6 and EF configurations.
 
 ---
 
@@ -115,6 +121,7 @@ Session cache is written **after** PostgreSQL commit, never before.
 - Endpoints implement `IEndpoint` and are discovered via assembly scan.
 - Endpoints send MediatR requests and map to **Contracts DTOs** — never serialize domain entities.
 - **MediatR only** in the Api layer for use-case dispatch.
+- Realtime updates use **SignalR hubs** in Api (see `technical.md` §5).
 
 ### 12. REST and error conventions are stable
 
@@ -141,7 +148,7 @@ Domain types must not appear in OpenAPI or JSON responses.
 
 ### 14. Aspire AppHost is the topology source of truth
 
-Local orchestration runs through **.NET Aspire AppHost** — PostgreSQL, Redis, Api, and web (Vite). Do not add hand-authored `docker-compose.yml` for service orchestration.
+Local orchestration runs through **.NET Aspire AppHost** — PostgreSQL, Redis, MinIO, RabbitMQ, Seq, Api, and web (Vite). Do not add hand-authored `docker-compose.yml` for service orchestration.
 
 ### 15. ServiceDefaults is mandatory for Api
 
@@ -153,7 +160,7 @@ Later sources override earlier ones:
 
 `appsettings.json` → `appsettings.Development.json` → Aspire environment → user secrets
 
-Connection strings are Aspire-injected: `ConnectionStrings__app`, `ConnectionStrings__cache`.
+Connection strings and endpoints are Aspire-injected (e.g. `ConnectionStrings__app`, `ConnectionStrings__cache`).
 
 ---
 
@@ -163,13 +170,12 @@ Connection strings are Aspire-injected: `ConnectionStrings__app`, `ConnectionStr
 
 - **No XML doc comments** (`/// <summary>`) — use clear type and member names.
 - **No abbreviations** in type, method, property, file, or parameter names. Exceptions: framework terms (`DbContext`, `Guid`) and official library API names.
-- **No `Trading` prefix** on types — the solution namespace is already `Solution.*`.
 - Every project under `src/` and `tests/` includes **`AssemblyReference.cs`**. Use `AssemblyReference.Assembly` for MediatR, FluentValidation, EF configuration, and endpoint discovery — not `typeof(DependencyInjection).Assembly` or `Assembly.GetEntryAssembly()`.
 
 ### 18. File size and quality bar
 
 - Prefer files **≤ 500 lines**; split when a type or handler grows unwieldy.
-- Significant architecture choices require an entry in [`memory/decisions.md`](memory/decisions.md).
+- Significant architecture choices that extend beyond [`prd.md`](prd.md) decisions require a new `DEC-*` entry in `prd.md` §11 or an amendment to this constitution.
 
 ---
 
@@ -178,7 +184,7 @@ Connection strings are Aspire-injected: `ConnectionStrings__app`, `ConnectionStr
 ### 19. Selective, meaningful tests only
 
 - **Domain unit tests** — pure aggregate and value object behavior, no DI.
-- **Api integration tests** — HTTP surface with Testcontainers (PostgreSQL, Redis).
+- **Api integration tests** — HTTP surface with Testcontainers (PostgreSQL, Redis, RabbitMQ, MinIO as needed).
 - Integration tests use fakes at Application **ports**, not domain mocks.
 - No coverage targets; do not add tests that only assert the obvious.
 
@@ -192,26 +198,29 @@ Fixed top-level structure:
 src/       AppHost, ServiceDefaults, Api, Application, Domain, Infrastructure, Contracts
 tests/     Domain.UnitTests, Api.IntegrationTests, Testing.Common
 web/       React 19 + Vite (outside .slnx; Yarn; run via Aspire web resource)
-docs/      PRD, TECHNICAL, memory/, this constitution
+docs/      constitution, prd, features, ddd, technical, specs/
 contracts/ OpenAPI contract and codegen scripts
-.cursor/   Rules, skills, commands for Cursor agents
+.cursor/   Rules, skills, commands; ephemeral plans in `.cursor/plans/` (gitignored)
 ```
 
 Do not collapse layers into monolithic projects or move orchestration outside AppHost.
+
+**Durable workflow artifact:** specs in `docs/specs/` (`YYYYMMDDHHmmss-<name>.md`). **Ephemeral plans** in `.cursor/plans/` — same basename as spec; never committed; deleted after `/build`.
 
 ---
 
 ## IX. Explicitly out of scope
 
-Unless explicitly requested and documented as a decision, the following are **not part of this boilerplate**:
+Unless explicitly requested and documented as a decision in `prd.md`, the following are **not part of EventHub**:
 
 - Production deployment and CD pipelines
-- Message brokers and transactional outbox
+- Transactional outbox (RabbitMQ is in scope; outbox pattern is not)
 - Multi-tenancy
-- Horizontal scaling patterns
-- Advanced observability beyond Aspire defaults
+- Horizontal scaling patterns beyond documented hot-aggregate trade-offs in `ddd.md` §8
+- Large-scale / high-concurrency on-sale handling (`prd.md` §6.2)
+- Enterprise venue features, multi-currency, blockchain ticketing, paid secondary marketplace
 
-Adding these requires a new architecture decision and must not violate principles I–VIII.
+Adding in-scope capabilities (e.g. a new bounded context) requires alignment with `ddd.md`, `features.md`, and `technical.md` — not silent drift.
 
 ---
 
@@ -219,8 +228,8 @@ Adding these requires a new architecture decision and must not violate principle
 
 To change an invariant in this document:
 
-1. Propose the change with rationale in [`memory/decisions.md`](memory/decisions.md).
-2. Update affected docs (`PRD.md`, `TECHNICAL.md`, Cursor rules) to match.
+1. Propose the change with rationale (new `DEC-*` in `prd.md` or a dedicated spec in `docs/specs/`).
+2. Update affected docs (`prd.md`, `features.md`, `ddd.md`, `technical.md`, Cursor rules) to match.
 3. Amend this constitution in the same change set.
 
 Silent drift — code or rules that contradict this document without amendment — is a defect.
@@ -232,8 +241,10 @@ Silent drift — code or rules that contradict this document without amendment �
 | Document | Role |
 |----------|------|
 | **This file** | Immutable principles |
-| [`PRD.md`](PRD.md) | Boilerplate scope and included patterns |
-| [`TECHNICAL.md`](TECHNICAL.md) | Architecture, CQRS, API, persistence, testing |
-| [`memory/current-status.md`](memory/current-status.md) | Active work and session checklist |
-| [`memory/decisions.md`](memory/decisions.md) | Accepted architecture decisions |
-| [`memory/known-issues.md`](memory/known-issues.md) | Documented bugs and workarounds |
+| [`prd.md`](prd.md) | Product intent — why, who, scope, goals, decisions (`DEC-*`), guardrails (`QG-*`) |
+| [`features.md`](features.md) | Observable capabilities — epics (`EP-*`), features (`F-*`), acceptance criteria, build order |
+| [`ddd.md`](ddd.md) | Domain model — bounded contexts, aggregates, invariants, events, context map |
+| [`technical.md`](technical.md) | How it is built — architecture, CQRS, infrastructure, API, persistence, testing |
+| [`docs/specs/`](specs/) | Product specs (`/spec`) — committed |
+
+**Reading order for agents:** constitution → prd → features (for the feature at hand) → ddd (domain rules) → technical (mechanics).
