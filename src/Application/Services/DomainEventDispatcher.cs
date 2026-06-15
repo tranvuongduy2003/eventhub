@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Reflection;
+using EventHub.Application.Abstractions.Messaging;
+using EventHub.Application.Abstractions.Services;
+using EventHub.Domain.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
-using Solution.Application.Abstractions.Messaging;
-using Solution.Application.Abstractions.Services;
-using Solution.Domain.Abstractions;
 
-namespace Solution.Application.Services;
+namespace EventHub.Application.Services;
 
 internal sealed class DomainEventDispatcher(IServiceProvider serviceProvider) : IDomainEventDispatcher
 {

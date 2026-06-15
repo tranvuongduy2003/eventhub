@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Solution.Infrastructure.Persistence.Configurations;
+namespace EventHub.Infrastructure.Persistence.Configurations;
 
 internal static class PersistenceModelBuilderExtensions
 {

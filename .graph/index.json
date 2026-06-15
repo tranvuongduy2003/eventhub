@@ -15,32 +15,32 @@
   "layers": {
     "src/Domain/": {
       "postEditAction": "test",
-      "testProject": "tests/Domain.UnitTests/Solution.Domain.UnitTests.csproj",
+      "testProject": "tests/Domain.UnitTests/EventHub.Domain.UnitTests.csproj",
       "namespaceFromSegment": true
     },
     "src/Application/": {
       "postEditAction": "build",
-      "buildProject": "src/Application/Solution.Application.csproj"
+      "buildProject": "src/Application/EventHub.Application.csproj"
     },
     "src/Infrastructure/": {
       "postEditAction": "build",
-      "buildProject": "src/Infrastructure/Solution.Infrastructure.csproj"
+      "buildProject": "src/Infrastructure/EventHub.Infrastructure.csproj"
     },
     "src/Api/": {
       "postEditAction": "build",
-      "buildProject": "src/Api/Solution.Api.csproj"
+      "buildProject": "src/Api/EventHub.Api.csproj"
     },
     "src/Contracts/": {
       "postEditAction": "build",
-      "buildProject": "src/Contracts/Solution.Contracts.csproj"
+      "buildProject": "src/Contracts/EventHub.Contracts.csproj"
     },
     "tests/Domain.UnitTests/": {
       "postEditAction": "test",
-      "testProject": "tests/Domain.UnitTests/Solution.Domain.UnitTests.csproj"
+      "testProject": "tests/Domain.UnitTests/EventHub.Domain.UnitTests.csproj"
     },
     "tests/Api.IntegrationTests/": {
       "postEditAction": "test",
-      "testProject": "tests/Api.IntegrationTests/Solution.Api.IntegrationTests.csproj",
+      "testProject": "tests/Api.IntegrationTests/EventHub.Api.IntegrationTests.csproj",
       "namespaceFromSegment": true
     }
   }

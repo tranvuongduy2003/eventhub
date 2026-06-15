@@ -1,21 +1,21 @@
 using System.Net;
 using System.Net.Http.Json;
+using EventHub.Api.IntegrationTests.Integration;
+using EventHub.Application.Abstractions.Auth;
+using EventHub.Application.Abstractions.Persistence;
+using EventHub.Application.Users;
+using EventHub.Application.Users.Commands;
+using EventHub.Contracts.Users;
+using EventHub.Domain.Users;
+using EventHub.Infrastructure.Persistence;
+using EventHub.Testing.Common.Fixtures;
 using FluentAssertions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Solution.Api.IntegrationTests.Integration;
-using Solution.Application.Abstractions.Auth;
-using Solution.Application.Abstractions.Persistence;
-using Solution.Application.Users;
-using Solution.Application.Users.Commands;
-using Solution.Contracts.Users;
-using Solution.Domain.Users;
-using Solution.Infrastructure.Persistence;
-using Solution.Testing.Common.Fixtures;
 
-namespace Solution.Api.IntegrationTests.Users;
+namespace EventHub.Api.IntegrationTests.Users;
 
 [Collection(IntegrationTestCollection.Name)]
 public sealed class LoginUserTests(IntegrationTestFixture fixture)
@@ -55,7 +55,7 @@ public sealed class LoginUserTests(IntegrationTestFixture fixture)
         var loginBody = await loginResponse.Content.ReadFromJsonAsync<LoginUserResponse>();
         loginBody.Should().NotBeNull();
         loginBody!.UserId.Should().Be(registration!.UserId);
-        loginBody.Username.Should().Be(registration.Username);
+        loginBody.DisplayName.Should().Be(registration.DisplayName);
     }
 
     [Fact]
@@ -133,7 +133,7 @@ public sealed class LoginUserTests(IntegrationTestFixture fixture)
 
         loginResult.IsSuccess.Should().BeTrue();
         loginResult.Value!.UserId.Should().Be(registerResult.Value!.UserId);
-        loginResult.Value.Username.Should().Be($"user_{suffix}");
+        loginResult.Value.DisplayName.Should().Be($"user_{suffix}");
         loginResult.Value.SessionId.Should().NotBeEmpty();
     }
 

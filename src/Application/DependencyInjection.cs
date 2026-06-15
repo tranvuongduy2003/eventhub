@@ -1,13 +1,13 @@
+using EventHub.Application.Abstractions.Auth;
+using EventHub.Application.Abstractions.Services;
+using EventHub.Application.Behaviors;
+using EventHub.Application.Options;
+using EventHub.Application.Services;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using Solution.Application.Abstractions.Auth;
-using Solution.Application.Abstractions.Services;
-using Solution.Application.Behaviors;
-using Solution.Application.Options;
-using Solution.Application.Services;
 
-namespace Solution.Application;
+namespace EventHub.Application;
 
 public static partial class DependencyInjection
 {

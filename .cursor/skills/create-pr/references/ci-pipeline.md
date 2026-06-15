@@ -7,10 +7,10 @@ Run from **repository root**. Use `;` between commands in PowerShell.
 ## Full stack (default)
 
 ```powershell
-dotnet restore Solution.slnx
-dotnet format Solution.slnx --verify-no-changes
-dotnet build Solution.slnx --no-restore -c Release
-dotnet test Solution.slnx --no-build -c Release --verbosity normal
+dotnet restore EventHub.slnx
+dotnet format EventHub.slnx --verify-no-changes
+dotnet build EventHub.slnx --no-restore -c Release
+dotnet test EventHub.slnx --no-build -c Release --verbosity normal
 
 yarn --cwd web install --frozen-lockfile
 yarn --cwd web lint
@@ -23,10 +23,10 @@ yarn --cwd web build
 When `web/` is untouched:
 
 ```powershell
-dotnet restore Solution.slnx
-dotnet format Solution.slnx --verify-no-changes
-dotnet build Solution.slnx --no-restore -c Release
-dotnet test Solution.slnx --no-build -c Release --verbosity normal
+dotnet restore EventHub.slnx
+dotnet format EventHub.slnx --verify-no-changes
+dotnet build EventHub.slnx --no-restore -c Release
+dotnet test EventHub.slnx --no-build -c Release --verbosity normal
 ```
 
 ## Frontend only

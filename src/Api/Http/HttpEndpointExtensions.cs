@@ -1,6 +1,6 @@
-using Solution.Api.Http.Filters;
+using EventHub.Api.Http.Filters;
 
-namespace Solution.Api.Http;
+namespace EventHub.Api.Http;
 
 internal static class HttpEndpointExtensions
 {

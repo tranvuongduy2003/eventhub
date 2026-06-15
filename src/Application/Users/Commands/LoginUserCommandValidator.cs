@@ -1,8 +1,8 @@
 using System.Net.Mail;
+using EventHub.Application.Users;
 using FluentValidation;
-using Solution.Application.Users;
 
-namespace Solution.Application.Users.Commands;
+namespace EventHub.Application.Users.Commands;
 
 public sealed class LoginUserCommandValidator : AbstractValidator<LoginUserCommand>
 {

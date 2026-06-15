@@ -1,7 +1,7 @@
-using Solution.Testing.Common.Fixtures;
+using EventHub.Testing.Common.Fixtures;
 using Xunit;
 
-namespace Solution.Api.IntegrationTests.Integration;
+namespace EventHub.Api.IntegrationTests.Integration;
 
 [CollectionDefinition(IntegrationTestCollection.Name)]
 public sealed class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixture>

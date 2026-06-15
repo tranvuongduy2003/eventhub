@@ -1,6 +1,6 @@
-using Solution.Domain.Abstractions;
+using EventHub.Domain.Abstractions;
 
-namespace Solution.Application.Abstractions.Messaging;
+namespace EventHub.Application.Abstractions.Messaging;
 
 public interface IDomainEventHandler<in TDomainEvent>
     where TDomainEvent : IDomainEvent

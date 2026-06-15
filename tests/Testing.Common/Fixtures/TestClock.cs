@@ -1,6 +1,6 @@
-using Solution.Application.Abstractions.Services;
+using EventHub.Application.Abstractions.Services;
 
-namespace Solution.Testing.Common.Fixtures;
+namespace EventHub.Testing.Common.Fixtures;
 
 public sealed class TestClock : IClock
 {

@@ -1,6 +1,6 @@
-using Solution.Application.Common;
+using EventHub.Application.Common;
 
-namespace Solution.Application.Users;
+namespace EventHub.Application.Users;
 
 public static class LoginErrors
 {

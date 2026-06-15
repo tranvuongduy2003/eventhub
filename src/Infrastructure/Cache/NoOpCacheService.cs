@@ -1,6 +1,6 @@
-using Solution.Application.Abstractions.Cache;
+using EventHub.Application.Abstractions.Cache;
 
-namespace Solution.Infrastructure.Cache;
+namespace EventHub.Infrastructure.Cache;
 
 internal sealed class NoOpCacheService : ICacheService
 {

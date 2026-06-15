@@ -28,7 +28,7 @@ export function RegisterForm() {
     mode: 'onBlur',
     reValidateMode: 'onChange',
     defaultValues: {
-      username: '',
+      displayName: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -38,22 +38,31 @@ export function RegisterForm() {
   const registerMutation = useMutation({
     mutationFn: (values: RegisterFormValues) =>
       authApi.register({
-        username: values.username,
+        displayName: values.displayName,
         email: values.email,
         password: values.password,
       }),
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       clearUserScopedQueries(queryClient)
 
       setSession({
         userId: response.userId,
-        username: response.username,
+        displayName: response.displayName,
         email: response.email,
       })
 
+      try {
+        await queryClient.fetchQuery({
+          queryKey: ['auth', 'session'],
+          queryFn: ({ signal }) => authApi.getCurrentUser(signal),
+        })
+      } catch {
+        // Account created; cookie verification failed — user can sign in manually (EC-07).
+      }
+
       queryClient.setQueryData(['auth', 'session'], {
         userId: response.userId,
-        username: response.username,
+        displayName: response.displayName,
         email: response.email,
       } satisfies authApi.LoginUserResponse)
 
@@ -98,15 +107,15 @@ export function RegisterForm() {
       ) : null}
 
       <FieldGroup>
-        <Field data-invalid={!!form.formState.errors.username}>
-          <FieldLabel htmlFor="register-username">Username</FieldLabel>
+        <Field data-invalid={!!form.formState.errors.displayName}>
+          <FieldLabel htmlFor="register-display-name">Username</FieldLabel>
           <Input
-            id="register-username"
-            autoComplete="username"
+            id="register-display-name"
+            autoComplete="name"
             disabled={registerMutation.isPending}
-            {...form.register('username')}
+            {...form.register('displayName')}
           />
-          <FieldError errors={[form.formState.errors.username]} />
+          <FieldError errors={[form.formState.errors.displayName]} />
         </Field>
 
         <Field data-invalid={!!form.formState.errors.email}>

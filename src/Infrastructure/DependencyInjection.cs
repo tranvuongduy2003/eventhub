@@ -1,24 +1,24 @@
+using EventHub.Application.Abstractions.Auth;
+using EventHub.Application.Abstractions.Cache;
+using EventHub.Application.Abstractions.Email;
+using EventHub.Application.Abstractions.Messaging;
+using EventHub.Application.Abstractions.Payments;
+using EventHub.Application.Abstractions.Persistence;
+using EventHub.Application.Abstractions.Storage;
+using EventHub.Infrastructure.Auth;
+using EventHub.Infrastructure.Cache;
+using EventHub.Infrastructure.Email;
+using EventHub.Infrastructure.Messaging;
+using EventHub.Infrastructure.Payments;
+using EventHub.Infrastructure.Persistence;
+using EventHub.Infrastructure.Persistence.Repositories;
+using EventHub.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Solution.Application.Abstractions.Auth;
-using Solution.Application.Abstractions.Cache;
-using Solution.Application.Abstractions.Email;
-using Solution.Application.Abstractions.Messaging;
-using Solution.Application.Abstractions.Payments;
-using Solution.Application.Abstractions.Persistence;
-using Solution.Application.Abstractions.Storage;
-using Solution.Infrastructure.Auth;
-using Solution.Infrastructure.Cache;
-using Solution.Infrastructure.Email;
-using Solution.Infrastructure.Messaging;
-using Solution.Infrastructure.Payments;
-using Solution.Infrastructure.Persistence;
-using Solution.Infrastructure.Persistence.Repositories;
-using Solution.Infrastructure.Storage;
 using StackExchange.Redis;
 
-namespace Solution.Infrastructure;
+namespace EventHub.Infrastructure;
 
 public static class DependencyInjection
 {

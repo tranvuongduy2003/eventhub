@@ -1,7 +1,7 @@
+using EventHub.Domain.Abstractions;
 using FluentAssertions;
-using Solution.Domain.Abstractions;
 
-namespace Solution.Domain.UnitTests.Abstractions;
+namespace EventHub.Domain.UnitTests.Abstractions;
 
 public class AggregateRootTests
 {

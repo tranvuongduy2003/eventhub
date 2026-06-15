@@ -1,10 +1,10 @@
+using EventHub.Api;
+using EventHub.Api.Endpoints;
+using EventHub.Api.Hubs;
+using EventHub.Application;
+using EventHub.Infrastructure;
+using EventHub.Infrastructure.Persistence;
 using Scalar.AspNetCore;
-using Solution.Api;
-using Solution.Api.Endpoints;
-using Solution.Api.Hubs;
-using Solution.Application;
-using Solution.Infrastructure;
-using Solution.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +31,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.MapEndpoints(Solution.Api.AssemblyReference.Assembly);
+app.MapEndpoints(EventHub.Api.AssemblyReference.Assembly);
 app.MapHub<EventMonitoringHub>("/hubs/events");
 
 app.Run();

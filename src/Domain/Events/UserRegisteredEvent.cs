@@ -1,9 +1,9 @@
-using Solution.Domain.Abstractions;
-using Solution.Domain.Users;
+using EventHub.Domain.Abstractions;
+using EventHub.Domain.Users;
 
-namespace Solution.Domain.Events;
+namespace EventHub.Domain.Events;
 
 public sealed record UserRegisteredEvent(
     UserId UserId,
-    Username Username,
+    DisplayName DisplayName,
     EmailAddress Email) : DomainEvent;

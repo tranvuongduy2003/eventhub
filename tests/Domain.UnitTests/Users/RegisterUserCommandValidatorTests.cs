@@ -1,8 +1,8 @@
+using EventHub.Application.Users.Commands;
 using FluentAssertions;
 using FluentValidation.Results;
-using Solution.Application.Users.Commands;
 
-namespace Solution.Domain.UnitTests.Users;
+namespace EventHub.Domain.UnitTests.Users;
 
 public sealed class RegisterUserCommandValidatorTests
 {
@@ -11,7 +11,7 @@ public sealed class RegisterUserCommandValidatorTests
     [Fact]
     public async Task Validate_WhenPasswordIsShort1_ReportsMultiplePasswordFailures()
     {
-        var command = new RegisterUserCommand("valid_user", "jane@example.com", "short1");
+        var command = new RegisterUserCommand("Jane Organizer", "jane@example.com", "short1");
 
         ValidationResult result = await validator.ValidateAsync(command);
 
@@ -25,12 +25,12 @@ public sealed class RegisterUserCommandValidatorTests
     }
 
     [Fact]
-    public async Task Validate_WhenUsernameIsTooShort_DoesNotValidateEmailOrPassword()
+    public async Task Validate_WhenDisplayNameIsEmpty_DoesNotValidateEmailOrPassword()
     {
-        var command = new RegisterUserCommand("ab", "not-an-email", "x");
+        var command = new RegisterUserCommand("   ", "not-an-email", "x");
 
         ValidationResult result = await validator.ValidateAsync(command);
 
-        result.Errors.Should().Contain(failure => failure.PropertyName == nameof(RegisterUserCommand.Username));
+        result.Errors.Should().Contain(failure => failure.PropertyName == nameof(RegisterUserCommand.DisplayName));
     }
 }

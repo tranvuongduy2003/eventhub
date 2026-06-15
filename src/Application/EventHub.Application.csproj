@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\Contracts\Solution.Contracts.csproj" />
-    <ProjectReference Include="..\Domain\Solution.Domain.csproj" />
+    <ProjectReference Include="..\Contracts\EventHub.Contracts.csproj" />
+    <ProjectReference Include="..\Domain\EventHub.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

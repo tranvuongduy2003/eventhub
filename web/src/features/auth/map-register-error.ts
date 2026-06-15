@@ -8,9 +8,6 @@ export const registerTransientErrorMessage = 'Something went wrong. Please try a
 type RegisterFormField = FieldPath<RegisterFormValues> | 'root'
 
 const fieldErrorMessages: Record<string, Partial<Record<keyof RegisterFormValues, string>>> = {
-  USERNAME_TAKEN: {
-    username: 'That username is already in use.',
-  },
   EMAIL_TAKEN: {
     email: 'An account with this email already exists.',
   },

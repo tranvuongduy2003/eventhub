@@ -1,4 +1,4 @@
-namespace Solution.Application.Abstractions.Email;
+namespace EventHub.Application.Abstractions.Email;
 
 public interface IEmailSender
 {

@@ -1,7 +1,7 @@
+using EventHub.Application.Options;
 using Microsoft.Extensions.Options;
-using Solution.Application.Options;
 
-namespace Solution.Api.Auth;
+namespace EventHub.Api.Auth;
 
 internal static class SessionCookieWriter
 {

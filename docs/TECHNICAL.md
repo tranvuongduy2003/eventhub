@@ -32,7 +32,7 @@ Requests flow top-down through the layers — **Api** (REST endpoints, OpenAPI, 
 
 ---
 
-## 2. Solution layout
+## 2. Repository layout
 
 ```
 src/

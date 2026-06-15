@@ -1,4 +1,4 @@
-namespace Solution.Infrastructure.Auth;
+namespace EventHub.Infrastructure.Auth;
 
 internal sealed class ApplicationIdentityUser
 {

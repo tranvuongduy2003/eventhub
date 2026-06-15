@@ -1,6 +1,6 @@
-using Solution.Application.Abstractions.Cache;
+using EventHub.Application.Abstractions.Cache;
 
-namespace Solution.Api.IntegrationTests.Users.Fakes;
+namespace EventHub.Api.IntegrationTests.Users.Fakes;
 
 internal sealed class ThrowingCacheService : ICacheService
 {

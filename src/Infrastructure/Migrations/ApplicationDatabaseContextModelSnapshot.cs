@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Solution.Infrastructure.Persistence;
+using EventHub.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace Solution.Infrastructure.Migrations
+namespace EventHub.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDatabaseContext))]
     partial class ApplicationDatabaseContextModelSnapshot : ModelSnapshot
@@ -23,7 +23,7 @@ namespace Solution.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Solution.Infrastructure.Persistence.Entities.UserRecord", b =>
+            modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.UserRecord", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -33,6 +33,12 @@ namespace Solution.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("display_name");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -46,6 +52,12 @@ namespace Solution.Infrastructure.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("password_hash");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("role");
+
                     b.Property<long>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAdd()
@@ -57,26 +69,16 @@ namespace Solution.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("username");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
                         .IsUnique()
                         .HasDatabaseName("ux_users_email");
 
-                    b.HasIndex("Username")
-                        .IsUnique()
-                        .HasDatabaseName("ux_users_username");
-
                     b.ToTable("users", "app");
                 });
 
-            modelBuilder.Entity("Solution.Infrastructure.Persistence.Entities.UserSessionRecord", b =>
+            modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.UserSessionRecord", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -114,9 +116,9 @@ namespace Solution.Infrastructure.Migrations
                     b.ToTable("user_sessions", "app");
                 });
 
-            modelBuilder.Entity("Solution.Infrastructure.Persistence.Entities.UserSessionRecord", b =>
+            modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.UserSessionRecord", b =>
                 {
-                    b.HasOne("Solution.Infrastructure.Persistence.Entities.UserRecord", "User")
+                    b.HasOne("EventHub.Infrastructure.Persistence.Entities.UserRecord", "User")
                         .WithMany("Sessions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -125,7 +127,7 @@ namespace Solution.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Solution.Infrastructure.Persistence.Entities.UserRecord", b =>
+            modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.UserRecord", b =>
                 {
                     b.Navigation("Sessions");
                 });

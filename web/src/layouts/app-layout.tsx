@@ -19,7 +19,7 @@ const navItems = [
 
 function UserMenu() {
   const status = useAuthStore((state) => state.status)
-  const username = useAuthStore((state) => state.username)
+  const displayName = useAuthStore((state) => state.displayName)
   const email = useAuthStore((state) => state.email)
   const { logout, isPending } = useLogout()
 
@@ -27,9 +27,9 @@ function UserMenu() {
     return null
   }
 
-  const displayName = username ?? 'Account'
+  const menuLabel = displayName ?? 'Account'
   const initials =
-    displayName
+    menuLabel
       .split(/\s+/)
       .filter(Boolean)
       .slice(0, 2)
@@ -39,7 +39,7 @@ function UserMenu() {
   return (
     <div className="flex items-center gap-3">
       <div className="hidden text-right sm:block">
-        <p className="text-sm leading-none font-medium">{displayName}</p>
+        <p className="text-sm leading-none font-medium">{menuLabel}</p>
         {email ? <p className="text-muted-foreground mt-1 text-xs">{email}</p> : null}
       </div>
       <Avatar size="sm">
@@ -79,10 +79,7 @@ export function AppLayout() {
               <span className="text-foreground hidden text-base sm:inline">EventHub</span>
             </NavLink>
 
-            <nav
-              className="hidden items-center gap-1 md:flex"
-              aria-label="Main navigation"
-            >
+            <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
               {navItems.map((item) => (
                 <NavLink
                   key={item.path}

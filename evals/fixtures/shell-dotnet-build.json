@@ -1,5 +1,5 @@
 {
-  "command": "dotnet build Solution.slnx -v q",
+  "command": "dotnet build EventHub.slnx -v q",
   "cwd": "{{PROJECT_ROOT}}",
   "hook_event_name": "beforeShellExecution"
 }

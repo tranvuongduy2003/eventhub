@@ -1,23 +1,19 @@
 using System.Net.Mail;
+using EventHub.Application.Users;
 using FluentValidation;
-using Solution.Application.Users;
 
-namespace Solution.Application.Users.Commands;
+namespace EventHub.Application.Users.Commands;
 
 public sealed class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
 {
     public RegisterUserCommandValidator()
     {
-        RuleFor(command => command.Username)
-            .NotEmpty()
-            .WithMessage(RegistrationValidationMessages.UsernameRequired)
-            .MinimumLength(3)
-            .WithMessage(RegistrationValidationMessages.UsernameLength)
-            .MaximumLength(32)
-            .WithMessage(RegistrationValidationMessages.UsernameLength)
-            .Matches("^[A-Za-z0-9_]+$")
-            .WithMessage(RegistrationValidationMessages.UsernameInvalidCharacters)
-            .When(command => !string.IsNullOrEmpty(command.Username));
+        RuleFor(command => command.DisplayName)
+            .Cascade(CascadeMode.Stop)
+            .Must(name => !string.IsNullOrWhiteSpace(name?.Trim()))
+            .WithMessage(RegistrationValidationMessages.DisplayNameRequired)
+            .Must(name => name!.Trim().Length <= 64)
+            .WithMessage(RegistrationValidationMessages.DisplayNameLength);
 
         RuleFor(command => command.Email)
             .Must(email => !string.IsNullOrWhiteSpace(NormalizeEmail(email)))

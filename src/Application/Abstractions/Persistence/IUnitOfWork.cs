@@ -1,6 +1,6 @@
-namespace Solution.Application.Abstractions.Persistence;
+namespace EventHub.Application.Abstractions.Persistence;
 
-using Solution.Application.Common;
+using EventHub.Application.Common;
 
 public interface IUnitOfWork
 {

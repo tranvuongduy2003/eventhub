@@ -1,8 +1,8 @@
-using Solution.Api.Common;
-using Solution.Application.Common;
+using EventHub.Api.Common;
+using EventHub.Application.Common;
 using HttpResult = Microsoft.AspNetCore.Http.IResult;
 
-namespace Solution.Api.Mapping;
+namespace EventHub.Api.Mapping;
 
 public static class ResultHttpExtensions
 {

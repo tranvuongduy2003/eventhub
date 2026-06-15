@@ -1,12 +1,12 @@
 using System.Net;
 using System.Net.Http.Json;
+using EventHub.Api.IntegrationTests.Integration;
+using EventHub.Contracts.Users;
+using EventHub.Testing.Common.Fixtures;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Solution.Api.IntegrationTests.Integration;
-using Solution.Contracts.Users;
-using Solution.Testing.Common.Fixtures;
 
-namespace Solution.Api.IntegrationTests.Users;
+namespace EventHub.Api.IntegrationTests.Users;
 
 [Collection(IntegrationTestCollection.Name)]
 public sealed class RegisterUserTests(IntegrationTestFixture fixture)
@@ -18,8 +18,9 @@ public sealed class RegisterUserTests(IntegrationTestFixture fixture)
     public async Task RegisterUser_Returns201_AndSetsSessionCookie()
     {
         var suffix = Guid.NewGuid().ToString("N")[..8];
+        var displayName = $"Organizer {suffix}";
         var request = new RegisterUserRequest(
-            $"user_{suffix}",
+            displayName,
             $"user_{suffix}@example.com",
             "SecurePass1!");
 
@@ -30,7 +31,7 @@ public sealed class RegisterUserTests(IntegrationTestFixture fixture)
 
         var registration = await registerResponse.Content.ReadFromJsonAsync<UserRegistrationResponse>();
         registration.Should().NotBeNull();
-        registration!.Username.Should().Be($"user_{suffix}");
+        registration!.DisplayName.Should().Be(displayName);
         registration.Email.Should().Be($"user_{suffix}@example.com");
         registration.UserId.Should().NotBeEmpty();
     }

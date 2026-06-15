@@ -1,6 +1,6 @@
-using Solution.Application.Common;
+using EventHub.Application.Common;
 
-namespace Solution.Api.Common;
+namespace EventHub.Api.Common;
 
 internal static class ProblemDetailsMapping
 {

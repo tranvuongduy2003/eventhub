@@ -1,7 +1,7 @@
-using Solution.Domain.Users;
-using Solution.Infrastructure.Persistence.Entities;
+using EventHub.Domain.Users;
+using EventHub.Infrastructure.Persistence.Entities;
 
-namespace Solution.Infrastructure.Persistence.Mapping;
+namespace EventHub.Infrastructure.Persistence.Mapping;
 
 internal static class UserPersistenceMapper
 {
@@ -9,9 +9,10 @@ internal static class UserPersistenceMapper
         new()
         {
             Id = user.Id.Value,
-            Username = user.Username.Value,
+            DisplayName = user.DisplayName.Value,
             Email = user.Email.Value,
             PasswordHash = user.PasswordHash.Value,
+            Role = user.Role,
             CreatedAt = user.CreatedAt,
             UpdatedAt = user.UpdatedAt,
             RowVersion = 1,
@@ -20,9 +21,10 @@ internal static class UserPersistenceMapper
     public static User ToUser(UserRecord record) =>
         User.FromPersistence(
             UserId.From(record.Id),
-            Username.Create(record.Username),
+            DisplayName.Create(record.DisplayName),
             EmailAddress.Create(record.Email),
             PasswordHash.Create(record.PasswordHash),
+            record.Role,
             record.CreatedAt,
             record.UpdatedAt);
 }

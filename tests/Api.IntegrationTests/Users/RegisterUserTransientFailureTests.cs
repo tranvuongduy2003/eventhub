@@ -1,21 +1,21 @@
 using System.Net;
 using System.Net.Http.Json;
+using EventHub.Api.Common;
+using EventHub.Api.IntegrationTests.Integration;
+using EventHub.Api.IntegrationTests.Users.Fakes;
+using EventHub.Application.Abstractions.Cache;
+using EventHub.Application.Abstractions.Persistence;
+using EventHub.Application.Users.Commands;
+using EventHub.Contracts.Users;
+using EventHub.Infrastructure.Persistence;
+using EventHub.Testing.Common.Fixtures;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Solution.Api.Common;
-using Solution.Api.IntegrationTests.Integration;
-using Solution.Api.IntegrationTests.Users.Fakes;
-using Solution.Application.Abstractions.Cache;
-using Solution.Application.Abstractions.Persistence;
-using Solution.Application.Users.Commands;
-using Solution.Contracts.Users;
-using Solution.Infrastructure.Persistence;
-using Solution.Testing.Common.Fixtures;
 
-namespace Solution.Api.IntegrationTests.Users;
+namespace EventHub.Api.IntegrationTests.Users;
 
 [Collection(IntegrationTestCollection.Name)]
 public sealed class RegisterUserTransientFailureTests(IntegrationTestFixture fixture)
@@ -27,9 +27,9 @@ public sealed class RegisterUserTransientFailureTests(IntegrationTestFixture fix
     public async Task RegisterUser_RetrySameCredentials_Returns422_NotSecondUser()
     {
         var suffix = Guid.NewGuid().ToString("N")[..8];
-        var username = $"retry_{suffix}";
+        var displayName = $"Retry User {suffix}";
         var email = $"retry_{suffix}@example.com";
-        var request = new RegisterUserRequest(username, email, "SecurePass1!");
+        var request = new RegisterUserRequest(displayName, email, "SecurePass1!");
 
         var userCountBefore = await CountUsersAsync();
 
@@ -47,7 +47,7 @@ public sealed class RegisterUserTransientFailureTests(IntegrationTestFixture fix
 
         var problem = await retry.Content.ReadFromJsonAsync<ApiProblemDetails>();
         problem.Should().NotBeNull();
-        problem!.Code.Should().Be("USERNAME_TAKEN");
+        problem!.Code.Should().Be("EMAIL_TAKEN");
 
         var userCountAfterRetry = await CountUsersAsync();
         userCountAfterRetry.Should().Be(userCountAfterFirst);
@@ -61,7 +61,7 @@ public sealed class RegisterUserTransientFailureTests(IntegrationTestFixture fix
 
         var suffix = Guid.NewGuid().ToString("N")[..8];
         var request = new RegisterUserRequest(
-            $"fail_{suffix}",
+            $"Fail User {suffix}",
             $"fail_{suffix}@example.com",
             "SecurePass1!");
 
@@ -88,7 +88,7 @@ public sealed class RegisterUserTransientFailureTests(IntegrationTestFixture fix
 
         var suffix = Guid.NewGuid().ToString("N")[..8];
         var request = new RegisterUserRequest(
-            $"redis_{suffix}",
+            $"Redis User {suffix}",
             $"redis_{suffix}@example.com",
             "SecurePass1!");
 
@@ -102,13 +102,13 @@ public sealed class RegisterUserTransientFailureTests(IntegrationTestFixture fix
     }
 
     [Fact]
-    public async Task RegisterUser_ParallelSameUsername_AtMostOneUser()
+    public async Task RegisterUser_ParallelSameEmail_AtMostOneUser()
     {
         var suffix = Guid.NewGuid().ToString("N")[..8];
-        var username = $"parallel_{suffix}";
+        var email = $"parallel_{suffix}@example.com";
         var request = new RegisterUserRequest(
-            username,
-            $"parallel_{suffix}@example.com",
+            $"Parallel User {suffix}",
+            email,
             "SecurePass1!");
 
         var userCountBefore = await CountUsersAsync();
@@ -137,9 +137,7 @@ public sealed class RegisterUserTransientFailureTests(IntegrationTestFixture fix
 
             var problem = await nonCreated[0].Content.ReadFromJsonAsync<ApiProblemDetails>();
             problem.Should().NotBeNull();
-            problem!.Code.Should().BeOneOf(
-                RegistrationErrors.UsernameTakenCode,
-                RegistrationErrors.EmailTakenCode);
+            problem!.Code.Should().Be(RegistrationErrors.EmailTakenCode);
         }
         finally
         {

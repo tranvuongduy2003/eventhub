@@ -27,13 +27,13 @@ jobs:
           cache-dependency-path: web/yarn.lock
 
       - name: Restore .NET
-        run: dotnet restore Solution.slnx
+        run: dotnet restore EventHub.slnx
 
       - name: Verify .NET formatting
-        run: dotnet format Solution.slnx --verify-no-changes
+        run: dotnet format EventHub.slnx --verify-no-changes
 
       - name: Build .NET
-        run: dotnet build Solution.slnx --no-restore -c Release
+        run: dotnet build EventHub.slnx --no-restore -c Release
 
       - name: Install frontend dependencies
         run: yarn --cwd web install --frozen-lockfile
@@ -42,7 +42,7 @@ jobs:
         run: yarn --cwd web api:verify
 
       - name: Test .NET (unit + integration tests)
-        run: dotnet test Solution.slnx --no-build -c Release --verbosity normal --logger "trx;LogFileName=test-results.trx"
+        run: dotnet test EventHub.slnx --no-build -c Release --verbosity normal --logger "trx;LogFileName=test-results.trx"
 
       - name: Lint frontend
         run: yarn --cwd web lint
@@ -63,11 +63,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Setup PowerShell
-        uses: actions/setup-powershell@v1
-        with:
-          pwsh-version: '7.4.6'
 
       - name: Run deterministic agent evals (harness + graph)
         shell: pwsh

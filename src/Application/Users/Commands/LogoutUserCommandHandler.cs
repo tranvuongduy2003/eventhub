@@ -1,9 +1,9 @@
+using EventHub.Application.Abstractions.Auth;
+using EventHub.Application.Abstractions.Messaging;
+using EventHub.Application.Common;
 using Microsoft.Extensions.Logging;
-using Solution.Application.Abstractions.Auth;
-using Solution.Application.Abstractions.Messaging;
-using Solution.Application.Common;
 
-namespace Solution.Application.Users.Commands;
+namespace EventHub.Application.Users.Commands;
 
 public sealed class LogoutUserCommandHandler(
     ISessionStore sessionStore,

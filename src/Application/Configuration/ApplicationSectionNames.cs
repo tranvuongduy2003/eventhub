@@ -1,4 +1,4 @@
-namespace Solution.Application.Configuration;
+namespace EventHub.Application.Configuration;
 
 public static class ApplicationSectionNames
 {

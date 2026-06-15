@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace Solution.Api.Common;
+namespace EventHub.Api.Common;
 
 public sealed class ApiProblemDetails : ProblemDetails
 {

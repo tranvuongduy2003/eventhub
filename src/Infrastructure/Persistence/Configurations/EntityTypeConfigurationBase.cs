@@ -1,8 +1,8 @@
+using EventHub.Domain.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Solution.Domain.Abstractions;
 
-namespace Solution.Infrastructure.Persistence.Configurations;
+namespace EventHub.Infrastructure.Persistence.Configurations;
 
 public abstract class EntityTypeConfigurationBase<TAggregate, TIdentifier> : IEntityTypeConfiguration<TAggregate>
     where TAggregate : class, IAggregateRoot<TIdentifier>

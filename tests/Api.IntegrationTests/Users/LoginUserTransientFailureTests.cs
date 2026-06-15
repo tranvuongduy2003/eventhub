@@ -1,19 +1,19 @@
 using System.Net;
 using System.Net.Http.Json;
+using EventHub.Api.Common;
+using EventHub.Api.IntegrationTests.Integration;
+using EventHub.Api.IntegrationTests.Users.Fakes;
+using EventHub.Application.Abstractions.Auth;
+using EventHub.Contracts.Users;
+using EventHub.Infrastructure.Persistence;
+using EventHub.Testing.Common.Fixtures;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Solution.Api.Common;
-using Solution.Api.IntegrationTests.Integration;
-using Solution.Api.IntegrationTests.Users.Fakes;
-using Solution.Application.Abstractions.Auth;
-using Solution.Contracts.Users;
-using Solution.Infrastructure.Persistence;
-using Solution.Testing.Common.Fixtures;
 
-namespace Solution.Api.IntegrationTests.Users;
+namespace EventHub.Api.IntegrationTests.Users;
 
 [Collection(IntegrationTestCollection.Name)]
 public sealed class LoginUserTransientFailureTests(IntegrationTestFixture fixture)

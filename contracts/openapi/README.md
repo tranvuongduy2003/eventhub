@@ -4,7 +4,7 @@ The committed source of truth for HTTP endpoints is **`api.v1.yaml`**. The React
 
 ## Workflow
 
-When you change REST endpoints or response shapes in `Solution.Api`:
+When you change REST endpoints or response shapes in `EventHub.Api`:
 
 1. **Regenerate the document** (builds the API and refreshes the YAML):
 

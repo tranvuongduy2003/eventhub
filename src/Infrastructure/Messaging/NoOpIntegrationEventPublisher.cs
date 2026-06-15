@@ -1,6 +1,6 @@
-using Solution.Application.Abstractions.Messaging;
+using EventHub.Application.Abstractions.Messaging;
 
-namespace Solution.Infrastructure.Messaging;
+namespace EventHub.Infrastructure.Messaging;
 
 public sealed class NoOpIntegrationEventPublisher : IIntegrationEventPublisher
 {

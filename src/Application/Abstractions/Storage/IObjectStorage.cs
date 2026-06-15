@@ -1,4 +1,4 @@
-namespace Solution.Application.Abstractions.Storage;
+namespace EventHub.Application.Abstractions.Storage;
 
 public interface IObjectStorage
 {

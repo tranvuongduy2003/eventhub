@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Solution.Infrastructure.Migrations;
+namespace EventHub.Infrastructure.Migrations;
 
 public partial class InitialBoilerplateSchema : Migration
 {

@@ -1,7 +1,7 @@
-using Solution.Api.Http.Binding;
-using Solution.Api.Http.Problems;
+using EventHub.Api.Http.Binding;
+using EventHub.Api.Http.Problems;
 
-namespace Solution.Api.Http.Filters;
+namespace EventHub.Api.Http.Filters;
 
 internal sealed class CompleteJsonBodyEndpointFilter<TBody> : IEndpointFilter
     where TBody : class

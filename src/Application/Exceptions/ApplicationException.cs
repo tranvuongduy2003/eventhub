@@ -1,4 +1,4 @@
-namespace Solution.Application.Exceptions;
+namespace EventHub.Application.Exceptions;
 
 public class ApplicationException : Exception
 {

@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Solution.Api.Endpoints;
+namespace EventHub.Api.Endpoints;
 
 public static class EndpointRouteBuilderExtensions
 {

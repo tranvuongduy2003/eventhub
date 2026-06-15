@@ -1,9 +1,9 @@
 using System.Diagnostics;
+using EventHub.Application.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Solution.Application.Common;
 
-namespace Solution.Application.Behaviors;
+namespace EventHub.Application.Behaviors;
 
 public sealed class LoggingBehavior<TRequest, TResponse>(
     ILogger<LoggingBehavior<TRequest, TResponse>> logger)

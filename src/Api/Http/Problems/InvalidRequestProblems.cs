@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Solution.Api.Common;
+using EventHub.Api.Common;
 
-namespace Solution.Api.Http.Problems;
+namespace EventHub.Api.Http.Problems;
 
 internal static class InvalidRequestProblems
 {

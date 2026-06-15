@@ -1,18 +1,18 @@
 using System.Net;
 using System.Net.Http.Json;
+using EventHub.Api.IntegrationTests.Integration;
+using EventHub.Application.Common;
+using EventHub.Application.Users.Commands;
+using EventHub.Contracts.Users;
+using EventHub.Infrastructure.Persistence;
+using EventHub.Testing.Common.Fixtures;
 using FluentAssertions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Solution.Api.IntegrationTests.Integration;
-using Solution.Application.Common;
-using Solution.Application.Users.Commands;
-using Solution.Contracts.Users;
-using Solution.Infrastructure.Persistence;
-using Solution.Testing.Common.Fixtures;
 
-namespace Solution.Api.IntegrationTests.Users;
+namespace EventHub.Api.IntegrationTests.Users;
 
 [Collection(IntegrationTestCollection.Name)]
 public sealed class RegisterUserValidationTests(IntegrationTestFixture fixture)
@@ -27,7 +27,7 @@ public sealed class RegisterUserValidationTests(IntegrationTestFixture fixture)
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
         var act = async () => await sender.Send(
-            new RegisterUserCommand("ab", "not-an-email", "short1"));
+            new RegisterUserCommand("   ", "not-an-email", "short1"));
 
         var result = await act.Should().NotThrowAsync();
         result.Subject.IsFailure.Should().BeTrue();
@@ -35,20 +35,20 @@ public sealed class RegisterUserValidationTests(IntegrationTestFixture fixture)
     }
 
     [Fact]
-    public async Task RegisterUser_UsernameTooShort_Returns422_VALIDATION_FAILED()
+    public async Task RegisterUser_DisplayNameEmpty_Returns422_VALIDATION_FAILED()
     {
         var suffix = Guid.NewGuid().ToString("N")[..8];
 
         using var response = await _client.PostAsJsonAsync(
             "/api/users",
-            new RegisterUserRequest("ab", $"user_{suffix}@example.com", "SecurePass1!"));
+            new RegisterUserRequest("   ", $"user_{suffix}@example.com", "SecurePass1!"));
 
         await RegisterUserTestHelpers.AssertValidationFailedAsync(
             response,
             assertErrors: errors =>
             {
-                errors.Should().ContainKey("username");
-                errors["username"].Should().NotBeEmpty();
+                errors.Should().ContainKey("displayName");
+                errors["displayName"].Should().NotBeEmpty();
             });
     }
 
@@ -59,7 +59,7 @@ public sealed class RegisterUserValidationTests(IntegrationTestFixture fixture)
 
         using var response = await _client.PostAsJsonAsync(
             "/api/users",
-            new RegisterUserRequest($"user_{suffix}", "not-an-email", "SecurePass1!"));
+            new RegisterUserRequest($"User {suffix}", "not-an-email", "SecurePass1!"));
 
         await RegisterUserTestHelpers.AssertValidationFailedAsync(
             response,
@@ -77,7 +77,7 @@ public sealed class RegisterUserValidationTests(IntegrationTestFixture fixture)
 
         using var response = await _client.PostAsJsonAsync(
             "/api/users",
-            new RegisterUserRequest($"user_{suffix}", $"user_{suffix}@example.com", "short1"));
+            new RegisterUserRequest($"User {suffix}", $"user_{suffix}@example.com", "short1"));
 
         await RegisterUserTestHelpers.AssertValidationFailedAsync(
             response,
@@ -89,17 +89,20 @@ public sealed class RegisterUserValidationTests(IntegrationTestFixture fixture)
     }
 
     [Fact]
-    public async Task RegisterUser_UsernameWithSpace_Returns422()
+    public async Task RegisterUser_DisplayNameWithSpaces_Returns201()
     {
         var suffix = Guid.NewGuid().ToString("N")[..8];
+        var displayName = $"Jane Organizer {suffix}";
 
         using var response = await _client.PostAsJsonAsync(
             "/api/users",
-            new RegisterUserRequest($"user {suffix}", $"user_{suffix}@example.com", "SecurePass1!"));
+            new RegisterUserRequest(displayName, $"user_{suffix}@example.com", "SecurePass1!"));
 
-        await RegisterUserTestHelpers.AssertValidationFailedAsync(
-            response,
-            assertErrors: errors => errors.Should().ContainKey("username"));
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var registration = await response.Content.ReadFromJsonAsync<UserRegistrationResponse>();
+        registration.Should().NotBeNull();
+        registration!.DisplayName.Should().Be(displayName);
     }
 
     [Fact]
@@ -107,7 +110,7 @@ public sealed class RegisterUserValidationTests(IntegrationTestFixture fixture)
     {
         using var response = await _client.PostAsync(
             "/api/users",
-            RegisterUserTestHelpers.JsonContent("{\"username\":"));
+            RegisterUserTestHelpers.JsonContent("{\"displayName\":"));
 
         await RegisterUserTestHelpers.AssertInvalidRequestAsync(response);
     }
@@ -129,7 +132,7 @@ public sealed class RegisterUserValidationTests(IntegrationTestFixture fixture)
 
         using var response = await _client.PostAsJsonAsync(
             "/api/users",
-            new RegisterUserRequest("ab", "not-an-email", "short1"));
+            new RegisterUserRequest("   ", "not-an-email", "short1"));
 
         await RegisterUserTestHelpers.AssertValidationFailedAsync(response);
 
@@ -145,7 +148,7 @@ public sealed class RegisterUserValidationTests(IntegrationTestFixture fixture)
 
         using var response = await _client.PostAsJsonAsync(
             "/api/users",
-            new RegisterUserRequest($"jane_{suffix}", email, "SecurePass1!"));
+            new RegisterUserRequest($"Jane {suffix}", email, "SecurePass1!"));
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 

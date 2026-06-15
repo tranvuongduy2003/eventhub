@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Solution.Infrastructure.Persistence.Extensions;
+namespace EventHub.Infrastructure.Persistence.Extensions;
 
 public static class ModelBuilderExtensions
 {

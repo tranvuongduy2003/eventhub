@@ -1,7 +1,7 @@
+using EventHub.Application.Abstractions.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Solution.Application.Abstractions.Persistence;
 
-namespace Solution.Infrastructure.Persistence;
+namespace EventHub.Infrastructure.Persistence;
 
 internal sealed class ApplicationDatabaseContextFactory(
     IDbContextFactory<ApplicationDatabaseContext> databaseContextFactory)

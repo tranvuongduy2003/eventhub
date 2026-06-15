@@ -1,4 +1,4 @@
-namespace Solution.Infrastructure;
+namespace EventHub.Infrastructure;
 
 public sealed class InfrastructureRegistrationOptions
 {

@@ -1,4 +1,4 @@
-namespace Solution.Api.Endpoints;
+namespace EventHub.Api.Endpoints;
 
 internal sealed class ApiHealthEndpoint : IEndpoint
 {

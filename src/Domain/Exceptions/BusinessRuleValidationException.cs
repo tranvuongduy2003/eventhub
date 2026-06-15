@@ -1,4 +1,4 @@
-namespace Solution.Domain.Exceptions;
+namespace EventHub.Domain.Exceptions;
 
 public sealed class BusinessRuleValidationException : DomainException
 {

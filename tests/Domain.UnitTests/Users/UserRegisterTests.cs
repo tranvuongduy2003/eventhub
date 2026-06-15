@@ -1,9 +1,9 @@
+using EventHub.Domain.Events;
+using EventHub.Domain.Exceptions;
+using EventHub.Domain.Users;
 using FluentAssertions;
-using Solution.Domain.Events;
-using Solution.Domain.Exceptions;
-using Solution.Domain.Users;
 
-namespace Solution.Domain.UnitTests.Users;
+namespace EventHub.Domain.UnitTests.Users;
 
 public class UserRegisterTests
 {
@@ -15,18 +15,19 @@ public class UserRegisterTests
         var user = RegisterValidUser();
 
         user.Id.Value.Should().NotBe(Guid.Empty);
-        user.Username.Value.Should().Be("trader_jane");
+        user.DisplayName.Value.Should().Be("Jane Organizer");
         user.Email.Value.Should().Be("jane@example.com");
+        user.Role.Should().Be(UserRole.Organizer);
     }
 
     [Fact]
-    public void Register_WithInvalidUsername_Throws()
+    public void Register_WithInvalidDisplayName_Throws()
     {
-        var act = () => Username.Create("ab");
+        var act = () => DisplayName.Create("   ");
 
         act.Should()
             .Throw<BusinessRuleValidationException>()
-            .Which.Code.Should().Be("USERNAME_LENGTH");
+            .Which.Code.Should().Be("DISPLAY_NAME_REQUIRED");
     }
 
     [Fact]
@@ -37,15 +38,14 @@ public class UserRegisterTests
         user.DomainEvents.Should().ContainSingle()
             .Which.Should().BeOfType<UserRegisteredEvent>()
             .Which.Should().BeEquivalentTo(
-                new UserRegisteredEvent(user.Id, user.Username, user.Email),
+                new UserRegisteredEvent(user.Id, user.DisplayName, user.Email),
                 options => options.Excluding(domainEvent => domainEvent.OccurredOn));
     }
 
     private static User RegisterValidUser() =>
         User.Register(
-            Username.Create("trader_jane"),
+            DisplayName.Create("Jane Organizer"),
             EmailAddress.Create("Jane@Example.com"),
-            Password.Create("SecurePass1!"),
             PasswordHash.Create("hashed-password-stub"),
             RegisteredAt);
 }

@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Solution.Infrastructure.Persistence;
+using EventHub.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace Solution.Infrastructure.Migrations
+namespace EventHub.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDatabaseContext))]
     [Migration("20260607074947_InitialBoilerplateSchema")]
@@ -26,7 +26,7 @@ namespace Solution.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Solution.Infrastructure.Persistence.Entities.UserRecord", b =>
+            modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.UserRecord", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -79,7 +79,7 @@ namespace Solution.Infrastructure.Migrations
                     b.ToTable("users", "app");
                 });
 
-            modelBuilder.Entity("Solution.Infrastructure.Persistence.Entities.UserSessionRecord", b =>
+            modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.UserSessionRecord", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -117,9 +117,9 @@ namespace Solution.Infrastructure.Migrations
                     b.ToTable("user_sessions", "app");
                 });
 
-            modelBuilder.Entity("Solution.Infrastructure.Persistence.Entities.UserSessionRecord", b =>
+            modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.UserSessionRecord", b =>
                 {
-                    b.HasOne("Solution.Infrastructure.Persistence.Entities.UserRecord", "User")
+                    b.HasOne("EventHub.Infrastructure.Persistence.Entities.UserRecord", "User")
                         .WithMany("Sessions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -128,7 +128,7 @@ namespace Solution.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Solution.Infrastructure.Persistence.Entities.UserRecord", b =>
+            modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.UserRecord", b =>
                 {
                     b.Navigation("Sessions");
                 });

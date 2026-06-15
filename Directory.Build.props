@@ -8,9 +8,9 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
     <Authors>tranvuongduy2003</Authors>
-    <Company>Solution</Company>
-    <Product>Solution</Product>
-    <Copyright>Copyright © $([System.DateTime]::UtcNow.Year) Solution</Copyright>
+    <Company>EventHub</Company>
+    <Product>EventHub</Product>
+    <Copyright>Copyright © $([System.DateTime]::UtcNow.Year) EventHub</Copyright>
     <RepositoryUrl>https://github.com/tranvuongduy2003/trading-simulator</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
 

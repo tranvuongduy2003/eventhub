@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Solution.Infrastructure.Persistence;
+namespace EventHub.Infrastructure.Persistence;
 
 public static class DatabaseMigrationExtensions
 {

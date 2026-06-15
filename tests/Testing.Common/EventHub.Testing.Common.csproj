@@ -20,10 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Api\Solution.Api.csproj" />
-    <ProjectReference Include="..\..\src\Application\Solution.Application.csproj" />
-    <ProjectReference Include="..\..\src\Domain\Solution.Domain.csproj" />
-    <ProjectReference Include="..\..\src\Infrastructure\Solution.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Api\EventHub.Api.csproj" />
+    <ProjectReference Include="..\..\src\Application\EventHub.Application.csproj" />
+    <ProjectReference Include="..\..\src\Domain\EventHub.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\EventHub.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,13 +1,13 @@
+using EventHub.Api.Auth;
+using EventHub.Api.Http;
+using EventHub.Api.Mapping;
+using EventHub.Application.Options;
+using EventHub.Application.Users.Commands;
+using EventHub.Contracts.Users;
 using MediatR;
 using Microsoft.Extensions.Options;
-using Solution.Api.Auth;
-using Solution.Api.Http;
-using Solution.Api.Mapping;
-using Solution.Application.Options;
-using Solution.Application.Users.Commands;
-using Solution.Contracts.Users;
 
-namespace Solution.Api.Endpoints;
+namespace EventHub.Api.Endpoints;
 
 internal sealed class UsersEndpoint : IEndpoint
 {
@@ -30,7 +30,7 @@ internal sealed class UsersEndpoint : IEndpoint
         IOptions<AuthSessionOptions> sessionOptions)
     {
         var result = await sender.Send(
-            new RegisterUserCommand(request.Username, request.Email, request.Password));
+            new RegisterUserCommand(request.DisplayName, request.Email, request.Password));
 
         if (!result.IsSuccess)
         {
@@ -48,7 +48,7 @@ internal sealed class UsersEndpoint : IEndpoint
             $"/api/users/{registeredUser.UserId:D}",
             new UserRegistrationResponse(
                 registeredUser.UserId,
-                registeredUser.Username,
+                registeredUser.DisplayName,
                 registeredUser.Email,
                 registeredUser.CreatedAt));
     }

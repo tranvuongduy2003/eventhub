@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
 
-namespace Solution.Api.Hubs;
+namespace EventHub.Api.Hubs;
 
 public sealed class EventMonitoringHub : Hub;

@@ -1,8 +1,8 @@
+using EventHub.Application.Abstractions.Auth;
+using EventHub.Domain.Users;
 using Microsoft.AspNetCore.Identity;
-using Solution.Application.Abstractions.Auth;
-using Solution.Domain.Users;
 
-namespace Solution.Infrastructure.Auth;
+namespace EventHub.Infrastructure.Auth;
 
 internal sealed class IdentityPasswordHasher : IPasswordHasher
 {

@@ -1,4 +1,4 @@
-namespace Solution.Application.Options;
+namespace EventHub.Application.Options;
 
 public sealed class MessagingOptions
 {

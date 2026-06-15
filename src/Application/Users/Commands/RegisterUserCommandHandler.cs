@@ -1,12 +1,12 @@
-using Solution.Application.Abstractions.Auth;
-using Solution.Application.Abstractions.Messaging;
-using Solution.Application.Abstractions.Persistence;
-using Solution.Application.Abstractions.Services;
-using Solution.Application.Common;
-using Solution.Domain.Exceptions;
-using Solution.Domain.Users;
+using EventHub.Application.Abstractions.Auth;
+using EventHub.Application.Abstractions.Messaging;
+using EventHub.Application.Abstractions.Persistence;
+using EventHub.Application.Abstractions.Services;
+using EventHub.Application.Common;
+using EventHub.Domain.Exceptions;
+using EventHub.Domain.Users;
 
-namespace Solution.Application.Users.Commands;
+namespace EventHub.Application.Users.Commands;
 
 public sealed class RegisterUserCommandHandler(
     IUserRepository userRepository,
@@ -23,11 +23,6 @@ public sealed class RegisterUserCommandHandler(
     {
         var normalizedEmail = EmailAddress.Create(command.Email).Value;
 
-        if (await userRepository.ExistsByUsernameAsync(command.Username, cancellationToken))
-        {
-            return RegistrationErrors.UsernameTaken;
-        }
-
         if (await userRepository.ExistsByEmailAsync(normalizedEmail, cancellationToken))
         {
             return RegistrationErrors.EmailTaken;
@@ -35,16 +30,15 @@ public sealed class RegisterUserCommandHandler(
 
         try
         {
-            var username = Username.Create(command.Username);
+            var displayName = DisplayName.Create(command.DisplayName);
             var email = EmailAddress.Create(command.Email);
             var password = Password.Create(command.Password);
             var passwordHash = passwordHasher.Hash(password);
             var createdAt = clock.UtcNow;
 
             var user = User.Register(
-                username,
+                displayName,
                 email,
-                password,
                 passwordHash,
                 createdAt);
 
@@ -62,7 +56,7 @@ public sealed class RegisterUserCommandHandler(
 
             return new RegisterUserResult(
                 user.Id.Value,
-                user.Username.Value,
+                user.DisplayName.Value,
                 email.DisplayValue,
                 user.CreatedAt,
                 session.SessionId,

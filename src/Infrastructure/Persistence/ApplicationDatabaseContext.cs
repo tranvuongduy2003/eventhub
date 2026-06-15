@@ -1,8 +1,8 @@
+using EventHub.Application.Abstractions.Persistence;
+using EventHub.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
-using Solution.Application.Abstractions.Persistence;
-using Solution.Infrastructure.Persistence.Entities;
 
-namespace Solution.Infrastructure.Persistence;
+namespace EventHub.Infrastructure.Persistence;
 
 public sealed class ApplicationDatabaseContext(DbContextOptions<ApplicationDatabaseContext> options)
     : DbContext(options), IApplicationDatabaseContext
@@ -16,6 +16,6 @@ public sealed class ApplicationDatabaseContext(DbContextOptions<ApplicationDatab
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(SchemaName);
-        modelBuilder.ApplyConfigurationsFromAssembly(global::Solution.Infrastructure.AssemblyReference.Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(global::EventHub.Infrastructure.AssemblyReference.Assembly);
     }
 }

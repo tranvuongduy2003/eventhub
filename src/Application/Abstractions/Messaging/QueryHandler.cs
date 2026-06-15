@@ -1,6 +1,6 @@
-using Solution.Application.Common;
+using EventHub.Application.Common;
 
-namespace Solution.Application.Abstractions.Messaging;
+namespace EventHub.Application.Abstractions.Messaging;
 
 public abstract class QueryHandler<TQuery, TResponse> : IQueryHandler<TQuery, TResponse>
     where TQuery : IQuery<TResponse>

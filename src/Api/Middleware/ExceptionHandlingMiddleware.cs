@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Solution.Api.Common;
-using Solution.Application.Exceptions;
-using Solution.Domain.Exceptions;
+using EventHub.Api.Common;
+using EventHub.Application.Exceptions;
+using EventHub.Domain.Exceptions;
 
-namespace Solution.Api.Middleware;
+namespace EventHub.Api.Middleware;
 
 public sealed class ExceptionHandlingMiddleware(
     RequestDelegate next,

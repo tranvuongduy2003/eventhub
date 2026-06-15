@@ -1,21 +1,21 @@
 using System.Net;
 using System.Net.Http.Json;
+using EventHub.Api.IntegrationTests.Integration;
+using EventHub.Api.IntegrationTests.Users.Fakes;
+using EventHub.Application.Abstractions.Cache;
+using EventHub.Application.Abstractions.Services;
+using EventHub.Application.Options;
+using EventHub.Contracts.Users;
+using EventHub.Infrastructure.Persistence;
+using EventHub.Testing.Common.Fixtures;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Solution.Api.IntegrationTests.Integration;
-using Solution.Api.IntegrationTests.Users.Fakes;
-using Solution.Application.Abstractions.Cache;
-using Solution.Application.Abstractions.Services;
-using Solution.Application.Options;
-using Solution.Contracts.Users;
-using Solution.Infrastructure.Persistence;
-using Solution.Testing.Common.Fixtures;
 
-namespace Solution.Api.IntegrationTests.Users;
+namespace EventHub.Api.IntegrationTests.Users;
 
 [Collection(IntegrationTestCollection.Name)]
 public sealed class SessionPersistenceTests(IntegrationTestFixture fixture)

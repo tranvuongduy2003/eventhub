@@ -1,8 +1,8 @@
+using EventHub.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Solution.Infrastructure.Persistence.Entities;
 
-namespace Solution.Infrastructure.Persistence.Configurations;
+namespace EventHub.Infrastructure.Persistence.Configurations;
 
 internal sealed class UserSessionConfiguration : IEntityTypeConfiguration<UserSessionRecord>
 {

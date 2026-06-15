@@ -43,7 +43,7 @@ Domain ← Application ← Infrastructure
 
 ### 2. Domain is pure C#
 
-Business rules live in `Solution.Domain` as framework-free C#. No ORM attributes, no HTTP types, no MediatR in Domain.
+Business rules live in `EventHub.Domain` as framework-free C#. No ORM attributes, no HTTP types, no MediatR in Domain.
 
 Aggregates enforce invariants internally. **No anemic domain models** — behavior belongs on aggregates and value objects, not scattered in handlers.
 
@@ -152,7 +152,7 @@ Local orchestration runs through **.NET Aspire AppHost** — PostgreSQL, Redis, 
 
 ### 15. ServiceDefaults is mandatory for Api
 
-`Solution.ServiceDefaults` provides shared logging, health checks, and service discovery. Api must use it.
+`EventHub.ServiceDefaults` provides shared logging, health checks, and service discovery. Api must use it.
 
 ### 16. Configuration layering is fixed
 

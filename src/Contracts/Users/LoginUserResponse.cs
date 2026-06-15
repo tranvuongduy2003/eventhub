@@ -1,3 +1,3 @@
-namespace Solution.Contracts.Users;
+namespace EventHub.Contracts.Users;
 
-public sealed record LoginUserResponse(Guid UserId, string Username, string Email);
+public sealed record LoginUserResponse(Guid UserId, string DisplayName, string Email);

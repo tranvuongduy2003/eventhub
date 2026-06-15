@@ -44,7 +44,7 @@ From the repository root (Windows PowerShell):
 Or manually:
 
 ```bash
-dotnet restore Solution.slnx
+dotnet restore EventHub.slnx
 yarn --cwd web install
 
 cp .env.example .env
@@ -58,13 +58,13 @@ dotnet dev-certs https --trust
 ## Run locally
 
 ```bash
-dotnet run --project src/AppHost/Solution.AppHost.csproj
+dotnet run --project src/AppHost/EventHub.AppHost.csproj
 ```
 
 Or:
 
 ```bash
-aspire run --project src/AppHost/Solution.AppHost.csproj
+aspire run --project src/AppHost/EventHub.AppHost.csproj
 ```
 
 | Service | URL / port |

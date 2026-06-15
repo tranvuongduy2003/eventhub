@@ -7,19 +7,19 @@ export type LoginRequest = {
 
 export type LoginUserResponse = {
   userId: string
-  username: string
+  displayName: string
   email: string
 }
 
 export type RegisterRequest = {
-  username: string
+  displayName: string
   email: string
   password: string
 }
 
 export type UserRegistrationResponse = {
   userId: string
-  username: string
+  displayName: string
   email: string
   createdAt: string
 }

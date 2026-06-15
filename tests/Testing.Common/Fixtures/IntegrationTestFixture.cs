@@ -1,11 +1,11 @@
+using EventHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Solution.Infrastructure.Persistence;
 using Testcontainers.PostgreSql;
 using Testcontainers.Redis;
 using Xunit;
 
-namespace Solution.Testing.Common.Fixtures;
+namespace EventHub.Testing.Common.Fixtures;
 
 public sealed class IntegrationTestFixture : IAsyncLifetime
 {

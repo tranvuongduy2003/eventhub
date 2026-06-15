@@ -1,8 +1,8 @@
 using System.Reflection;
+using EventHub.Application.Abstractions.Messaging;
 using Microsoft.Extensions.DependencyInjection;
-using Solution.Application.Abstractions.Messaging;
 
-namespace Solution.Application;
+namespace EventHub.Application;
 
 public static partial class DependencyInjection
 {

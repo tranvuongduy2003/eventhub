@@ -1,3 +1,4 @@
+using EventHub.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -5,10 +6,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Solution.Infrastructure.Persistence;
 using StackExchange.Redis;
 
-namespace Solution.Testing.Common.Fixtures;
+namespace EventHub.Testing.Common.Fixtures;
 
 public sealed class IntegrationTestWebApplicationFactory : WebApplicationFactory<Program>
 {

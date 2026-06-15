@@ -1,8 +1,8 @@
 using System.Text.Json;
+using EventHub.Api.Http.Problems;
 using Microsoft.AspNetCore.Http;
-using Solution.Api.Http.Problems;
 
-namespace Solution.Api.Middleware;
+namespace EventHub.Api.Middleware;
 
 public sealed class InvalidRequestMiddleware(RequestDelegate next)
 {

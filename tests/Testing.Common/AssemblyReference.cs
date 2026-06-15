@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Solution.Testing.Common;
+namespace EventHub.Testing.Common;
 
 public static class AssemblyReference
 {

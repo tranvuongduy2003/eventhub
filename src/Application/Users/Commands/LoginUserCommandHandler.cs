@@ -1,11 +1,11 @@
-using Solution.Application.Abstractions.Auth;
-using Solution.Application.Abstractions.Messaging;
-using Solution.Application.Abstractions.Persistence;
-using Solution.Application.Common;
-using Solution.Application.Users;
-using Solution.Domain.Users;
+using EventHub.Application.Abstractions.Auth;
+using EventHub.Application.Abstractions.Messaging;
+using EventHub.Application.Abstractions.Persistence;
+using EventHub.Application.Common;
+using EventHub.Application.Users;
+using EventHub.Domain.Users;
 
-namespace Solution.Application.Users.Commands;
+namespace EventHub.Application.Users.Commands;
 
 public sealed class LoginUserCommandHandler(
     IUserRepository userRepository,
@@ -36,7 +36,7 @@ public sealed class LoginUserCommandHandler(
 
         return new LoginUserResult(
             user.Id.Value,
-            user.Username.Value,
+            user.DisplayName.Value,
             email.DisplayValue,
             session.SessionId,
             session.ExpiresAt);

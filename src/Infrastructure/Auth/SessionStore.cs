@@ -1,15 +1,15 @@
+using EventHub.Application.Abstractions.Auth;
+using EventHub.Application.Abstractions.Cache;
+using EventHub.Application.Abstractions.Services;
+using EventHub.Application.Options;
+using EventHub.Domain.Users;
+using EventHub.Infrastructure.Persistence;
+using EventHub.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Solution.Application.Abstractions.Auth;
-using Solution.Application.Abstractions.Cache;
-using Solution.Application.Abstractions.Services;
-using Solution.Application.Options;
-using Solution.Domain.Users;
-using Solution.Infrastructure.Persistence;
-using Solution.Infrastructure.Persistence.Entities;
 
-namespace Solution.Infrastructure.Auth;
+namespace EventHub.Infrastructure.Auth;
 
 internal sealed class SessionStore(
     ApplicationDatabaseContext databaseContext,

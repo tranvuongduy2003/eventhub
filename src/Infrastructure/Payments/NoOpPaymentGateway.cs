@@ -1,6 +1,6 @@
-using Solution.Application.Abstractions.Payments;
+using EventHub.Application.Abstractions.Payments;
 
-namespace Solution.Infrastructure.Payments;
+namespace EventHub.Infrastructure.Payments;
 
 public sealed class NoOpPaymentGateway : IPaymentGateway
 {

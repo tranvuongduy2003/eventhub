@@ -1,9 +1,9 @@
+using EventHub.Application.Abstractions.Auth;
+using EventHub.Application.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Solution.Application.Abstractions.Auth;
-using Solution.Application.Common;
 
-namespace Solution.Application.Behaviors;
+namespace EventHub.Application.Behaviors;
 
 public sealed class PostCommitSessionCacheBehavior<TRequest, TResponse>(
     IPendingSessionCacheCollector pendingSessionCacheCollector,

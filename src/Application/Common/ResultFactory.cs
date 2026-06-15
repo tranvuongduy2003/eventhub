@@ -1,4 +1,4 @@
-namespace Solution.Application.Common;
+namespace EventHub.Application.Common;
 
 internal static class ResultFactory
 {

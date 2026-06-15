@@ -2,14 +2,14 @@
   "id": "agent-domain-stays-pure",
   "layer": "agent",
   "mode": "manual",
-  "description": "Agent adds domain logic without EF/ASP.NET imports in Solution.Domain",
+  "description": "Agent adds domain logic without EF/ASP.NET imports in EventHub.Domain",
   "input": {
     "prompt": "Add a value object EmailAddress validation test skeleton under src/Domain/Users/ following ddd.md and architecture.mdc. Do not add Infrastructure references."
   },
   "assert": {
     "commands": [
-      { "run": "dotnet build src/Domain/Solution.Domain.csproj", "exitCode": 0 },
-      { "run": "dotnet test tests/Domain.UnitTests/Solution.Domain.UnitTests.csproj --filter FullyQualifiedName~Users", "exitCode": 0 }
+      { "run": "dotnet build src/Domain/EventHub.Domain.csproj", "exitCode": 0 },
+      { "run": "dotnet test tests/Domain.UnitTests/EventHub.Domain.UnitTests.csproj --filter FullyQualifiedName~Users", "exitCode": 0 }
     ],
     "filesMustNotMatch": [
       { "glob": "src/Domain/**/*.cs", "pattern": "Microsoft\\.EntityFrameworkCore|Microsoft\\.AspNetCore|MediatR" }

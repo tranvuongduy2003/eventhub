@@ -1,4 +1,4 @@
-namespace Solution.Application.Abstractions.Payments;
+namespace EventHub.Application.Abstractions.Payments;
 
 public interface IPaymentGateway
 {

@@ -1,5 +1,5 @@
 {
   "appHost": {
-    "path": "Solution.AppHost.csproj"
+    "path": "EventHub.AppHost.csproj"
   }
 }

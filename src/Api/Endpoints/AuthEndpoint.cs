@@ -1,15 +1,15 @@
+using EventHub.Api.Auth;
+using EventHub.Api.Http;
+using EventHub.Api.Mapping;
+using EventHub.Application.Abstractions.Auth;
+using EventHub.Application.Options;
+using EventHub.Application.Users.Commands;
+using EventHub.Application.Users.Queries;
+using EventHub.Contracts.Users;
 using MediatR;
 using Microsoft.Extensions.Options;
-using Solution.Api.Auth;
-using Solution.Api.Http;
-using Solution.Api.Mapping;
-using Solution.Application.Abstractions.Auth;
-using Solution.Application.Options;
-using Solution.Application.Users.Commands;
-using Solution.Application.Users.Queries;
-using Solution.Contracts.Users;
 
-namespace Solution.Api.Endpoints;
+namespace EventHub.Api.Endpoints;
 
 internal sealed class AuthEndpoint : IEndpoint
 {
@@ -63,7 +63,7 @@ internal sealed class AuthEndpoint : IEndpoint
             sessionOptions.Value);
 
         return Results.Ok(
-            new LoginUserResponse(loginUser.UserId, loginUser.Username, loginUser.Email));
+            new LoginUserResponse(loginUser.UserId, loginUser.DisplayName, loginUser.Email));
     }
 
     private static async Task<IResult> LogoutUser(
@@ -106,7 +106,7 @@ internal sealed class AuthEndpoint : IEndpoint
         var currentUser = result.Value!;
         return Results.Ok(new LoginUserResponse(
             currentUser.UserId,
-            currentUser.Username,
+            currentUser.DisplayName,
             currentUser.Email));
     }
 }

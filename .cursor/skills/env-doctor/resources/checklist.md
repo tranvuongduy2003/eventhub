@@ -25,7 +25,7 @@ Use when the quick workflow in `SKILL.md` is insufficient or failures are interm
 ```bash
 dotnet --info
 dotnet workload list
-dotnet build src/AppHost/Solution.AppHost.csproj
+dotnet build src/AppHost/EventHub.AppHost.csproj
 ```
 
 Watch for:

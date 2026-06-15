@@ -1,6 +1,6 @@
-using Solution.Application.Abstractions.Storage;
+using EventHub.Application.Abstractions.Storage;
 
-namespace Solution.Infrastructure.Storage;
+namespace EventHub.Infrastructure.Storage;
 
 public sealed class NoOpObjectStorage : IObjectStorage
 {

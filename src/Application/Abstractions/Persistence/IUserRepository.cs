@@ -1,12 +1,10 @@
-using Solution.Domain.Users;
+using EventHub.Domain.Users;
 
-namespace Solution.Application.Abstractions.Persistence;
+namespace EventHub.Application.Abstractions.Persistence;
 
 public interface IUserRepository
 {
     Task AddAsync(User user, CancellationToken cancellationToken = default);
-
-    Task<bool> ExistsByUsernameAsync(string username, CancellationToken cancellationToken = default);
 
     Task<bool> ExistsByEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default);
 

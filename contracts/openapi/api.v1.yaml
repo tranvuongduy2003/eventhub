@@ -1,4 +1,4 @@
-# Generated from Solution.Api (OpenAPI v1). Do not edit by hand — run:
+# Generated from EventHub.Api (OpenAPI v1). Do not edit by hand — run:
 #   yarn --cwd web api:export
 components:
   schemas:
@@ -14,16 +14,16 @@ components:
       type: object
     LoginUserResponse:
       properties:
+        displayName:
+          type: string
         email:
           type: string
         userId:
           format: uuid
           type: string
-        username:
-          type: string
       required:
         - userId
-        - username
+        - displayName
         - email
       type: object
     ProblemDetails:
@@ -54,14 +54,14 @@ components:
       type: object
     RegisterUserRequest:
       properties:
+        displayName:
+          type: string
         email:
           type: string
         password:
           type: string
-        username:
-          type: string
       required:
-        - username
+        - displayName
         - email
         - password
       type: object
@@ -70,21 +70,21 @@ components:
         createdAt:
           format: date-time
           type: string
+        displayName:
+          type: string
         email:
           type: string
         userId:
           format: uuid
           type: string
-        username:
-          type: string
       required:
         - userId
-        - username
+        - displayName
         - email
         - createdAt
       type: object
 info:
-  title: Solution.Api | v1
+  title: EventHub.Api | v1
   version: 1.0.0
 openapi: 3.1.1
 paths:

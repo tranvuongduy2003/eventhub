@@ -1,15 +1,14 @@
+using EventHub.Application.Abstractions.Persistence;
+using EventHub.Application.Common;
+using EventHub.Application.Users.Commands;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using Solution.Application.Abstractions.Persistence;
-using Solution.Application.Common;
-using Solution.Application.Users.Commands;
 
-namespace Solution.Infrastructure.Persistence;
+namespace EventHub.Infrastructure.Persistence;
 
 internal sealed class UnitOfWork(ApplicationDatabaseContext databaseContext) : IUnitOfWork
 {
     private const string UniqueViolationSqlState = "23505";
-    private const string UsernameUniqueConstraint = "ux_users_username";
     private const string EmailUniqueConstraint = "ux_users_email";
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
@@ -45,7 +44,6 @@ internal sealed class UnitOfWork(ApplicationDatabaseContext databaseContext) : I
 
         error = postgresException.ConstraintName switch
         {
-            UsernameUniqueConstraint => RegistrationErrors.UsernameTaken,
             EmailUniqueConstraint => RegistrationErrors.EmailTaken,
             _ => null
         };

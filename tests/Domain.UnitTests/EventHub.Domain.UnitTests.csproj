@@ -9,9 +9,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Application\Solution.Application.csproj" />
-    <ProjectReference Include="..\..\src\Domain\Solution.Domain.csproj" />
-    <ProjectReference Include="..\Testing.Common\Solution.Testing.Common.csproj" />
+    <ProjectReference Include="..\..\src\Application\EventHub.Application.csproj" />
+    <ProjectReference Include="..\..\src\Domain\EventHub.Domain.csproj" />
+    <ProjectReference Include="..\Testing.Common\EventHub.Testing.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

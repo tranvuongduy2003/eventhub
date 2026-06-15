@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Solution.AppHost;
+namespace EventHub.AppHost;
 
 public static class AssemblyReference
 {

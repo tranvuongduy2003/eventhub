@@ -1,11 +1,11 @@
+using EventHub.Api.Auth;
+using EventHub.Api.Middleware;
+using EventHub.Api.Options;
+using EventHub.Application.Abstractions.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
-using Solution.Api.Auth;
-using Solution.Api.Middleware;
-using Solution.Api.Options;
-using Solution.Application.Abstractions.Auth;
 
-namespace Solution.Api;
+namespace EventHub.Api;
 
 public static class DependencyInjection
 {

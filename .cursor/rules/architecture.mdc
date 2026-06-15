@@ -33,7 +33,7 @@ Domain ← Application ← Infrastructure
 
 ---
 
-## 2. Solution layout
+## 2. Repository layout
 
 ```
 src/
@@ -126,7 +126,7 @@ Use only when logic does not belong to one entity (e.g. `SVC-DiscountPolicy` in 
 
 ### Modular monolith
 
-Bounded contexts are **logical modules** inside `Solution.Domain` (see `ddd.md` §2). Strong consistency inside an aggregate; cross-context via integration events unless explicitly documented otherwise (e.g. `PlaceOrder` + `Event.Reserve` in one transaction per `ddd.md` §8).
+Bounded contexts are **logical modules** inside `EventHub.Domain` (see `ddd.md` §2). Strong consistency inside an aggregate; cross-context via integration events unless explicitly documented otherwise (e.g. `PlaceOrder` + `Event.Reserve` in one transaction per `ddd.md` §8).
 
 ---
 
@@ -230,7 +230,7 @@ Use `Application/Common/Error.cs` — stable `code` strings consumed by Api as R
 
 - No `/// <summary>` XML doc comments.
 - No abbreviations in type, method, property, file, or parameter names (except framework terms like `DbContext`, `Guid`).
-- Namespace prefix: **`Solution.*`**.
+- Namespace prefix: **`EventHub.*`**.
 
 ---
 

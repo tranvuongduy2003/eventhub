@@ -11,13 +11,13 @@ Source: [`docs/constitution.md`](docs/constitution.md) III, [`docs/technical.md`
 ## EF Core rules
 
 - One migration per logical change; **never edit** a migration already merged — add a new file
-- Live under `Solution.Infrastructure/Migrations/`
+- Live under `EventHub.Infrastructure/Migrations/`
 - Generate:
 
 ```bash
 dotnet ef migrations add <Name> \
-  -p src/Infrastructure/Solution.Infrastructure.csproj \
-  -s src/Api/Solution.Api.csproj
+  -p src/Infrastructure/EventHub.Infrastructure.csproj \
+  -s src/Api/EventHub.Api.csproj
 ```
 
 - **Dev:** apply on service startup (Development)

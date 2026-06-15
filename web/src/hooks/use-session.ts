@@ -52,7 +52,7 @@ export function useSession() {
 
     setSession({
       userId: user.userId,
-      username: user.username,
+      displayName: user.displayName,
       email: user.email,
     })
   }, [

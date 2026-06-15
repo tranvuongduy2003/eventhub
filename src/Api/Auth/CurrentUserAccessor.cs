@@ -1,8 +1,8 @@
 using System.Security.Claims;
-using Solution.Application.Abstractions.Auth;
-using Solution.Domain.Users;
+using EventHub.Application.Abstractions.Auth;
+using EventHub.Domain.Users;
 
-namespace Solution.Api.Auth;
+namespace EventHub.Api.Auth;
 
 internal sealed class CurrentUserAccessor(IHttpContextAccessor httpContextAccessor) : ICurrentUserAccessor
 {

@@ -29,11 +29,7 @@ export const router = createBrowserRouter([
     children: [
       {
         element: <AppLayout />,
-        children: [
-          { index: true, element: <HomePage /> },
-          ...eventsRoutes,
-          ...checkInRoutes,
-        ],
+        children: [{ index: true, element: <HomePage /> }, ...eventsRoutes, ...checkInRoutes],
       },
     ],
   },

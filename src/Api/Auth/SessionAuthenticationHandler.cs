@@ -1,11 +1,11 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using EventHub.Application.Abstractions.Auth;
+using EventHub.Application.Options;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
-using Solution.Application.Abstractions.Auth;
-using Solution.Application.Options;
 
-namespace Solution.Api.Auth;
+namespace EventHub.Api.Auth;
 
 internal sealed class SessionAuthenticationHandler(
     IOptionsMonitor<AuthenticationSchemeOptions> options,

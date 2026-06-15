@@ -1,7 +1,7 @@
+using EventHub.Application.Common;
 using FluentAssertions;
-using Solution.Application.Common;
 
-namespace Solution.Testing.Common.Assertions;
+namespace EventHub.Testing.Common.Assertions;
 
 public static class ResultAssertionExtensions
 {

@@ -1,6 +1,6 @@
-using Solution.Domain.Abstractions;
+using EventHub.Domain.Abstractions;
 
-namespace Solution.Application.Abstractions.Persistence;
+namespace EventHub.Application.Abstractions.Persistence;
 
 public interface IRepository<TAggregate, TId>
     where TAggregate : class, IAggregateRoot<TId>

@@ -1,6 +1,6 @@
 ---
 name: openapi-contract-sync
-description: Keeps the REST OpenAPI contract and frontend TypeScript types in sync with Solution.Api. Use when adding or changing HTTP endpoints, updating contracts/openapi/api.v1.yaml, running api:export/api:verify/api:codegen, fixing CI OpenAPI drift, or wiring type-safe API clients from generated paths/components.
+description: Keeps the REST OpenAPI contract and frontend TypeScript types in sync with EventHub.Api. Use when adding or changing HTTP endpoints, updating contracts/openapi/api.v1.yaml, running api:export/api:verify/api:codegen, fixing CI OpenAPI drift, or wiring type-safe API clients from generated paths/components.
 ---
 
 # OpenAPI contract sync (REST)
@@ -18,7 +18,7 @@ HTTP contract flow for **EventHub**.
 ## Pipeline
 
 ```
-Solution.Api  →  dotnet build (OpenApiGenerateDocuments=true)
+EventHub.Api  →  dotnet build (OpenApiGenerateDocuments=true)
                       →  scripts/openapi/sync-contract.mjs  →  api.v1.yaml
                       →  openapi-typescript  →  web/src/generated/api-schema.ts
                       →  web app imports via web/src/lib/api/openapi.ts
@@ -68,11 +68,11 @@ Do not hand-edit `web/src/generated/api-schema.ts`.
 ## Backend notes
 
 - `src/Api/Program.cs`: `MapOpenApi()` is always registered; Scalar stays Development-only.
-- Export MSBuild props live in `src/Api/Solution.Api.csproj`:
+- Export MSBuild props live in `src/Api/EventHub.Api.csproj`:
   - `OpenApiGenerateDocuments=false` by default (export only when requested).
   - Build flag: `-p:OpenApiGenerateDocuments=true`
   - Output file name must be alphanumeric/`_`/`-` only → **`api-v1`** (not `api.v1`).
-- Map DTOs from `Solution.Contracts`; never expose domain types in OpenAPI.
+- Map DTOs from `EventHub.Contracts`; never expose domain types in OpenAPI.
 
 ## CI
 

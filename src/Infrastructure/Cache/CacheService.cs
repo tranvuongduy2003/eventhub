@@ -1,8 +1,8 @@
+using EventHub.Application.Abstractions.Cache;
 using Microsoft.Extensions.Logging;
-using Solution.Application.Abstractions.Cache;
 using StackExchange.Redis;
 
-namespace Solution.Infrastructure.Cache;
+namespace EventHub.Infrastructure.Cache;
 
 internal sealed class CacheService(
     IConnectionMultiplexer connectionMultiplexer,

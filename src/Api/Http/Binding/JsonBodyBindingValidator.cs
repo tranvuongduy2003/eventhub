@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Solution.Api.Http.Binding;
+namespace EventHub.Api.Http.Binding;
 
 internal static class JsonBodyBindingValidator
 {

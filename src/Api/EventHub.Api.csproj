@@ -24,10 +24,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Application\Solution.Application.csproj" />
-    <ProjectReference Include="..\Infrastructure\Solution.Infrastructure.csproj" />
-    <ProjectReference Include="..\Contracts\Solution.Contracts.csproj" />
-    <ProjectReference Include="..\ServiceDefaults\Solution.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\Application\EventHub.Application.csproj" />
+    <ProjectReference Include="..\Infrastructure\EventHub.Infrastructure.csproj" />
+    <ProjectReference Include="..\Contracts\EventHub.Contracts.csproj" />
+    <ProjectReference Include="..\ServiceDefaults\EventHub.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

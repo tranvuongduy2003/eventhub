@@ -12,6 +12,6 @@
       "skip": "False",
       "steps.1.kind": "dotnet-build"
     },
-    "stdoutContains": ["Solution.Application.csproj"]
+    "stdoutContains": ["EventHub.Application.csproj"]
   }
 }

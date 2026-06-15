@@ -4,14 +4,14 @@ export type AuthStatus = 'unknown' | 'authenticated' | 'unauthenticated'
 
 type AuthSession = {
   userId: string
-  username: string
+  displayName: string
   email: string
 }
 
 type AuthState = {
   status: AuthStatus
   userId: string | null
-  username: string | null
+  displayName: string | null
   email: string | null
   setSession: (session: AuthSession) => void
   clearSession: () => void
@@ -21,20 +21,20 @@ type AuthState = {
 export const useAuthStore = create<AuthState>((set) => ({
   status: 'unknown',
   userId: null,
-  username: null,
+  displayName: null,
   email: null,
   setSession: (session) =>
     set({
       status: 'authenticated',
       userId: session.userId,
-      username: session.username,
+      displayName: session.displayName,
       email: session.email,
     }),
   clearSession: () =>
     set({
       status: 'unauthenticated',
       userId: null,
-      username: null,
+      displayName: null,
       email: null,
     }),
   setStatus: (status) => set({ status }),

@@ -6,7 +6,7 @@ Source: [`docs/constitution.md`](docs/constitution.md) IV, [`docs/technical.md`]
 
 ## Scope
 
-`Solution.Api` — thin HTTP. **MediatR only** in handlers; map to `Solution.Contracts` DTOs — never serialize domain entities.
+`EventHub.Api` — thin HTTP. **MediatR only** in handlers; map to `EventHub.Contracts` DTOs — never serialize domain entities.
 
 ## REST surface
 

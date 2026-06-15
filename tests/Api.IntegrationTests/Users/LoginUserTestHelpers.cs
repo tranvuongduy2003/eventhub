@@ -1,12 +1,12 @@
 using System.Net;
 using System.Text.Json;
+using EventHub.Api.Common;
+using EventHub.Application.Common;
+using EventHub.Application.Users;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
-using Solution.Api.Common;
-using Solution.Application.Common;
-using Solution.Application.Users;
 
-namespace Solution.Api.IntegrationTests.Users;
+namespace EventHub.Api.IntegrationTests.Users;
 
 internal static class LoginUserTestHelpers
 {

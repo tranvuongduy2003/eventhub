@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Api\Solution.Api.csproj" />
+    <ProjectReference Include="..\Api\EventHub.Api.csproj" />
   </ItemGroup>
 
 </Project>

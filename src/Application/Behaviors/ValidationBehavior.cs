@@ -1,8 +1,8 @@
+using EventHub.Application.Common;
 using FluentValidation;
 using MediatR;
-using Solution.Application.Common;
 
-namespace Solution.Application.Behaviors;
+namespace EventHub.Application.Behaviors;
 
 public sealed class ValidationBehavior<TRequest, TResponse>(
     IEnumerable<IValidator<TRequest>> validators)

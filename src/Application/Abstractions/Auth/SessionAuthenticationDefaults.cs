@@ -1,4 +1,4 @@
-namespace Solution.Application.Abstractions.Auth;
+namespace EventHub.Application.Abstractions.Auth;
 
 public static class SessionAuthenticationDefaults
 {

@@ -1,8 +1,8 @@
+using EventHub.Application.Abstractions.Services;
+using EventHub.Application.Common;
 using MediatR;
-using Solution.Application.Abstractions.Services;
-using Solution.Application.Common;
 
-namespace Solution.Application.Behaviors;
+namespace EventHub.Application.Behaviors;
 
 public sealed class DomainEventDispatchBehavior<TRequest, TResponse>(
     IPendingDomainEventsCollector pendingDomainEventsCollector,

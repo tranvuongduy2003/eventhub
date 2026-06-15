@@ -69,7 +69,7 @@ export function LoginForm() {
 
       setSession({
         userId: response.userId,
-        username: response.username,
+        displayName: response.displayName,
         email: response.email,
       })
 

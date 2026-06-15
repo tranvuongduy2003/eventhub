@@ -1,6 +1,6 @@
-using Solution.Domain.Abstractions;
+using EventHub.Domain.Abstractions;
 
-namespace Solution.Testing.Common.Domain;
+namespace EventHub.Testing.Common.Domain;
 
 public sealed class DomainEventCollector
 {

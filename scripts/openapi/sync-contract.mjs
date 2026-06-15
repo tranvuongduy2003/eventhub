@@ -24,7 +24,7 @@ const { parse, stringify } = requireFromWeb('yaml')
 
 function buildOpenApiJson() {
   execSync(
-    'dotnet build src/Api/Solution.Api.csproj -c Release -p:OpenApiGenerateDocuments=true',
+    'dotnet build src/Api/EventHub.Api.csproj -c Release -p:OpenApiGenerateDocuments=true',
     { cwd: repositoryRoot, stdio: 'inherit' },
   )
 }
@@ -68,7 +68,7 @@ function writeYaml(document) {
 
   writeFileSync(
     committedYamlPath,
-    `# Generated from Solution.Api (OpenAPI v1). Do not edit by hand — run:\n` +
+    `# Generated from EventHub.Api (OpenAPI v1). Do not edit by hand — run:\n` +
       `#   yarn --cwd web api:export\n` +
       `${yamlBody}`,
     'utf8',

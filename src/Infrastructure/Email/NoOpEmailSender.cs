@@ -1,6 +1,6 @@
-using Solution.Application.Abstractions.Email;
+using EventHub.Application.Abstractions.Email;
 
-namespace Solution.Infrastructure.Email;
+namespace EventHub.Infrastructure.Email;
 
 public sealed class NoOpEmailSender : IEmailSender
 {

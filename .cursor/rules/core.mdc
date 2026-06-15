@@ -43,9 +43,9 @@ When a **rule**, **skill**, or **doc** disagree, precedence is: **Constitution �
 Summarized here for quick scan; **Constitution is authoritative** if anything differs.
 
 1. **Clean Architecture** — Domain → Application → Infrastructure; Api is the composition root.
-2. **Domain is pure C#** — no EF Core, ASP.NET, MediatR, or Infrastructure in `Solution.Domain`.
+2. **Domain is pure C#** — no EF Core, ASP.NET, MediatR, or Infrastructure in `EventHub.Domain`.
 3. **Aspire AppHost** is the local topology source of truth — no hand-authored `docker-compose.yml`.
-4. **`Solution.ServiceDefaults` is mandatory** for Api.
+4. **`EventHub.ServiceDefaults` is mandatory** for Api.
 5. **PostgreSQL is authoritative**; Redis holds rebuildable cache only; MinIO for binary assets.
 6. **Domain model** follows [`docs/ddd.md`](docs/ddd.md) — modular monolith, RabbitMQ for cross-context integration events.
 

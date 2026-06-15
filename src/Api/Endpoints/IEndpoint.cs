@@ -1,4 +1,4 @@
-namespace Solution.Api.Endpoints;
+namespace EventHub.Api.Endpoints;
 
 public interface IEndpoint
 {

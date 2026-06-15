@@ -1,12 +1,12 @@
+using EventHub.Application.Abstractions.Messaging;
+using EventHub.Application.Abstractions.Persistence;
+using EventHub.Application.Common;
+using EventHub.Application.Options;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Solution.Application.Abstractions.Messaging;
-using Solution.Application.Abstractions.Persistence;
-using Solution.Application.Common;
-using Solution.Application.Options;
 
-namespace Solution.Application.Behaviors;
+namespace EventHub.Application.Behaviors;
 
 public sealed class UnitOfWorkBehavior<TRequest, TResponse>(
     IUnitOfWork unitOfWork,

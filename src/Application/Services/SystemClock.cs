@@ -1,6 +1,6 @@
-using Solution.Application.Abstractions.Services;
+using EventHub.Application.Abstractions.Services;
 
-namespace Solution.Application.Services;
+namespace EventHub.Application.Services;
 
 internal sealed class SystemClock : IClock
 {

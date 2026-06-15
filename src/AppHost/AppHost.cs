@@ -25,7 +25,7 @@ var seq = builder.AddSeq("seq")
     .WithEnvironment("ACCEPT_EULA", "Y");
 
 #pragma warning disable ASPIRECERTIFICATES001 // WithHttpsDeveloperCertificate
-var api = builder.AddProject<Projects.Solution_Api>("api", launchProfileName: "https")
+var api = builder.AddProject<Projects.EventHub_Api>("api", launchProfileName: "https")
     .WithReference(applicationDatabase)
     .WithReference(redis, connectionName: "Cache")
     .WithReference(storage)

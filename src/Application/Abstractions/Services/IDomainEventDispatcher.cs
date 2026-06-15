@@ -1,6 +1,6 @@
-using Solution.Domain.Abstractions;
+using EventHub.Domain.Abstractions;
 
-namespace Solution.Application.Abstractions.Services;
+namespace EventHub.Application.Abstractions.Services;
 
 public interface IDomainEventDispatcher
 {

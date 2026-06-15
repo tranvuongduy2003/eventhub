@@ -1,8 +1,8 @@
+using EventHub.Application.Common;
+using EventHub.Testing.Common.Assertions;
 using FluentAssertions;
-using Solution.Application.Common;
-using Solution.Testing.Common.Assertions;
 
-namespace Solution.Domain.UnitTests.Common;
+namespace EventHub.Domain.UnitTests.Common;
 
 public class ResultTests
 {

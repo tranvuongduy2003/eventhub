@@ -1,4 +1,4 @@
-namespace Solution.Application.Abstractions.Cache;
+namespace EventHub.Application.Abstractions.Cache;
 
 public interface ICacheService
 {

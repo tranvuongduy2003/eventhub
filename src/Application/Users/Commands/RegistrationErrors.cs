@@ -1,18 +1,22 @@
-using Solution.Application.Common;
+using EventHub.Application.Common;
 
-namespace Solution.Application.Users.Commands;
+namespace EventHub.Application.Users.Commands;
 
 public static class RegistrationErrors
 {
-    public const string UsernameTakenCode = "USERNAME_TAKEN";
-
     public const string EmailTakenCode = "EMAIL_TAKEN";
 
-    public static readonly Error UsernameTaken = Error.Validation(
-        UsernameTakenCode,
-        "That username is already in use.");
+    private static readonly IReadOnlyDictionary<string, string[]> EmailTakenFieldErrors =
+        new Dictionary<string, string[]>
+        {
+            ["email"] = ["An account with this email already exists."],
+        };
 
     public static readonly Error EmailTaken = Error.Validation(
         EmailTakenCode,
-        "An account with this email already exists.");
+        "An account with this email already exists.",
+        new Dictionary<string, object?>
+        {
+            ["errors"] = EmailTakenFieldErrors,
+        });
 }

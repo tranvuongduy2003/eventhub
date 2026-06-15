@@ -1,3 +1,3 @@
-namespace Solution.Contracts.Users;
+namespace EventHub.Contracts.Users;
 
-public sealed record RegisterUserRequest(string Username, string Email, string Password);
+public sealed record RegisterUserRequest(string DisplayName, string Email, string Password);

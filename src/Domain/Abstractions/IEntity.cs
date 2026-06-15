@@ -1,4 +1,4 @@
-namespace Solution.Domain.Abstractions;
+namespace EventHub.Domain.Abstractions;
 
 public interface IEntity<out TId>
     where TId : notnull

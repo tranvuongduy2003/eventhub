@@ -1,4 +1,4 @@
-namespace Solution.Application.Users;
+namespace EventHub.Application.Users;
 
 internal static class LoginValidationMessages
 {

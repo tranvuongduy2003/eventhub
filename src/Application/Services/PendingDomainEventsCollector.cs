@@ -1,7 +1,7 @@
-using Solution.Application.Abstractions.Services;
-using Solution.Domain.Abstractions;
+using EventHub.Application.Abstractions.Services;
+using EventHub.Domain.Abstractions;
 
-namespace Solution.Application.Services;
+namespace EventHub.Application.Services;
 
 internal sealed class PendingDomainEventsCollector : IPendingDomainEventsCollector
 {

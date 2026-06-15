@@ -1,6 +1,6 @@
-using Solution.Application.Abstractions.Auth;
+using EventHub.Application.Abstractions.Auth;
 
-namespace Solution.Application.Services;
+namespace EventHub.Application.Services;
 
 internal sealed class PendingSessionCacheCollector : IPendingSessionCacheCollector
 {

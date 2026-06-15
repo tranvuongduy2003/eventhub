@@ -1,15 +1,15 @@
 using System.Net;
+using EventHub.Api.IntegrationTests.Integration;
+using EventHub.Application.Abstractions.Email;
+using EventHub.Application.Abstractions.Messaging;
+using EventHub.Application.Abstractions.Payments;
+using EventHub.Application.Abstractions.Storage;
+using EventHub.Testing.Common.Fixtures;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Solution.Api.IntegrationTests.Integration;
-using Solution.Application.Abstractions.Email;
-using Solution.Application.Abstractions.Messaging;
-using Solution.Application.Abstractions.Payments;
-using Solution.Application.Abstractions.Storage;
-using Solution.Testing.Common.Fixtures;
 
-namespace Solution.Api.IntegrationTests.Infrastructure;
+namespace EventHub.Api.IntegrationTests.Infrastructure;
 
 [Collection(IntegrationTestCollection.Name)]
 public sealed class FoundationSmokeTests(IntegrationTestFixture fixture)

@@ -1,7 +1,7 @@
-using Solution.Application.Abstractions.Auth;
-using Solution.Domain.Users;
+using EventHub.Application.Abstractions.Auth;
+using EventHub.Domain.Users;
 
-namespace Solution.Api.IntegrationTests.Users.Fakes;
+namespace EventHub.Api.IntegrationTests.Users.Fakes;
 
 internal sealed class ThrowOnCreateSessionStore : ISessionStore
 {

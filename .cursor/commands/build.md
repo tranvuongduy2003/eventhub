@@ -96,7 +96,7 @@ Run the returned steps (EventHub stack — not npm):
 |-----------|---------|
 | `dotnet-test` | `dotnet test <project> [--filter …]` |
 | `dotnet-build` | `dotnet build <project> -v q` |
-| `dotnet-format` | `dotnet format Solution.slnx --verify-no-changes --include <path>` |
+| `dotnet-format` | `dotnet format EventHub.slnx --verify-no-changes --include <path>` |
 | `eslint` | `yarn --cwd web eslint <file> --max-warnings 0` |
 
 If web `.ts/.tsx` changed: `yarn --cwd web exec tsc -b --noEmit`.
@@ -118,7 +118,7 @@ If blocked: `[SKIP]` + reason in plan; stop unless user says continue.
 
 ## Step 4: Finish
 
-- Full sweep: `dotnet test Solution.slnx`; `yarn --cwd web lint`; `yarn --cwd web build` if UI touched
+- Full sweep: `dotnet test EventHub.slnx`; `yarn --cwd web lint`; `yarn --cwd web build` if UI touched
 - Optional Reflexion: invoke **`code-reviewer`** subagent on the diff
 - **Delete** plan file when all tasks succeed
 - **Do not** commit unless user asks · **Do not** update GitHub issues

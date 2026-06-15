@@ -1,6 +1,6 @@
-using Solution.Domain.Exceptions;
+using EventHub.Domain.Exceptions;
 
-namespace Solution.Domain.Users;
+namespace EventHub.Domain.Users;
 
 public readonly record struct UserId(Guid Value)
 {

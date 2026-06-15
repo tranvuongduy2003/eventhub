@@ -34,7 +34,7 @@ const featureLinks = [
 
 export function HomePage() {
   const userId = useAuthStore((state) => state.userId)
-  const username = useAuthStore((state) => state.username)
+  const displayName = useAuthStore((state) => state.displayName)
   const email = useAuthStore((state) => state.email)
 
   return (
@@ -42,7 +42,7 @@ export function HomePage() {
       <section className="flex flex-col gap-2">
         <p className="text-primary text-sm font-medium">Organizer dashboard</p>
         <h1 className="text-foreground text-3xl font-bold tracking-tight">
-          Welcome back{username ? `, ${username}` : ''}
+          Welcome back{displayName ? `, ${displayName}` : ''}
         </h1>
         <p className="text-muted-foreground max-w-2xl text-base">
           Manage events, sell tickets, and check in attendees — all in one place.

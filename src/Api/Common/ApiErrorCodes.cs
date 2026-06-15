@@ -1,4 +1,4 @@
-namespace Solution.Api.Common;
+namespace EventHub.Api.Common;
 
 internal static class ApiErrorCodes
 {

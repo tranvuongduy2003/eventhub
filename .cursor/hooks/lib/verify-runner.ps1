@@ -89,7 +89,7 @@ function Invoke-VerificationSteps {
             'dotnet-format' {
                 $include = [string]$step.file
                 $result = Invoke-VerifyQuiet -FilePath 'dotnet' -ArgumentList @(
-                    'format', 'Solution.slnx', '--verify-no-changes', '--include', $include
+                    'format', 'EventHub.slnx', '--verify-no-changes', '--include', $include
                 ) -WorkingDirectory $ProjectRoot
                 if ($result.ExitCode -ne 0) {
                     $errors.Add("dotnet format failed on $include")

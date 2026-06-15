@@ -4,13 +4,11 @@ const passwordSpecialCharacterPattern = /[!@#$%^&*()_+\-=[\]{}|;:'",.<>?/`~]/
 
 export const registerFormSchema = z
   .object({
-    username: z
+    displayName: z
       .string()
       .trim()
-      .min(1, 'Username is required.')
-      .min(3, 'Username must be between 3 and 32 characters.')
-      .max(32, 'Username must be between 3 and 32 characters.')
-      .regex(/^[A-Za-z0-9_]+$/, 'Username may only contain letters, digits, and underscores.'),
+      .min(1, 'Display name is required.')
+      .max(64, 'Display name must be between 1 and 64 characters.'),
     email: z
       .string()
       .trim()

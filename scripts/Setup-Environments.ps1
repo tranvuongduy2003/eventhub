@@ -41,7 +41,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-$SolutionPath = Join-Path $RepoRoot 'Solution.slnx'
+$SolutionPath = Join-Path $RepoRoot 'EventHub.slnx'
 $WebDir = Join-Path $RepoRoot 'web'
 $GlobalJsonPath = Join-Path $RepoRoot 'global.json'
 
@@ -358,7 +358,7 @@ Repository: $RepoRoot
         Write-Warn @"
 Aspire CLI not on PATH (optional but recommended).
   Install: https://aspire.dev
-  You can still run: dotnet run --project src/AppHost/Solution.AppHost.csproj
+  You can still run: dotnet run --project src/AppHost/EventHub.AppHost.csproj
 "@
     }
 
@@ -422,9 +422,9 @@ Setup complete.
 Next steps:
   1. Start Docker Desktop (if not already running).
   2. Run the stack:
-       dotnet run --project src/AppHost/Solution.AppHost.csproj
+       dotnet run --project src/AppHost/EventHub.AppHost.csproj
      Or:
-       aspire run --project src/AppHost/Solution.AppHost.csproj
+       aspire run --project src/AppHost/EventHub.AppHost.csproj
   3. Open the Aspire dashboard URL shown in the console.
   4. HTTPS endpoints (pinned in AppHost):
        API:    $ApiHttpsUrl  (HTTP $ApiHttpUrl)

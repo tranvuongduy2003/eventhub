@@ -1,8 +1,8 @@
+using EventHub.Application.Abstractions.Messaging;
+using EventHub.Domain.Events;
 using Microsoft.Extensions.Logging;
-using Solution.Application.Abstractions.Messaging;
-using Solution.Domain.Events;
 
-namespace Solution.Application.Users.EventHandlers;
+namespace EventHub.Application.Users.EventHandlers;
 
 internal sealed class UserRegisteredEventHandler(ILogger<UserRegisteredEventHandler> logger)
     : IDomainEventHandler<UserRegisteredEvent>
@@ -10,9 +10,9 @@ internal sealed class UserRegisteredEventHandler(ILogger<UserRegisteredEventHand
     public Task Handle(UserRegisteredEvent domainEvent, CancellationToken cancellationToken)
     {
         logger.LogInformation(
-            "UserRegistered {UserId} {Username}",
+            "UserRegistered {UserId} {DisplayName}",
             domainEvent.UserId.Value,
-            domainEvent.Username.Value);
+            domainEvent.DisplayName.Value);
 
         return Task.CompletedTask;
     }

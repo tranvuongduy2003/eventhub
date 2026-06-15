@@ -15,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Api\Solution.Api.csproj" />
-    <ProjectReference Include="..\Testing.Common\Solution.Testing.Common.csproj" />
+    <ProjectReference Include="..\..\src\Api\EventHub.Api.csproj" />
+    <ProjectReference Include="..\Testing.Common\EventHub.Testing.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

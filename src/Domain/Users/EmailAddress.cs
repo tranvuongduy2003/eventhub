@@ -1,8 +1,8 @@
 using System.Net.Mail;
-using Solution.Domain.Abstractions;
-using Solution.Domain.Exceptions;
+using EventHub.Domain.Abstractions;
+using EventHub.Domain.Exceptions;
 
-namespace Solution.Domain.Users;
+namespace EventHub.Domain.Users;
 
 public sealed class EmailAddress : ValueObject
 {

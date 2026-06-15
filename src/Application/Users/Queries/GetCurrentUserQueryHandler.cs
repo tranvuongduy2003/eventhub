@@ -1,9 +1,9 @@
-using Solution.Application.Abstractions.Auth;
-using Solution.Application.Abstractions.Messaging;
-using Solution.Application.Abstractions.Persistence;
-using Solution.Application.Common;
+using EventHub.Application.Abstractions.Auth;
+using EventHub.Application.Abstractions.Messaging;
+using EventHub.Application.Abstractions.Persistence;
+using EventHub.Application.Common;
 
-namespace Solution.Application.Users.Queries;
+namespace EventHub.Application.Users.Queries;
 
 public sealed class GetCurrentUserQueryHandler(
     ICurrentUserAccessor currentUserAccessor,
@@ -27,7 +27,7 @@ public sealed class GetCurrentUserQueryHandler(
 
         return new CurrentUserResult(
             user.Id.Value,
-            user.Username.Value,
+            user.DisplayName.Value,
             user.Email.DisplayValue);
     }
 }

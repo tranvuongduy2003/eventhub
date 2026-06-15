@@ -1,4 +1,4 @@
-namespace Solution.Api.Options;
+namespace EventHub.Api.Options;
 
 public sealed class CorsOptions
 {

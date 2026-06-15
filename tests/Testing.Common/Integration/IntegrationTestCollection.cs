@@ -1,4 +1,4 @@
-namespace Solution.Testing.Common.Integration;
+namespace EventHub.Testing.Common.Integration;
 
 public static class IntegrationTestCollection
 {

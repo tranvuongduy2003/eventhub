@@ -1,6 +1,6 @@
-using Solution.Domain.Users;
+using EventHub.Domain.Users;
 
-namespace Solution.Application.Abstractions.Auth;
+namespace EventHub.Application.Abstractions.Auth;
 
 public interface IPasswordHasher
 {
