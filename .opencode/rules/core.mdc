@@ -1,0 +1,131 @@
+---
+alwaysApply: true
+description: EventHub conventions, source-of-truth pointers, repo layout, and non-negotiable invariants.
+---
+
+# EVENTHUB — CORE
+
+**EventHub** — Clean Architecture + CQRS + DDD event management and ticketing. Local-only via .NET Aspire.
+
+## SOURCE OF TRUTH (read before acting)
+
+**Do not load overlapping skills when these docs cover the task.** Skills are for procedures not spelled out below.
+
+| Document | When to consult |
+|---|---|
+| [`docs/constitution.md`](docs/constitution.md) | Non-negotiable invariants (architecture, CQRS, data, API, local run, naming) |
+| [`docs/prd.md`](docs/prd.md) | Product intent, personas, goals, decisions (`DEC-*`), guardrails (`QG-*`) |
+| [`docs/features.md`](docs/features.md) | Epics (`EP-*`), features (`F-*`), acceptance criteria, build order |
+| [`docs/ddd.md`](docs/ddd.md) | Bounded contexts, aggregates, invariants, domain/integration events |
+| [`docs/technical.md`](docs/technical.md) | Layer layout, CQRS pipeline, infrastructure, persistence §6, API §7, testing §11 |
+
+**Cross-reference:** `Constitution §N`, `PRD §N` / `DEC-*`, `F-*`, `Tech §N`, `ddd.md §N`.
+
+When a **rule**, **skill**, or **doc** disagree, precedence is: **Constitution → prd / features / ddd / technical → scoped rule → skill**. Fix the lower layer in a follow-up PR.
+
+## DOC ROUTING (prefer over skills)
+
+| Work | Read first |
+|------|------------|
+| Architecture, layers, dependencies | Constitution I · `architecture.mdc` · Tech §1–3 |
+| Domain / aggregates / BC map | Constitution I.2–3 · `ddd.md` · `architecture.mdc` §3 |
+| Feature scope / acceptance | `features.md` (feature id) · `prd.md` (intent) |
+| CQRS, handlers, pipeline | Constitution II · `architecture.mdc` §4–5 · Tech §4 |
+| EF Core, schema, migrations | Constitution III · Tech §6 · `migration.mdc` |
+| HTTP, errors, auth, SignalR | Constitution IV · Tech §7 · `api-guidelines.mdc` |
+| Aspire / local run | Constitution V · Tech §8–10 · `aspire.mdc` |
+| Naming, file size, quality | Constitution VI |
+| Tests | Constitution VII · Tech §11 · `backend-testing.mdc` |
+| Frontend (web/) | `frontend.mdc`, `design-system.mdc` |
+
+## NON-NEGOTIABLE INVARIANTS
+
+Summarized here for quick scan; **Constitution is authoritative** if anything differs.
+
+1. **Clean Architecture** — Domain → Application → Infrastructure; Api is the composition root.
+2. **Domain is pure C#** — no EF Core, ASP.NET, MediatR, or Infrastructure in `EventHub.Domain`.
+3. **Aspire AppHost** is the local topology source of truth — no hand-authored `docker-compose.yml`.
+4. **`EventHub.ServiceDefaults` is mandatory** for Api.
+5. **PostgreSQL is authoritative**; Redis holds rebuildable cache only; MinIO for binary assets.
+6. **Domain model** follows [`docs/ddd.md`](docs/ddd.md) — modular monolith, RabbitMQ for cross-context integration events.
+
+## REPOSITORY LAYOUT
+
+```
+src/       AppHost, ServiceDefaults, Api, Application, Domain, Infrastructure, Contracts
+tests/     Domain.UnitTests, Api.IntegrationTests, Testing.Common  (see backend-testing.mdc)
+web/       React 19 + Vite (not in .slnx; Yarn; run via Aspire `web` Vite app)
+docs/      constitution, prd, features, ddd, technical, specs/
+.opencode/   rules/, skills/, commands/, hooks/, notes/, agent-memory/, agents/
+.graph/    index.json — path→test map for agent harness (extend to full graph)
+evals/     cases/, fixtures/, run.ps1 — objective eval pipeline (harness + graph + agent)
+```
+
+## PROCEDURAL SKILLS (when docs are not enough)
+
+Read `.opencode/skills/<name>/SKILL.md` only for these workflows:
+
+| Trigger | Skill |
+|---------|--------|
+| OpenAPI export / codegen / CI verify | `openapi-contract-sync` |
+| Live DB inspection (read-only SQL via MCP) | `postgres-mcp` |
+| Neo4j graph / GraphRAG queries via MCP | `neo4j-graphrag` |
+| Local env broken | `env-doctor` |
+| Frontend server state | `tanstack-query` |
+| shadcn / Tailwind UI | `shadcn`, `tailwind-patterns` |
+| Commits / PRs / GitHub | `create-pr`, `git-commit-writer`, `pr-description-writer`, `github-cli` |
+| Hooks blocked / verify gate / stop loop | `harness.mdc` (always on) |
+| Context compaction / progress notes | `context-memory.mdc` |
+| ReAct / Reflexion / subagent delegation | `reasoning-loop.mdc` |
+| How layers compose (worked example) | `agent-stack.mdc` |
+
+## SLASH COMMANDS (`.opencode/commands/`)
+
+| Command | When | Outcome | Then |
+|---------|------|---------|------|
+| `/spec` | New feature slice; need product spec | `docs/specs/<timestamp>-<name>.md` | `/plan` |
+| `/plan` | Spec exists; need engineering plan | `.opencode/plans/<same-filename>.md` (never commit) | `/build` |
+| `/build` | Plan exists; implement | Code + green tests/type; delete plan when done | PR / review |
+
+Read the matching command file before executing. `/plan` and `/build` delegate to project subagents below.
+
+## PROJECT SUBAGENTS (`.opencode/agents/<name>.md`)
+
+Invoke as OpenCode subtasks: `@<name>` or command `agent: <name>` with `subtask: true`. **Do not** substitute ad-hoc exploration for project subagents.
+
+| name | When | readonly | parallel OK |
+|------|------|----------|-------------|
+| `codebase-explorer` | Before edits — path:line scout; no dumps | yes | yes |
+| `plan-domain-researcher` | `/plan` — Domain aggregates, `INV-*`, events | yes | yes |
+| `plan-application-researcher` | `/plan` — CQRS commands/queries/handlers/ports | yes | yes |
+| `plan-infrastructure-researcher` | `/plan` — EF, Api, integration tests | yes | yes |
+| `plan-web-researcher` | `/plan` — web routes, TanStack Query, UI | yes | yes |
+| `graph-impact-analyst` | `/plan` or `/build` — blast radius (neo4j-graphrag MCP) | yes | yes |
+| `test-impact-analyzer` | git diff → affected tests + coverage gaps | yes | yes |
+| `build-test-writer` | `/build` bug path — red test before fix | no (tests only) | **no** |
+| `code-reviewer` | After `/build` — Reflexion with command output | yes | no |
+
+**Topology:** parallel only for readonly scouts; **parent agent** writes production code alone. `reasoning-loop.mdc` Layer 5.
+
+Worker memory: `.opencode/agent-memory/<name>.md` (durable codepaths; parent uses `.opencode/notes/progress.md`).
+
+## WHEN TO CONSULT WHICH RULE
+
+| Concern | Rule |
+|---|---|
+| Architecture, CQRS, DDD, layers | `architecture.mdc` |
+| .NET services (stack, DON'Ts) | `backend.mdc` |
+| Tests in `tests/**` | `backend-testing.mdc` |
+| React UI | `frontend.mdc` |
+| HTTP / API contracts | `api-guidelines.mdc` |
+| EF / PostgreSQL schema | `migration.mdc` |
+| AppHost / local run | `aspire.mdc` |
+| Implementation specs (durable) | `spec-artifacts.mdc` |
+| Agent hooks / verify gate | `harness.mdc` |
+| Session notes / compaction | `context-memory.mdc` |
+| ReAct / done criteria | `reasoning-loop.mdc` |
+| Five-layer walkthrough (example) | `agent-stack.mdc` |
+
+## OUT OF SCOPE (unless explicitly requested)
+
+Production CD, transactional outbox, multi-tenancy, horizontal scaling, enterprise venue features, multi-currency, paid secondary marketplace (see `prd.md` §6.2).

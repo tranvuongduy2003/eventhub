@@ -1,0 +1,37 @@
+---
+alwaysApply: true
+description: OpenCode harness plugin — preToolUse guards, afterFileEdit verify gate, stop-gate objective checks, preCompact backup. Consult when edits blocked or agent cannot stop.
+---
+
+# Agent harness (hooks)
+
+Deterministic enforcement via `.opencode/plugins/harness.ts` → PowerShell scripts in `.opencode/hooks/` — not prompt advice.
+
+## Hook map
+
+| OpenCode event | Script | Behavior |
+|----------------|--------|----------|
+| `tool.execute.before` | `pre-tool-guard.ps1` | Deny Write to `web/src/generated/`, `.env`, `.mcp.json`; deny dangerous Shell |
+| `tool.execute.before` (bash) | `before-shell-guard.ps1` | Deny `rm -rf`, `git push --force`, `git reset --hard`, `git config`, `npm install` |
+| `file.edited` | `post-edit-verify.ps1` | lint/format + affected test/build via `scripts/affected-tests.mjs`; sets verify gate on fail |
+| `session.idle` | `stop-gate.ps1` | Error with follow-up if verify gate active or git-diff checks fail (tsc + affected steps) |
+| `experimental.session.compacting` | `pre-compact-backup.ps1` | Backup transcript + `progress.md` to `.opencode/notes/backups/` |
+
+## Verify gate
+
+Failure writes `.opencode/hooks/state/verify-gate.json` → blocks `Shell`, `Task`, `Delete` until next green edit verification. `Write`/`Read`/`Grep` still allowed.
+
+Clear manually: delete `verify-gate.json`.
+
+## Affected checks
+
+| Changed path | Checks |
+|--------------|--------|
+| `web/**/*.{ts,tsx}` | eslint + tsc at stop if web touched |
+| `src/Domain/**` | dotnet format + filtered Domain.UnitTests |
+| `src/Application\|Infrastructure\|Api\|Contracts/**` | dotnet format + layer build |
+| Map source | `.graph/index.json` + `node scripts/affected-tests.mjs <path>` |
+
+## Regression
+
+After hook changes: `.\evals\run.ps1` (CI job `agent-evals`).

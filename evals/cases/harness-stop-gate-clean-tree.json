@@ -4,7 +4,7 @@
   "description": "stop hook allows done when verify gate clear and no failing git-diff checks",
   "run": {
     "type": "hook",
-    "script": ".cursor/hooks/stop-gate.ps1",
+    "script": ".opencode/hooks/stop-gate.ps1",
     "stdinFixture": "evals/fixtures/stop-completed.json"
   },
   "assert": {

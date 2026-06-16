@@ -4,19 +4,22 @@ Local-first event management and ticketing platform. .NET backend (Clean Archite
 
 ## About
 
-**EventHub** connects organizers and attendees for small events — transparent pricing, valid tickets, check-in, and basic results. Built as a pet project with Cursor-native agent configuration.
+**EventHub** connects organizers and attendees for small events — transparent pricing, valid tickets, check-in, and basic results. Built as a pet project with OpenCode-native agent configuration.
 
-### Cursor agent setup (`.cursor/`)
+### OpenCode agent setup (`.opencode/`)
 
 | Piece | Purpose |
 |-------|---------|
 | **Rules** (`rules/`) | Layer boundaries, CQRS, Aspire, API contracts, testing, frontend |
 | **Skills** (`skills/`) | OpenAPI sync, MCP (Postgres, Neo4j GraphRAG), env setup, git/PR, UI |
 | **Commands** (`commands/`) | `/spec` → `/plan` → `/build` |
+| **Plugins** (`plugins/`) | Harness guards + post-edit verification |
 
-Open the repo in [Cursor](https://cursor.com); agents read `core.mdc` and **`docs/constitution.md`** plus companion docs before changing code.
+Open the repo in [OpenCode](https://opencode.ai); agents read `AGENTS.md`, `core.mdc`, and **`docs/constitution.md`** plus companion docs before changing code.
 
-**Agent workflow:** `/spec` (spec in `docs/specs/` + one GitHub issue) → `/plan` (ephemeral plan in `.cursor/plans/`, not committed) → `/build` (implement, then delete plan).
+Project config: [`opencode.json`](opencode.json) at repo root.
+
+**Agent workflow:** `/spec` (spec in `docs/specs/` + one GitHub issue) → `/plan` (ephemeral plan in `.opencode/plans/`, not committed) → `/build` (implement, then delete plan).
 
 ### Stack highlights
 
@@ -87,7 +90,7 @@ Copy [`.mcp.json.example`](.mcp.json.example) to `.mcp.json` and set credentials
 | `postgres` | Read-only SQL against local `app` database |
 | `neo4j-graphrag` | Cypher, vector/fulltext search, GraphRAG |
 
-See `.cursor/skills/postgres-mcp/SKILL.md` and `.cursor/skills/neo4j-graphrag/SKILL.md`.
+See `.opencode/skills/postgres-mcp/SKILL.md` and `.opencode/skills/neo4j-graphrag/SKILL.md`.
 
 ## Docs
 
@@ -100,7 +103,7 @@ See `.cursor/skills/postgres-mcp/SKILL.md` and `.cursor/skills/neo4j-graphrag/SK
 | [`docs/technical.md`](docs/technical.md) | Architecture and infrastructure |
 | [`docs/specs/`](docs/specs/) | Product specs (committed) |
 
-Ephemeral plans live in `.cursor/plans/` (gitignored; deleted after `/build`).
+Ephemeral plans live in `.opencode/plans/` (gitignored; deleted after `/build`).
 
 ## API contract
 

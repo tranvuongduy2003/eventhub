@@ -4,7 +4,7 @@
   "description": "beforeShellExecution denies git push --force",
   "run": {
     "type": "hook",
-    "script": ".cursor/hooks/before-shell-guard.ps1",
+    "script": ".opencode/hooks/before-shell-guard.ps1",
     "stdinFixture": "evals/fixtures/shell-force-push.json"
   },
   "assert": {
