@@ -54,6 +54,7 @@ export function useSession() {
       userId: user.userId,
       displayName: user.displayName,
       email: user.email,
+      role: user.role,
     })
   }, [
     authStatus,

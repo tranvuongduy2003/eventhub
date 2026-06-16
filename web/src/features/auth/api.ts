@@ -9,6 +9,7 @@ export type LoginUserResponse = {
   userId: string
   displayName: string
   email: string
+  role: string
 }
 
 export type RegisterRequest = {

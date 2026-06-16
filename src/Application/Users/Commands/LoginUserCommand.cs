@@ -8,5 +8,6 @@ public sealed record LoginUserResult(
     Guid UserId,
     string DisplayName,
     string Email,
+    string Role,
     Guid SessionId,
     DateTimeOffset SessionExpiresAt);

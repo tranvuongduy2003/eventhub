@@ -49,6 +49,7 @@ export function RegisterForm() {
         userId: response.userId,
         displayName: response.displayName,
         email: response.email,
+        role: 'Organizer',
       })
 
       try {
@@ -64,6 +65,7 @@ export function RegisterForm() {
         userId: response.userId,
         displayName: response.displayName,
         email: response.email,
+        role: 'Organizer',
       } satisfies authApi.LoginUserResponse)
 
       navigate(paths.home, { replace: true })

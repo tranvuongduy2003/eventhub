@@ -18,6 +18,8 @@ components:
           type: string
         email:
           type: string
+        role:
+          type: string
         userId:
           format: uuid
           type: string
@@ -25,6 +27,7 @@ components:
         - userId
         - displayName
         - email
+        - role
       type: object
     ProblemDetails:
       properties:
@@ -136,12 +139,6 @@ paths:
       responses:
         "204":
           description: No Content
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-          description: Unauthorized
       tags:
         - Auth
   /api/auth/me:

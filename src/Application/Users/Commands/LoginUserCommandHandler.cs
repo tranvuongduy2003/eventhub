@@ -38,6 +38,7 @@ public sealed class LoginUserCommandHandler(
             user.Id.Value,
             user.DisplayName.Value,
             email.DisplayValue,
+            user.Role.ToString(),
             session.SessionId,
             session.ExpiresAt);
     }

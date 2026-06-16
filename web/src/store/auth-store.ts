@@ -6,6 +6,7 @@ type AuthSession = {
   userId: string
   displayName: string
   email: string
+  role: string
 }
 
 type AuthState = {
@@ -13,6 +14,7 @@ type AuthState = {
   userId: string | null
   displayName: string | null
   email: string | null
+  role: string | null
   setSession: (session: AuthSession) => void
   clearSession: () => void
   setStatus: (status: AuthStatus) => void
@@ -23,12 +25,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   userId: null,
   displayName: null,
   email: null,
+  role: null,
   setSession: (session) =>
     set({
       status: 'authenticated',
       userId: session.userId,
       displayName: session.displayName,
       email: session.email,
+      role: session.role,
     }),
   clearSession: () =>
     set({
@@ -36,6 +40,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       userId: null,
       displayName: null,
       email: null,
+      role: null,
     }),
   setStatus: (status) => set({ status }),
 }))

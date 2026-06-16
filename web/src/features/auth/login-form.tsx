@@ -71,6 +71,7 @@ export function LoginForm() {
         userId: response.userId,
         displayName: response.displayName,
         email: response.email,
+        role: response.role,
       })
 
       const from = (location.state as LoginLocationState | null)?.from

@@ -84,19 +84,17 @@ public sealed class LogoutUserTests(IntegrationTestFixture fixture)
     }
 
     [Fact]
-    public async Task LogoutUser_WithoutSession_Returns401()
+    public async Task LogoutUser_WithoutSession_Returns204_Idempotent()
     {
         using var client = fixture.Factory.CreateClient();
 
         using var logoutResponse = await client.PostAsync("/api/auth/logout", null);
 
-        logoutResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-        var responseBody = await logoutResponse.Content.ReadAsStringAsync();
-        responseBody.Should().NotContain("password", because: "must not leak sensitive fields");
+        logoutResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]
-    public async Task LogoutUser_SecondCallAfterLogout_Returns401()
+    public async Task LogoutUser_SecondCallAfterLogout_Returns204_Idempotent()
     {
         var suffix = Guid.NewGuid().ToString("N")[..8];
         var email = $"logout_twice_{suffix}@example.com";
@@ -120,7 +118,7 @@ public sealed class LogoutUserTests(IntegrationTestFixture fixture)
         firstLogoutResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         using var secondLogoutResponse = await client.PostAsync("/api/auth/logout", null);
-        secondLogoutResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        secondLogoutResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]

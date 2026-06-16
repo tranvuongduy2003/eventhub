@@ -28,6 +28,7 @@ public sealed class GetCurrentUserQueryHandler(
         return new CurrentUserResult(
             user.Id.Value,
             user.DisplayName.Value,
-            user.Email.DisplayValue);
+            user.Email.DisplayValue,
+            user.Role.ToString());
     }
 }

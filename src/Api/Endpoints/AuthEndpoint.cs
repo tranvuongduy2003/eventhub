@@ -30,9 +30,8 @@ internal sealed class AuthEndpoint : IEndpoint
         endpoints.MapPost("/api/auth/logout", LogoutUser)
             .WithName("LogoutUser")
             .WithTags("Auth")
-            .RequireAuthorization()
-            .Produces(StatusCodes.Status204NoContent)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .AllowAnonymous()
+            .Produces(StatusCodes.Status204NoContent);
 
         endpoints.MapGet("/api/auth/me", GetCurrentUser)
             .WithName("GetCurrentUser")
@@ -63,7 +62,7 @@ internal sealed class AuthEndpoint : IEndpoint
             sessionOptions.Value);
 
         return Results.Ok(
-            new LoginUserResponse(loginUser.UserId, loginUser.DisplayName, loginUser.Email));
+            new LoginUserResponse(loginUser.UserId, loginUser.DisplayName, loginUser.Email, loginUser.Role));
     }
 
     private static async Task<IResult> LogoutUser(
@@ -78,7 +77,8 @@ internal sealed class AuthEndpoint : IEndpoint
             || !Guid.TryParse(sessionIdValue, out var sessionId)
             || currentUserAccessor.UserId is null)
         {
-            return Results.Unauthorized();
+            SessionCookieWriter.Delete(httpContext, sessionOptions.Value);
+            return Results.NoContent();
         }
 
         var result = await sender.Send(
@@ -107,6 +107,7 @@ internal sealed class AuthEndpoint : IEndpoint
         return Results.Ok(new LoginUserResponse(
             currentUser.UserId,
             currentUser.DisplayName,
-            currentUser.Email));
+            currentUser.Email,
+            currentUser.Role));
     }
 }
