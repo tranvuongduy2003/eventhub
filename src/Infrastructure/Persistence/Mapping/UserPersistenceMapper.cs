@@ -13,6 +13,7 @@ internal static class UserPersistenceMapper
             Email = user.Email.Value,
             PasswordHash = user.PasswordHash.Value,
             Role = user.Role,
+            AvatarImageRef = user.AvatarImageRef?.Value,
             CreatedAt = user.CreatedAt,
             UpdatedAt = user.UpdatedAt,
             RowVersion = 1,
@@ -26,5 +27,6 @@ internal static class UserPersistenceMapper
             PasswordHash.Create(record.PasswordHash),
             record.Role,
             record.CreatedAt,
-            record.UpdatedAt);
+            record.UpdatedAt,
+            record.AvatarImageRef is not null ? AvatarImageRef.Create(record.AvatarImageRef) : null);
 }

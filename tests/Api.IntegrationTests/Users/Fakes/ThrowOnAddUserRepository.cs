@@ -11,6 +11,9 @@ internal sealed class ThrowOnAddUserRepository : IUserRepository
     public Task<bool> ExistsByEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default) =>
         Task.FromResult(false);
 
+    public Task<bool> ExistsByEmailExcludingUserIdAsync(string normalizedEmail, UserId excludeUserId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(false);
+
     public Task<User?> GetByEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default) =>
         Task.FromResult<User?>(null);
 

@@ -108,6 +108,7 @@ internal sealed class AuthEndpoint : IEndpoint
             currentUser.UserId,
             currentUser.DisplayName,
             currentUser.Email,
-            currentUser.Role));
+            currentUser.Role,
+            currentUser.AvatarUrl));
     }
 }

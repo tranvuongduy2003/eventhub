@@ -17,6 +17,8 @@ public sealed class User : AggregateRoot<UserId>
 
     public UserRole Role { get; private set; }
 
+    public AvatarImageRef? AvatarImageRef { get; private set; }
+
     public DateTimeOffset CreatedAt { get; private set; }
 
     public DateTimeOffset UpdatedAt { get; private set; }
@@ -44,6 +46,46 @@ public sealed class User : AggregateRoot<UserId>
         return user;
     }
 
+    public void UpdateProfile(DisplayName? displayName, EmailAddress? email)
+    {
+        if (displayName is not null)
+        {
+            DisplayName = displayName;
+        }
+
+        if (email is not null)
+        {
+            if (email.Value == Email.Value)
+            {
+                return;
+            }
+
+            Email = email;
+        }
+
+        UpdatedAt = DateTimeOffset.UtcNow;
+        Raise(new UserProfileUpdatedEvent(Id, displayName, email));
+    }
+
+    public void SetAvatar(AvatarImageRef avatarImageRef)
+    {
+        AvatarImageRef = avatarImageRef;
+        UpdatedAt = DateTimeOffset.UtcNow;
+        Raise(new UserProfileUpdatedEvent(Id, null, null));
+    }
+
+    public void RemoveAvatar()
+    {
+        if (AvatarImageRef is null)
+        {
+            return;
+        }
+
+        AvatarImageRef = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
+        Raise(new UserProfileUpdatedEvent(Id, null, null));
+    }
+
     public static User FromPersistence(
         UserId id,
         DisplayName displayName,
@@ -51,7 +93,8 @@ public sealed class User : AggregateRoot<UserId>
         PasswordHash passwordHash,
         UserRole role,
         DateTimeOffset createdAt,
-        DateTimeOffset updatedAt) =>
+        DateTimeOffset updatedAt,
+        AvatarImageRef? avatarImageRef = null) =>
         new()
         {
             Id = id,
@@ -59,6 +102,7 @@ public sealed class User : AggregateRoot<UserId>
             Email = email,
             PasswordHash = passwordHash,
             Role = role,
+            AvatarImageRef = avatarImageRef,
             CreatedAt = createdAt,
             UpdatedAt = updatedAt,
         };

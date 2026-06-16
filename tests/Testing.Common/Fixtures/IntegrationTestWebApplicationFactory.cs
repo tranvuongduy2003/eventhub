@@ -1,3 +1,4 @@
+using EventHub.Application.Abstractions.Storage;
 using EventHub.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -42,6 +43,7 @@ public sealed class IntegrationTestWebApplicationFactory : WebApplicationFactory
             services.RemoveAll<DbContextOptions<ApplicationDatabaseContext>>();
             services.RemoveAll<IDbContextFactory<ApplicationDatabaseContext>>();
             services.RemoveAll<IConnectionMultiplexer>();
+            services.RemoveAll<IObjectStorage>();
 
             void ConfigureApplicationDatabaseContext(DbContextOptionsBuilder contextOptions)
             {
@@ -60,6 +62,7 @@ public sealed class IntegrationTestWebApplicationFactory : WebApplicationFactory
 
             services.AddSingleton<IConnectionMultiplexer>(_ =>
                 ConnectionMultiplexer.Connect(_redisConnectionString));
+            services.AddSingleton<IObjectStorage, InMemoryObjectStorage>();
         });
 
         if (_configureTestServices is not null)

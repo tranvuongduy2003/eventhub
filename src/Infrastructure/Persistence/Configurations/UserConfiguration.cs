@@ -18,6 +18,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<UserRecord>
         builder.Property(user => user.Email).HasColumnName("email").HasMaxLength(254).IsRequired();
         builder.Property(user => user.PasswordHash).HasColumnName("password_hash").HasMaxLength(255).IsRequired();
         builder.Property(user => user.Role).HasColumnName("role").HasConversion<string>().HasMaxLength(32).IsRequired();
+        builder.Property(user => user.AvatarImageRef).HasColumnName("avatar_image_ref").HasMaxLength(512);
         builder.Property(user => user.CreatedAt).HasColumnName("created_at");
         builder.Property(user => user.UpdatedAt).HasColumnName("updated_at");
         builder.Property(user => user.RowVersion).AsRowVersion();

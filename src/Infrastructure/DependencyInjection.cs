@@ -77,7 +77,16 @@ public static class DependencyInjection
         services.AddScoped<ISessionStore, SessionStore>();
         services.AddScoped<IPasswordHasher, IdentityPasswordHasher>();
 
-        services.AddSingleton<IObjectStorage, NoOpObjectStorage>();
+        services.AddSingleton<IObjectStorage>(serviceProvider =>
+        {
+            var storageConnectionString = configuration.GetConnectionString("storage");
+            if (!string.IsNullOrWhiteSpace(storageConnectionString))
+            {
+                return new MinioObjectStorage(storageConnectionString);
+            }
+
+            return new NoOpObjectStorage();
+        });
         services.AddSingleton<IIntegrationEventPublisher, NoOpIntegrationEventPublisher>();
         services.AddSingleton<IEmailSender, NoOpEmailSender>();
         services.AddSingleton<IPaymentGateway, NoOpPaymentGateway>();

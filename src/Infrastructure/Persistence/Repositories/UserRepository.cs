@@ -13,6 +13,9 @@ internal sealed class UserRepository(ApplicationDatabaseContext databaseContext)
     public Task<bool> ExistsByEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default) =>
         databaseContext.Users.AsNoTracking().AnyAsync(user => user.Email == normalizedEmail, cancellationToken);
 
+    public Task<bool> ExistsByEmailExcludingUserIdAsync(string normalizedEmail, UserId excludeUserId, CancellationToken cancellationToken = default) =>
+        databaseContext.Users.AsNoTracking().AnyAsync(user => user.Email == normalizedEmail && user.Id != excludeUserId.Value, cancellationToken);
+
     public async Task<User?> GetByEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default)
     {
         var record = await databaseContext.Users

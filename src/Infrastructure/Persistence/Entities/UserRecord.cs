@@ -14,6 +14,8 @@ public sealed class UserRecord
 
     public UserRole Role { get; set; }
 
+    public string? AvatarImageRef { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
