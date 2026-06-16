@@ -1,13 +1,13 @@
 # BACKEND (.NET)
 
-Source: [`docs/constitution.md`](docs/constitution.md), [`docs/technical.md`](docs/technical.md). Consult `core.mdc` and **`architecture.mdc`** first. Tests → `backend-testing.mdc`.
+Source: [`docs/constitution.md`](docs/constitution.md), [`docs/technical.md`](docs/technical.md). Consult `core.md` and **`architecture.md`** first. Tests → `backend-testing.md`.
 
-Architecture, CQRS, DDD, and layer rules live in **`architecture.mdc`** — do not duplicate here.
+Architecture, CQRS, DDD, and layer rules live in **`architecture.md`** — do not duplicate here.
 
 ## Stack
 
 - **.NET 10**, nullable on, warnings as errors where project enables it
-- **MediatR** + **FluentValidation** — see `architecture.mdc` §4
+- **MediatR** + **FluentValidation** — see `architecture.md` §4
 - **EF Core** — Infrastructure only; read queries `AsNoTracking` by default (Tech §6)
 
 ## DON'TS

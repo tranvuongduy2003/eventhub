@@ -3,7 +3,7 @@ description: >-
   Slash /build — evaluator-optimizer. Execute .opencode/plans/ tasks: graph-impact-analyst per task,
   build-test-writer for bugs; parent alone writes production code; parallel readonly scouts
   (codebase-explorer, graph-impact-analyst, test-impact-analyzer); evaluator loop until green.
-  All five agent layers — see agent-stack.mdc walkthrough (e.g. add Phone to User).
+  All five agent layers — see agent-stack.md walkthrough (e.g. add Phone to User).
 ---
 # /build — Evaluator-optimizer (implement plan until checks green)
 
@@ -25,7 +25,7 @@ Execute the ephemeral plan using the **evaluator-optimizer** loop: generate → 
 
 ## Step 0: Read context
 
-Constitution · `ddd.md` · `technical.md` · **`architecture.mdc`** · spec from plan `related_spec` · `.opencode/notes/progress.md`.
+Constitution · `ddd.md` · `technical.md` · **`architecture.md`** · spec from plan `related_spec` · `.opencode/notes/progress.md`.
 
 ## Step 1: Parse input
 

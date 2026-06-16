@@ -1,5 +1,5 @@
 # PreCompact hook — backup transcript + structured notes before context compaction.
-# Observational only; cannot block compaction. See context-memory.mdc and .opencode/notes/
+# Observational only; cannot block compaction. See context-memory.md and .opencode/notes/
 
 $ErrorActionPreference = 'Stop'
 

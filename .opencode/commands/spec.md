@@ -15,7 +15,7 @@ Feature description after the command, plus optional `$ARGUMENTS` (e.g. `F-5.3`,
 
 ## ARTIFACT CONTRACT
 
-Follow [`.opencode/rules/spec-artifacts.mdc`](.opencode/rules/spec-artifacts.mdc).
+Follow [`.opencode/rules/spec-artifacts.md`](.opencode/rules/spec-artifacts.md).
 
 - **Directory:** `docs/specs/`
 - **Filename:** `<YYYYMMDDHHmmss>-<feature-kebab>.md`
@@ -30,7 +30,7 @@ When sources conflict, higher wins:
 3. [`docs/features.md`](docs/features.md) — `EP-*`, `F-*`, acceptance criteria
 4. [`docs/ddd.md`](docs/ddd.md) — aggregates, `INV-*`, events
 5. [`docs/technical.md`](docs/technical.md)
-6. [`.opencode/rules/core.mdc`](.opencode/rules/core.mdc)
+6. [`.opencode/rules/core.md`](.opencode/rules/core.md)
 
 ## STEP 0 — CLARIFY
 
@@ -94,7 +94,7 @@ Reference `ddd.md` (`INV-*`, lifecycles, events). No class or file names.
 
 ## 4. UI Behavior **or** API Contract
 
-Product-level only (screens, flows, endpoints at contract level). See `design-system.mdc` for UI patterns.
+Product-level only (screens, flows, endpoints at contract level). See `design-system.md` for UI patterns.
 
 ## 5. Data & Storage Impact
 

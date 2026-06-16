@@ -34,4 +34,4 @@ Last **20** backup folders are kept; older ones are pruned.
 ## Related
 
 - Worker-layer memory: `.opencode/agent-memory/<agent-name>.md` (one file per project subagent)
-- Agent rule: [`context-memory.mdc`](../rules/context-memory.mdc) · hooks: [`harness.mdc`](../rules/harness.mdc)
+- Agent rule: [`context-memory.md`](../rules/context-memory.md) · hooks: [`harness.md`](../rules/harness.md)

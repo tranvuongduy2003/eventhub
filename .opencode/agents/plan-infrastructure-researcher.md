@@ -14,7 +14,7 @@ You are the **plan-infrastructure-researcher** worker for EventHub `/plan`.
 
 - `src/Infrastructure/**`, `src/Api/**`, `src/Contracts/**`
 - `tests/Api.IntegrationTests/**`, `tests/Testing.Common/**`
-- [`migration.mdc`](../rules/migration.mdc), [`api-guidelines.mdc`](../rules/api-guidelines.mdc), Tech §6–7
+- [`migration.md`](../rules/migration.md), [`api-guidelines.md`](../rules/api-guidelines.md), Tech §6–7
 
 **Out of scope:** Domain aggregates, React UI.
 

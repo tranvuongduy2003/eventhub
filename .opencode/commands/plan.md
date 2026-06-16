@@ -21,7 +21,7 @@ Read in order before delegating:
 
 1. Spec (ACs, scope, edge cases)
 2. [`docs/constitution.md`](docs/constitution.md) · [`docs/ddd.md`](docs/ddd.md) · [`docs/technical.md`](docs/technical.md)
-3. [`architecture.mdc`](.opencode/rules/architecture.mdc) · applicable scoped rules
+3. [`architecture.md`](.opencode/rules/architecture.md) · applicable scoped rules
 4. `.opencode/notes/progress.md` if present
 
 Split ACs into **research workstreams** (skip empty streams):

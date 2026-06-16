@@ -1,12 +1,6 @@
----
-description: Clean Architecture, CQRS, DDD domain rules, and layer conventions for EventHub backend.
-globs: src/**/*.cs,tests/**/*.cs
-alwaysApply: false
----
-
 # ARCHITECTURE — Clean Architecture · CQRS · DDD
 
-Source: [`docs/constitution.md`](docs/constitution.md) I–II · [`docs/technical.md`](docs/technical.md) §1–6 · [`docs/ddd.md`](docs/ddd.md). Consult `core.mdc` first. HTTP → `api-guidelines.mdc` · EF migrations → `migration.mdc` · tests → `backend-testing.mdc`.
+Source: [`docs/constitution.md`](docs/constitution.md) I–II · [`docs/technical.md`](docs/technical.md) §1–6 · [`docs/ddd.md`](docs/ddd.md). Consult `core.md` first. HTTP → `api-guidelines.md` · EF migrations → `migration.md` · tests → `backend-testing.md`.
 
 This rule replaces procedural skills for layer boundaries, handlers, and domain modeling. **Do not load separate architecture/CQRS/domain skills** when this rule applies.
 
@@ -160,7 +154,7 @@ public sealed record GetCurrentUserQuery : IQuery<CurrentUserResult>;
 
 - Every command has a **`{Command}Validator`** in the same folder.
 - Validation runs in **`ValidationBehavior`** before the handler — failures never reach the handler.
-- Api JSON binding failures → `400`; FluentValidation / domain rejection → `422` (see `api-guidelines.mdc`).
+- Api JSON binding failures → `400`; FluentValidation / domain rejection → `422` (see `api-guidelines.md`).
 
 ### Pipeline order (fixed — do not reorder)
 
@@ -222,7 +216,7 @@ Use `Application/Common/Error.cs` — stable `code` strings consumed by Api as R
 - One primary table per aggregate root; FKs reflect ownership, not cross-aggregate object graphs.
 - UTC timestamps (`timestamptz`); declarative DB constraints where they reinforce invariants.
 - EF configurations live in **Infrastructure only**; Domain has no ORM attributes.
-- Migrations: append-only in `Infrastructure/Migrations/` — see `migration.mdc`.
+- Migrations: append-only in `Infrastructure/Migrations/` — see `migration.md`.
 
 ---
 
@@ -242,7 +236,7 @@ Use `Application/Common/Error.cs` — stable `code` strings consumed by Api as R
 - [ ] Endpoint maps to MediatR; response uses **Contracts** DTO
 - [ ] Commands that mutate state implement **`ICommand`** (unit of work)
 - [ ] Domain events collected and cleared; integration events idempotent
-- [ ] Tests: domain unit tests pure; integration tests at ports (see `backend-testing.mdc`)
+- [ ] Tests: domain unit tests pure; integration tests at ports (see `backend-testing.md`)
 
 ---
 

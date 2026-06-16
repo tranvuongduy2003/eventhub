@@ -12,7 +12,7 @@ You are the **plan-web-researcher** worker for EventHub `/plan`.
 
 ## Scope
 
-- `web/src/**` — [`frontend.mdc`](../rules/frontend.mdc), [`design-system.mdc`](../rules/design-system.mdc)
+- `web/src/**` — [`frontend.md`](../rules/frontend.md), [`design-system.md`](../rules/design-system.md)
 - OpenAPI client: `web/src/lib/`, generated types in `web/src/generated/` (read-only)
 
 **Out of scope:** C# backend (flag cross-layer needs for other workers).

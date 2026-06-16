@@ -1,8 +1,3 @@
----
-alwaysApply: false
-description: End-to-end example — how Context, Harness, Reasoning, Workflow, and Topology layers run together for a typical field change (e.g. add phone to User). Read when implementing non-trivial changes.
----
-
 # Five-layer walkthrough — add `Phone` to `User`
 
 Ad-hoc ask: *"Thêm field `phone` vào model `User`."*  
@@ -55,7 +50,7 @@ Orchestrator (**parent only**) implements after plan task lists concrete paths, 
 1. **ReAct:** reason → act → observe each step (no batch edits across layers without build signal).
 2. **Red test first** (behavior change): delegate `@build-test-writer` — e.g. API/register response includes `phone` or domain invariant test; confirm **red once**.
 3. **Single writer:** parent applies minimal diff — `User`, mapper, migration, OpenAPI, endpoint mapping.
-4. Agent **cannot** self-declare done — only green checks count (`reasoning-loop.mdc`).
+4. Agent **cannot** self-declare done — only green checks count (`reasoning-loop.md`).
 
 ---
 

@@ -1,6 +1,6 @@
 # .NET ASPIRE
 
-Source: [`docs/constitution.md`](docs/constitution.md) V, [`docs/technical.md`](docs/technical.md) §8–10. Consult `core.mdc` first.
+Source: [`docs/constitution.md`](docs/constitution.md) V, [`docs/technical.md`](docs/technical.md) §8–10. Consult `core.md` first.
 
 **No aspire skill folder** — topology and workflow are in Constitution V and Tech §8–10.
 
@@ -34,7 +34,7 @@ Source: [`docs/constitution.md`](docs/constitution.md) V, [`docs/technical.md`](
 
 ## ServiceDefaults
 
-Api calls ServiceDefaults extensions once — logging, health checks, service discovery, **OpenTelemetry OTLP** (Seq via `OTEL_EXPORTER_OTLP_ENDPOINT` injected by AppHost). **No `Aspire.*` client packages** in service projects — see `backend.mdc`.
+Api calls ServiceDefaults extensions once — logging, health checks, service discovery, **OpenTelemetry OTLP** (Seq via `OTEL_EXPORTER_OTLP_ENDPOINT` injected by AppHost). **No `Aspire.*` client packages** in service projects — see `backend.md`.
 
 ## Client libraries (service projects)
 
@@ -63,7 +63,7 @@ EF migrations apply on startup in Development.
 
 ## DON'TS
 
-- ❌ No **Aspire client/component packages** in `Api`, `Application`, `Infrastructure`, or `ServiceDefaults` — AppHost provisions containers; services use native SDKs (`backend.mdc`)
+- ❌ No **Aspire client/component packages** in `Api`, `Application`, `Infrastructure`, or `ServiceDefaults` — AppHost provisions containers; services use native SDKs (`backend.md`)
 - ❌ No documenting "run Api alone" as the primary dev path for full-stack work
 - ❌ No secrets in AppHost source — user secrets / env
 - ❌ No production CD assumptions — local template only

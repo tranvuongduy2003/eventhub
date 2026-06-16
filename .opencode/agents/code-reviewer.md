@@ -19,7 +19,7 @@ Before writing the review, run (or read recent output of) these checks on the ch
 | `src/**/*.cs` | `dotnet build` on affected projects; `dotnet test` with filter for the feature folder |
 | `web/**` | `yarn --cwd web build` (includes `tsc -b`); `yarn --cwd web lint` on changed files |
 | `contracts/openapi/**` or API | `yarn --cwd web api:verify` |
-| Architecture | Read `docs/constitution.md`, `architecture.mdc`, `ddd.md` — cite violations with file paths |
+| Architecture | Read `docs/constitution.md`, `architecture.md`, `ddd.md` — cite violations with file paths |
 
 **Do not** mark something "looks fine" if a command above failed. Quote exit codes and error snippets.
 

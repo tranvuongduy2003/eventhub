@@ -4,10 +4,10 @@
   "default_agent": "build",
   "instructions": [
     "AGENTS.md",
-    ".opencode/rules/*.mdc"
-  ],
-  "plugin": [
-    "opencode-cursor-rules@1.0.1"
+    ".opencode/rules/core.md",
+    ".opencode/rules/harness.md",
+    ".opencode/rules/reasoning-loop.md",
+    ".opencode/rules/context-memory.md"
   ],
   "provider": {
     "mimo": {

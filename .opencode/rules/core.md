@@ -1,8 +1,3 @@
----
-alwaysApply: true
-description: EventHub conventions, source-of-truth pointers, repo layout, and non-negotiable invariants.
----
-
 # EVENTHUB — CORE
 
 **EventHub** — Clean Architecture + CQRS + DDD event management and ticketing. Local-only via .NET Aspire.
@@ -23,20 +18,39 @@ description: EventHub conventions, source-of-truth pointers, repo layout, and no
 
 When a **rule**, **skill**, or **doc** disagree, precedence is: **Constitution → prd / features / ddd / technical → scoped rule → skill**. Fix the lower layer in a follow-up PR.
 
+## OpenCode rules (native)
+
+**Always loaded** (via `opencode.json` → `instructions`): `AGENTS.md`, this file, `harness.md`, `reasoning-loop.md`, `context-memory.md`.
+
+**Read on demand** — use the **read** tool for the matching file under `.opencode/rules/` when the task matches (do not preload every scoped rule):
+
+| File | When |
+|------|------|
+| `.opencode/rules/architecture.md` | Layers, CQRS, DDD, backend structure |
+| `.opencode/rules/backend.md` | .NET stack conventions |
+| `.opencode/rules/backend-testing.md` | Test layout and patterns |
+| `.opencode/rules/api-guidelines.md` | HTTP, errors, OpenAPI |
+| `.opencode/rules/migration.md` | EF Core, schema changes |
+| `.opencode/rules/aspire.md` | AppHost, local run |
+| `.opencode/rules/frontend.md` | React, TanStack Query |
+| `.opencode/rules/design-system.md` | UI tokens, shadcn |
+| `.opencode/rules/spec-artifacts.md` | `/spec`, `/plan`, `/build` artifacts |
+| `.opencode/rules/agent-stack.md` | Five-layer walkthrough example |
+
 ## DOC ROUTING (prefer over skills)
 
 | Work | Read first |
 |------|------------|
-| Architecture, layers, dependencies | Constitution I · `architecture.mdc` · Tech §1–3 |
-| Domain / aggregates / BC map | Constitution I.2–3 · `ddd.md` · `architecture.mdc` §3 |
+| Architecture, layers, dependencies | Constitution I · `.opencode/rules/architecture.md` · Tech §1–3 |
+| Domain / aggregates / BC map | Constitution I.2–3 · `ddd.md` · `.opencode/rules/architecture.md` §3 |
 | Feature scope / acceptance | `features.md` (feature id) · `prd.md` (intent) |
-| CQRS, handlers, pipeline | Constitution II · `architecture.mdc` §4–5 · Tech §4 |
-| EF Core, schema, migrations | Constitution III · Tech §6 · `migration.mdc` |
-| HTTP, errors, auth, SignalR | Constitution IV · Tech §7 · `api-guidelines.mdc` |
-| Aspire / local run | Constitution V · Tech §8–10 · `aspire.mdc` |
+| CQRS, handlers, pipeline | Constitution II · `.opencode/rules/architecture.md` §4–5 · Tech §4 |
+| EF Core, schema, migrations | Constitution III · Tech §6 · `.opencode/rules/migration.md` |
+| HTTP, errors, auth, SignalR | Constitution IV · Tech §7 · `.opencode/rules/api-guidelines.md` |
+| Aspire / local run | Constitution V · Tech §8–10 · `.opencode/rules/aspire.md` |
 | Naming, file size, quality | Constitution VI |
-| Tests | Constitution VII · Tech §11 · `backend-testing.mdc` |
-| Frontend (web/) | `frontend.mdc`, `design-system.mdc` |
+| Tests | Constitution VII · Tech §11 · `.opencode/rules/backend-testing.md` |
+| Frontend (web/) | `.opencode/rules/frontend.md`, `.opencode/rules/design-system.md` |
 
 ## NON-NEGOTIABLE INVARIANTS
 
@@ -53,7 +67,7 @@ Summarized here for quick scan; **Constitution is authoritative** if anything di
 
 ```
 src/       AppHost, ServiceDefaults, Api, Application, Domain, Infrastructure, Contracts
-tests/     Domain.UnitTests, Api.IntegrationTests, Testing.Common  (see backend-testing.mdc)
+tests/     Domain.UnitTests, Api.IntegrationTests, Testing.Common  (see backend-testing.md)
 web/       React 19 + Vite (not in .slnx; Yarn; run via Aspire `web` Vite app)
 docs/      constitution, prd, features, ddd, technical, specs/
 .opencode/   rules/, skills/, commands/, hooks/, notes/, agent-memory/, agents/
@@ -74,10 +88,10 @@ Read `.opencode/skills/<name>/SKILL.md` only for these workflows:
 | Frontend server state | `tanstack-query` |
 | shadcn / Tailwind UI | `shadcn`, `tailwind-patterns` |
 | Commits / PRs / GitHub | `create-pr`, `git-commit-writer`, `pr-description-writer`, `github-cli` |
-| Hooks blocked / verify gate / stop loop | `harness.mdc` (always on) |
-| Context compaction / progress notes | `context-memory.mdc` |
-| ReAct / Reflexion / subagent delegation | `reasoning-loop.mdc` |
-| How layers compose (worked example) | `agent-stack.mdc` |
+| Hooks blocked / verify gate / stop loop | `harness.md` (always on) |
+| Context compaction / progress notes | `context-memory.md` |
+| ReAct / Reflexion / subagent delegation | `reasoning-loop.md` |
+| How layers compose (worked example) | `agent-stack.md` |
 
 ## SLASH COMMANDS (`.opencode/commands/`)
 
@@ -107,7 +121,7 @@ Invoke project subagents via **`@<agent>`** in chat or the **`task`** tool from 
 | `build-test-writer` | `/build` bug path — red test before fix | allow (tests only) | **no** |
 | `code-reviewer` | After `/build` — Reflexion with command output | deny | no |
 
-**Topology:** parallel only for readonly scouts; **parent agent** writes production code alone. `reasoning-loop.mdc` Layer 5.
+**Topology:** parallel only for readonly scouts; **parent agent** writes production code alone. `reasoning-loop.md` Layer 5.
 
 Worker memory: `.opencode/agent-memory/<name>.md` (durable codepaths; parent uses `.opencode/notes/progress.md`).
 
@@ -115,18 +129,18 @@ Worker memory: `.opencode/agent-memory/<name>.md` (durable codepaths; parent use
 
 | Concern | Rule |
 |---|---|
-| Architecture, CQRS, DDD, layers | `architecture.mdc` |
-| .NET services (stack, DON'Ts) | `backend.mdc` |
-| Tests in `tests/**` | `backend-testing.mdc` |
-| React UI | `frontend.mdc` |
-| HTTP / API contracts | `api-guidelines.mdc` |
-| EF / PostgreSQL schema | `migration.mdc` |
-| AppHost / local run | `aspire.mdc` |
-| Implementation specs (durable) | `spec-artifacts.mdc` |
-| Agent hooks / verify gate | `harness.mdc` |
-| Session notes / compaction | `context-memory.mdc` |
-| ReAct / done criteria | `reasoning-loop.mdc` |
-| Five-layer walkthrough (example) | `agent-stack.mdc` |
+| Architecture, CQRS, DDD, layers | `architecture.md` |
+| .NET services (stack, DON'Ts) | `backend.md` |
+| Tests in `tests/**` | `backend-testing.md` |
+| React UI | `frontend.md` |
+| HTTP / API contracts | `api-guidelines.md` |
+| EF / PostgreSQL schema | `migration.md` |
+| AppHost / local run | `aspire.md` |
+| Implementation specs (durable) | `spec-artifacts.md` |
+| Agent hooks / verify gate | `harness.md` |
+| Session notes / compaction | `context-memory.md` |
+| ReAct / done criteria | `reasoning-loop.md` |
+| Five-layer walkthrough (example) | `agent-stack.md` |
 
 ## OUT OF SCOPE (unless explicitly requested)
 

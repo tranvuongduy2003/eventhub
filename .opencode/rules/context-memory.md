@@ -1,8 +1,3 @@
----
-alwaysApply: true
-description: Context-rot mitigation — read/update .opencode/notes/progress.md; subagent worker memory at .opencode/agent-memory/<agent-name>.md; PreCompact backups in .opencode/notes/backups/.
----
-
 # Context memory (compaction-safe)
 
 Long tasks lose detail when OpenCode **compacts** context. Use durable files instead of relying on chat history.
@@ -24,7 +19,7 @@ Do not dump tool output — bullets only.
 
 Before launching a subagent, add one line to `progress.md` **Status** (what the worker should do).
 
-Project subagents (`core.mdc` table — e.g. `plan-domain-researcher`, `graph-impact-analyst`):
+Project subagents (`core.md` table — e.g. `plan-domain-researcher`, `graph-impact-analyst`):
 
 1. Read `.opencode/agent-memory/<agent-name>.md` at start if present.
 2. After non-trivial work, append **durable** codepaths/patterns only (under ~150 lines; no secrets).
@@ -35,4 +30,4 @@ Parent owns `progress.md`; each worker owns `agent-memory/<agent-name>.md`.
 
 ## After compaction
 
-Re-read `progress.md` and latest `.opencode/notes/backups/<timestamp>/` (transcript + notes from `preCompact` hook in `harness.mdc`).
+Re-read `progress.md` and latest `.opencode/notes/backups/<timestamp>/` (transcript + notes from `preCompact` hook in `harness.md`).

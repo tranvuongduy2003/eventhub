@@ -1,12 +1,6 @@
----
-description: React 19 + TypeScript frontend — structure, state, SignalR, API client.
-globs: web/**/*.ts,web/**/*.tsx,web/**/*.css,web/**/package.json,web/**/vite.config.*
-alwaysApply: false
----
-
 # FRONTEND (web/)
 
-Source: [`docs/features.md`](docs/features.md), [`docs/prd.md`](docs/prd.md) (QG-4 mobile), [`docs/technical.md`](docs/technical.md) §7. See `design-system.mdc`, `api-guidelines.mdc`. Consult `core.mdc` first.
+Source: [`docs/features.md`](docs/features.md), [`docs/prd.md`](docs/prd.md) (QG-4 mobile), [`docs/technical.md`](docs/technical.md) §7. See `design-system.md`, `api-guidelines.md`. Consult `core.md` first.
 
 ## Skills (read first)
 

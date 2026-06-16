@@ -25,7 +25,7 @@ Add or extend a test that **fails before the fix** and passes after — objectiv
 - **Tests only** — edit files under `tests/` only unless parent explicitly allows a test helper in `src/`.
 - **One red run** — `dotnet test` with filter; confirm fail once; report output to parent.
 - **Do not** fix production code — parent **build** agent owns `src/` and `web/`.
-- Naming: `Method_Scenario_Expected` (see `backend-testing.mdc`).
+- Naming: `Method_Scenario_Expected` (see `backend-testing.md`).
 
 ## Output to parent
 

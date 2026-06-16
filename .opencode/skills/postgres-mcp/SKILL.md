@@ -57,9 +57,9 @@ If MCP connection fails, compare the URL to the Aspire dashboard connection stri
 |---|---|
 | Inspect live rows, counts, joins, explain plans | **This skill** → MCP `query` |
 | Table/column meaning, invariants, indexes | [`docs/technical.md`](../../../docs/technical.md) §6 and [`docs/ddd.md`](../../../docs/ddd.md) first, then MCP to confirm |
-| Add/change schema, EF migrations | Constitution III · Tech §6 · `migration.mdc` — **not** MCP (no writes) |
-| AppHost / container not up | `aspire.mdc`, `env-doctor` |
-| Integration tests | Constitution VII · Tech §10 · `backend-testing.mdc` |
+| Add/change schema, EF migrations | Constitution III · Tech §6 · `migration.md` — **not** MCP (no writes) |
+| AppHost / container not up | `aspire.md`, `env-doctor` |
+| Integration tests | Constitution VII · Tech §10 · `backend-testing.md` |
 
 ## MCP capabilities
 

@@ -1,8 +1,3 @@
----
-alwaysApply: true
-description: OpenCode harness plugin — tool guards, file.edited verify gate, session.idle stop-gate, compaction backup. Consult when edits blocked or build agent cannot finish.
----
-
 # Agent harness (hooks)
 
 Deterministic enforcement via `.opencode/plugins/harness.ts` → PowerShell scripts in `.opencode/hooks/` — not prompt advice.

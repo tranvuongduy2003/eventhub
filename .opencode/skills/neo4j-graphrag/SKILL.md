@@ -105,5 +105,5 @@ Source documents: [`docs/features.md`](../../../docs/features.md), [`docs/ddd.md
 ## References
 
 - Upstream: [neo4j-field/mcp-neo4j-graphrag](https://github.com/neo4j-field/mcp-neo4j-graphrag)
-- Aspire MCP: `aspire.mdc`
+- Aspire MCP: `aspire.md`
 - Postgres MCP: `postgres-mcp` skill

@@ -1,6 +1,6 @@
 # BACKEND TESTING
 
-Source: [`docs/constitution.md`](docs/constitution.md) VII, [`docs/technical.md`](docs/technical.md) §11. Consult `core.mdc` and `backend.mdc` first.
+Source: [`docs/constitution.md`](docs/constitution.md) VII, [`docs/technical.md`](docs/technical.md) §11. Consult `core.md` and `backend.md` first.
 
 **No separate testing skill** — follow Constitution VII and mirror patterns in `tests/`.
 

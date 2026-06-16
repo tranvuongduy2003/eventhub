@@ -5,7 +5,7 @@
 ## Start here
 
 1. Read [`docs/constitution.md`](docs/constitution.md) — non-negotiable invariants.
-2. Read [`.opencode/rules/core.mdc`](.opencode/rules/core.mdc) — doc routing, repo layout, slash commands, subagents.
+2. Read [`.opencode/rules/core.md`](.opencode/rules/core.md) — doc routing, repo layout, slash commands, subagents.
 3. Read [`.opencode/notes/progress.md`](.opencode/notes/progress.md) if present — current goal, decisions, next steps.
 
 ## Workflow
@@ -18,9 +18,18 @@
 
 Command definitions: [`.opencode/commands/`](.opencode/commands/).
 
+## Rules
+
+Native OpenCode [custom instructions](https://opencode.ai/docs/rules/) — no Cursor plugins.
+
+| Load | Files |
+|------|-------|
+| Always (via `opencode.json` `instructions`) | `AGENTS.md`, `core.md`, `harness.md`, `reasoning-loop.md`, `context-memory.md` |
+| On demand (**read** tool) | Other files in [`.opencode/rules/`](.opencode/rules/) — see **OpenCode rules** table in `core.md` |
+
 ## Harness
 
-Deterministic guards and verification run via [`.opencode/plugins/harness.ts`](.opencode/plugins/harness.ts) → PowerShell scripts in [`.opencode/hooks/`](.opencode/hooks/). See [`.opencode/rules/harness.mdc`](.opencode/rules/harness.mdc).
+Deterministic guards and verification run via [`.opencode/plugins/harness.ts`](.opencode/plugins/harness.ts) → PowerShell scripts in [`.opencode/hooks/`](.opencode/hooks/). See [`.opencode/rules/harness.md`](.opencode/rules/harness.md).
 
 ## Subagents
 

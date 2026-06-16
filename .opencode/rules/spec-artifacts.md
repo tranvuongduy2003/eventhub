@@ -1,11 +1,6 @@
----
-alwaysApply: false
-description: Rules for durable specs and ephemeral local plans.
----
-
 # SPEC & PLAN ARTIFACTS
 
-Consult `core.mdc` first.
+Consult `core.md` first.
 
 **Workflow:** `/spec` → `docs/specs/` (+ one GitHub issue) · `/plan` → `.opencode/plans/` (local, gitignored) · `/build` → execute plan · delete plan when done.
 

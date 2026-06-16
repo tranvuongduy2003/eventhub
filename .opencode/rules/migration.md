@@ -1,8 +1,8 @@
 # MIGRATIONS & DATA
 
-Source: [`docs/constitution.md`](docs/constitution.md) III, [`docs/technical.md`](docs/technical.md) §6, [`docs/ddd.md`](docs/ddd.md). Consult `core.mdc` first.
+Source: [`docs/constitution.md`](docs/constitution.md) III, [`docs/technical.md`](docs/technical.md) §6, [`docs/ddd.md`](docs/ddd.md). Consult `core.md` first.
 
-**Do not load EF or database-performance skills** — schema rules live in Constitution III, Tech §6, and `architecture.mdc` §7.
+**Do not load EF or database-performance skills** — schema rules live in Constitution III, Tech §6, and `architecture.md` §7.
 
 - `postgres-mcp` — read-only MCP queries against running Postgres (procedure only)
 

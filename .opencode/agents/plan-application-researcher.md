@@ -13,7 +13,7 @@ You are the **plan-application-researcher** worker for EventHub `/plan`.
 ## Scope
 
 - `src/Application/**`
-- CQRS pipeline — [`architecture.mdc`](../rules/architecture.mdc) §4–5, [`docs/technical.md` §4](../../docs/technical.md)
+- CQRS pipeline — [`architecture.md`](../rules/architecture.md) §4–5, [`docs/technical.md` §4](../../docs/technical.md)
 - Application **ports** (interfaces Infrastructure implements)
 
 **Out of scope:** EF mappings, controllers, React.

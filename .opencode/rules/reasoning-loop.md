@@ -1,8 +1,3 @@
----
-alwaysApply: true
-description: ReAct loop; Layer 5 topology — parallel readonly subagents only, single parent writer for code; Reflexion via harness + code-reviewer.
----
-
 # Reasoning loop (Layer 3)
 
 ## ReAct (default for every task)
@@ -29,7 +24,7 @@ If the agent tries to finish while checks fail, the harness plugin throws on `se
 
 After substantial implementation, invoke **`@code-reviewer`** or delegate via the **task** tool.
 
-For `/plan`, launch parallel **readonly** workers only — see `core.mdc` subagent table.
+For `/plan`, launch parallel **readonly** workers only — see `core.md` subagent table.
 
 ## Orchestration topology (Layer 5)
 
@@ -54,4 +49,4 @@ Use project subagents in `.opencode/agents/` — prefer `@codebase-explorer` or 
 
 - `/build` completion: `dotnet test`, `yarn --cwd web lint`, update `progress.md` **Next** checkboxes.
 - Before PR: `.\evals\run.ps1` when hooks or graph changed.
-- Worked example (all layers): `agent-stack.mdc` — add `Phone` to `User`.
+- Worked example (all layers): `agent-stack.md` — add `Phone` to `User`.

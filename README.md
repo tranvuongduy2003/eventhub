@@ -15,7 +15,7 @@ Local-first event management and ticketing platform. .NET backend (Clean Archite
 | **Commands** (`commands/`) | `/spec` → `/plan` → `/build` |
 | **Plugins** (`plugins/`) | Harness guards + post-edit verification |
 
-Open the repo in [OpenCode](https://opencode.ai); agents read `AGENTS.md`, `core.mdc`, and **`docs/constitution.md`** plus companion docs before changing code.
+Open the repo in [OpenCode](https://opencode.ai); agents load `AGENTS.md` and core rules via `opencode.json`, then read scoped rules and **`docs/constitution.md`** on demand.
 
 Project config: [`opencode.json`](opencode.json) at repo root.
 

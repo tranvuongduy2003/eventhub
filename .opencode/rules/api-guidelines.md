@@ -1,6 +1,6 @@
 # API GUIDELINES
 
-Source: [`docs/constitution.md`](docs/constitution.md) IV, [`docs/technical.md`](docs/technical.md) §7. Consult `core.mdc`, `backend.mdc`.
+Source: [`docs/constitution.md`](docs/constitution.md) IV, [`docs/technical.md`](docs/technical.md) §7. Consult `core.md`, `backend.md`.
 
 **OpenAPI workflow:** `openapi-contract-sync` skill (export/codegen commands not in TECHNICAL).
 

@@ -1,12 +1,6 @@
----
-description: EventHub UI — Tailwind v4, shadcn/ui, mobile-first event and ticketing flows.
-globs: web/**/*.tsx,web/**/*.css,web/**/components/**,web/**/styles/**
-alwaysApply: false
----
-
 # DESIGN SYSTEM
 
-Apply under `web/`. Consult `core.mdc`, `frontend.mdc`, [`docs/prd.md`](docs/prd.md) QG-4 first.
+Apply under `web/`. Consult `core.md`, `frontend.md`, [`docs/prd.md`](docs/prd.md) QG-4 first.
 
 ## Skills (read first)
 

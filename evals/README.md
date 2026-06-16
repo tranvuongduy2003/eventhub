@@ -70,4 +70,4 @@ Manual **agent** cases (`mode: manual`) define prompts + post-conditions for Ope
 | **graph** | `affected-tests.mjs` + `.graph/index.json` mapping |
 | **agent** | End-to-end agent behavior (manual or future SDK runner) |
 
-See also: [`harness.mdc`](../rules/harness.mdc) · [`core.mdc`](../rules/core.mdc)
+See also: [`.opencode/rules/harness.md`](../.opencode/rules/harness.md) · [`.opencode/rules/core.md`](../.opencode/rules/core.md)
