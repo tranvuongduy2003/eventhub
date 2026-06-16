@@ -38,4 +38,4 @@ Fails if the API build produces a different contract than the committed YAML.
 | JSON → YAML | `scripts/openapi/sync-contract.mjs` (uses `yaml` from `web`) |
 | YAML → TypeScript | [`openapi-typescript`](https://github.com/drwpow/openapi-typescript) |
 
-Agent workflow: `.cursor/skills/openapi-contract-sync/SKILL.md`.
+Agent workflow: `.claude/skills/openapi-contract-sync/SKILL.md`.

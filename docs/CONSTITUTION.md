@@ -12,8 +12,8 @@ This document defines the **non-negotiable invariants** of the repository. Every
 
 When guidance conflicts:
 
-1. **This constitution** wins over all other documents and Cursor rules.
-2. **Product and technical docs** (`prd.md`, `features.md`, `ddd.md`, `technical.md`) win over scoped Cursor rules.
+1. **This constitution** wins over all other documents and Claude Code rules.
+2. **Product and technical docs** (`prd.md`, `features.md`, `ddd.md`, `technical.md`) win over scoped Claude Code rules.
 3. **Resolved product decisions** in [`prd.md`](prd.md) (`DEC-*`) win over informal notes or session artifacts.
 
 Fix contradictions in lower-level docs or rules — do not weaken these principles without an explicit constitution amendment.
@@ -200,12 +200,12 @@ tests/     Domain.UnitTests, Api.IntegrationTests, Testing.Common
 web/       React 19 + Vite (outside .slnx; Yarn; run via Aspire web resource)
 docs/      constitution, prd, features, ddd, technical, specs/
 contracts/ OpenAPI contract and codegen scripts
-.cursor/   Rules, skills, commands; ephemeral plans in `.cursor/plans/` (gitignored)
+.claude/   Rules, skills, commands; ephemeral plans in `.claude/plans/` (gitignored)
 ```
 
 Do not collapse layers into monolithic projects or move orchestration outside AppHost.
 
-**Durable workflow artifact:** specs in `docs/specs/` (`YYYYMMDDHHmmss-<name>.md`). **Ephemeral plans** in `.cursor/plans/` — same basename as spec; never committed; deleted after `/build`.
+**Durable workflow artifact:** specs in `docs/specs/` (`YYYYMMDDHHmmss-<name>.md`). **Ephemeral plans** in `.claude/plans/` — same basename as spec; never committed; deleted after `/build`.
 
 ---
 
@@ -229,7 +229,7 @@ Adding in-scope capabilities (e.g. a new bounded context) requires alignment wit
 To change an invariant in this document:
 
 1. Propose the change with rationale (new `DEC-*` in `prd.md` or a dedicated spec in `docs/specs/`).
-2. Update affected docs (`prd.md`, `features.md`, `ddd.md`, `technical.md`, Cursor rules) to match.
+2. Update affected docs (`prd.md`, `features.md`, `ddd.md`, `technical.md`, Claude Code rules) to match.
 3. Amend this constitution in the same change set.
 
 Silent drift — code or rules that contradict this document without amendment — is a defect.

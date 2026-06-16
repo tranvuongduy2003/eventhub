@@ -65,20 +65,20 @@ pnpm-debug.log*
 !.mcp.json.example
 
 # Ephemeral implementation plans (/plan → /build; never commit)
-.cursor/plans/
+.claude/plans/
 
 # Agent session scratchpad + compaction backups (templates/README committed)
-.cursor/notes/progress.md
-.cursor/notes/backups/
+.claude/notes/progress.md
+.claude/notes/backups/
 
 # Harness runtime state (verify gate, etc.)
-.cursor/hooks/state/
+.claude/hooks/state/
 
 # Agent eval run output (cases/fixtures are committed)
 evals/results/
 
 # Subagent worker memory (local)
-.cursor/agent-memory/*.md
+.claude/agent-memory/*.md
 
 # ASP.NET / .NET local configuration
 appsettings.*.local.json
@@ -146,3 +146,8 @@ logs/
 *.tmp
 *.temp
 .cache/
+
+# Claude Code ephemeral plans
+.claude/plans/
+.claude/hooks/state/
+

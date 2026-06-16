@@ -1,0 +1,69 @@
+﻿---
+description: "REST API surface conventions for EventHub.Api — endpoint naming, RFC 7807 error format, HTTP status mapping, cookie auth, SignalR realtime, and OpenAPI contract workflow. Use when adding or modifying API endpoints, error handling, or OpenAPI specs."
+paths:
+  - "src/Api/**"
+  - "src/Contracts/**"
+  - "contracts/openapi/**"
+---
+
+# API GUIDELINES
+
+Source: [`docs/constitution.md`](../../docs/constitution.md) IV, [`docs/technical.md`](../../docs/technical.md) §7. Consult `CLAUDE.md`, `backend.md`.
+
+**OpenAPI workflow:** `openapi-contract-sync` skill (export/codegen commands not in TECHNICAL).
+
+## Scope
+
+`EventHub.Api` — thin HTTP. **MediatR only** in handlers; map to `EventHub.Contracts` DTOs — never serialize domain entities.
+
+## REST surface
+
+Endpoints align with [`docs/features.md`](../../docs/features.md) epics. Auth sample (EP-1):
+
+| Area | Method / path | Notes |
+|------|---------------|-------|
+| Auth | `POST /api/users` | Register organizer |
+| Auth | `POST /api/auth/login` | Session cookie |
+| Auth | `POST /api/auth/logout` | End session |
+| Auth | `GET /api/auth/me` | Current user |
+| Health | `GET /health` | Aspire defaults |
+
+Add routes per feature spec; export OpenAPI after changes.
+
+## Success response
+
+Return the resource DTO directly (no custom `{ data, meta }` envelope).
+
+## Errors — RFC 7807
+
+- `code` — stable machine identifier
+- Validation failures → field extensions in `errors`
+
+## Status mapping
+
+| Status | Use |
+|--------|-----|
+| `200` | Read success |
+| `201` | Created |
+| `204` | Logout / no body |
+| `400` | Malformed JSON / binding failure |
+| `401` | No session |
+| `404` | Resource not found |
+| `409` | Optimistic concurrency conflict |
+| `422` | Domain / validation rejection |
+| `500` | Unhandled — generic client message |
+
+## Auth
+
+- Cookie session; Redis cache, PostgreSQL authoritative for sessions
+- Guest checkout routes are public where specified in `features.md` (F-5.2)
+- Ownership enforced in **Application** handlers (Constitution II.7)
+
+## Realtime
+
+SignalR hubs for EP-11 (live sales, check-in). Same session auth as REST.
+
+## DON'TS
+
+- No `200` with error body — use correct status
+- No domain types in OpenAPI/JSON responses

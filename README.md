@@ -4,9 +4,9 @@ Local-first event management and ticketing platform. .NET backend (Clean Archite
 
 ## About
 
-**EventHub** connects organizers and attendees for small events — transparent pricing, valid tickets, check-in, and basic results. Built as a pet project with Cursor-native agent configuration.
+**EventHub** connects organizers and attendees for small events — transparent pricing, valid tickets, check-in, and basic results. Built as a pet project with Claude Code agent configuration.
 
-### Cursor agent setup (`.cursor/`)
+### Claude Code agent setup (`.claude/`)
 
 | Piece | Purpose |
 |-------|---------|
@@ -14,9 +14,9 @@ Local-first event management and ticketing platform. .NET backend (Clean Archite
 | **Skills** (`skills/`) | OpenAPI sync, MCP (Postgres, Neo4j GraphRAG), env setup, git/PR, UI |
 | **Commands** (`commands/`) | `/spec` → `/plan` → `/build` |
 
-Open the repo in [Cursor](https://cursor.com); agents read `core.mdc` and **`docs/constitution.md`** plus companion docs before changing code.
+Open the repo in [Claude Code](https://claude.ai/code); agents read `CLAUDE.md` and **`docs/constitution.md`** plus companion docs before changing code.
 
-**Agent workflow:** `/spec` (spec in `docs/specs/` + one GitHub issue) → `/plan` (ephemeral plan in `.cursor/plans/`, not committed) → `/build` (implement, then delete plan).
+**Agent workflow:** `/spec` (spec in `docs/specs/` + one GitHub issue) → `/plan` (ephemeral plan in `.claude/plans/`, not committed) → `/build` (implement, then delete plan).
 
 ### Stack highlights
 
@@ -87,7 +87,7 @@ Copy [`.mcp.json.example`](.mcp.json.example) to `.mcp.json` and set credentials
 | `postgres` | Read-only SQL against local `app` database |
 | `neo4j-graphrag` | Cypher, vector/fulltext search, GraphRAG |
 
-See `.cursor/skills/postgres-mcp/SKILL.md` and `.cursor/skills/neo4j-graphrag/SKILL.md`.
+See `.claude/skills/postgres-mcp/SKILL.md` and `.claude/skills/neo4j-graphrag/SKILL.md`.
 
 ## Docs
 
@@ -100,7 +100,7 @@ See `.cursor/skills/postgres-mcp/SKILL.md` and `.cursor/skills/neo4j-graphrag/SK
 | [`docs/technical.md`](docs/technical.md) | Architecture and infrastructure |
 | [`docs/specs/`](docs/specs/) | Product specs (committed) |
 
-Ephemeral plans live in `.cursor/plans/` (gitignored; deleted after `/build`).
+Ephemeral plans live in `.claude/plans/` (gitignored; deleted after `/build`).
 
 ## API contract
 

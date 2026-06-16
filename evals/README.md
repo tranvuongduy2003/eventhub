@@ -23,7 +23,7 @@ evals/
   "description": "what this proves",
   "run": {
     "type": "hook | command",
-    "script": ".cursor/hooks/pre-tool-guard.ps1",
+    "script": ".claude/hooks/pre-tool-guard.ps1",
     "stdinFixture": "evals/fixtures/pre-tool-write-generated.json"
   },
   "assert": {
@@ -44,13 +44,13 @@ evals/
 .\evals\run.ps1 -Json
 ```
 
-Manual **agent** cases (`mode: manual`) define prompts + post-conditions for Cursor sessions; skipped unless `-IncludeAgent`.
+Manual **agent** cases (`mode: manual`) define prompts + post-conditions for Claude Code sessions; skipped unless `-IncludeAgent`.
 
 ## When to run
 
 | Change | Run |
 |--------|-----|
-| `.cursor/hooks/**`, `hooks.json` | `.\evals\run.ps1 -Layer harness` |
+| `.claude/hooks/**`, `hooks.json` | `.\evals\run.ps1 -Layer harness` |
 | `.graph/index.json`, `affected-tests.mjs` | `.\evals\run.ps1 -Layer graph` |
 | Rules / prompts / agent defs | full suite + manual agent cases; invoke `code-reviewer` subagent after substantial edits |
 | Before merging harness PR | CI job `agent-evals` |
