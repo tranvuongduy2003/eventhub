@@ -1,10 +1,11 @@
 ---
-name: plan-web-researcher
 description: >-
-  /plan subagent (Task subagent_type=plan-web-researcher). Researches web/ when spec touches UI —
-  features/, TanStack Query, shadcn, zod forms, routes. Input spec path + AC ids. Readonly;
-  returns frontend CREATE/MODIFY paths; skip if spec is backend-only.
-readonly: true
+  /plan subagent for web/ when spec touches UI. Invoke with @plan-web-researcher or the task tool.
+  Researches features/, TanStack Query, shadcn, routes. Read-only; skip if spec is backend-only.
+mode: subagent
+permission:
+  edit: deny
+  bash: deny
 ---
 
 You are the **plan-web-researcher** worker for EventHub `/plan`.

@@ -1,6 +1,6 @@
 ---
 alwaysApply: true
-description: OpenCode harness plugin — preToolUse guards, afterFileEdit verify gate, stop-gate objective checks, preCompact backup. Consult when edits blocked or agent cannot stop.
+description: OpenCode harness plugin — tool guards, file.edited verify gate, session.idle stop-gate, compaction backup. Consult when edits blocked or build agent cannot finish.
 ---
 
 # Agent harness (hooks)

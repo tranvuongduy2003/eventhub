@@ -15,7 +15,7 @@ Feature description after the command, plus optional `$ARGUMENTS` (e.g. `F-5.3`,
 
 ## ARTIFACT CONTRACT
 
-Follow [`.opencode/rules/spec-artifacts.mdc`](mdc:.opencode/rules/spec-artifacts.mdc).
+Follow [`.opencode/rules/spec-artifacts.mdc`](.opencode/rules/spec-artifacts.mdc).
 
 - **Directory:** `docs/specs/`
 - **Filename:** `<YYYYMMDDHHmmss>-<feature-kebab>.md`
@@ -30,7 +30,7 @@ When sources conflict, higher wins:
 3. [`docs/features.md`](docs/features.md) — `EP-*`, `F-*`, acceptance criteria
 4. [`docs/ddd.md`](docs/ddd.md) — aggregates, `INV-*`, events
 5. [`docs/technical.md`](docs/technical.md)
-6. [`.opencode/rules/core.mdc`](mdc:.opencode/rules/core.mdc)
+6. [`.opencode/rules/core.mdc`](.opencode/rules/core.mdc)
 
 ## STEP 0 — CLARIFY
 
@@ -142,7 +142,7 @@ Create **exactly one issue** for the whole spec — not per user story, not an e
 | **Title** | `Spec: <feature name> (<F-* refs>)` |
 | **Labels** | `spec`, `enhancement` |
 
-**Body must include** (or copy from [`.github/.issue-bodies/spec.template.md`](mdc:.github/.issue-bodies/spec.template.md)):
+**Body must include** (or copy from [`.github/.issue-bodies/spec.template.md`](.github/.issue-bodies/spec.template.md)):
 
 - Link to `docs/specs/<file>.md`
 - Problem & solution (short)

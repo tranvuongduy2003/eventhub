@@ -43,15 +43,15 @@ If all tasks checked → delete plan → report done.
 
 ## Step 2: Context retrieval (parallel readonly — then you write)
 
-Before each task, launch **parallel** readonly subagents in one message (summaries only — keep main window clean):
+Before each task, launch **parallel** readonly subagents in one turn (summaries only — keep the build session clean):
 
-| subagent_type | When |
-|---------------|------|
-| `graph-impact-analyst` | Blast radius, callers (neo4j-graphrag MCP) |
-| `codebase-explorer` | Locate files/symbols for the task topic |
-| `test-impact-analyzer` | If prior commits/diff exist — tests to run + gaps |
+| Agent | When |
+|-------|------|
+| `@graph-impact-analyst` | Blast radius, callers (neo4j-graphrag MCP) |
+| `@codebase-explorer` | Locate files/symbols for the task topic |
+| `@test-impact-analyzer` | If prior commits/diff exist — tests to run + gaps |
 
-Example:
+Example (task tool or @ mentions in one message):
 
 ```text
 @graph-impact-analyst — F-… / files: … / spec: …
@@ -60,7 +60,7 @@ Example:
 
 Merge summaries into `.opencode/notes/progress.md` **Decisions**. **Do not** let subagents edit code.
 
-**Fallback** (MCP down): `SemanticSearch` + docs — note `degraded: no graph`.
+**Fallback** (MCP down): grep + docs — note `degraded: no graph`.
 
 ## Step 3: Mandatory task loop (evaluator-optimizer)
 
@@ -68,7 +68,7 @@ For each unchecked task:
 
 ### 3a. If bug fix → red test first (sequential writer)
 
-Delegate to **`build-test-writer`** alone — **not** in parallel with other writers:
+Delegate to **`@build-test-writer`** alone — **not** in parallel with other writers:
 
 ```text
 @build-test-writer — Bug: … / repro: … / layer: Domain|Integration
@@ -99,7 +99,7 @@ Run the returned steps (EventHub stack — not npm):
 | `dotnet-format` | `dotnet format EventHub.slnx --verify-no-changes --include <path>` |
 | `eslint` | `yarn --cwd web eslint <file> --max-warnings 0` |
 
-If web `.ts/.tsx` changed: `yarn --cwd web exec tsc -b --noEmit`.
+If web `.ts/.tsx` changed: `yarn --cwd web build` (runs `tsc -b`) or `yarn --cwd web lint` on changed files.
 
 ### 3d. Optimize — loop until green
 
@@ -119,7 +119,7 @@ If blocked: `[SKIP]` + reason in plan; stop unless user says continue.
 ## Step 4: Finish
 
 - Full sweep: `dotnet test EventHub.slnx`; `yarn --cwd web lint`; `yarn --cwd web build` if UI touched
-- Optional Reflexion: invoke **`code-reviewer`** subagent on the diff
+- Optional Reflexion: invoke **`@code-reviewer`** or delegate via the **task** tool on the diff
 - **Delete** plan file when all tasks succeed
 - **Do not** commit unless user asks · **Do not** update GitHub issues
 

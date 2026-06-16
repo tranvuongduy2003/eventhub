@@ -61,15 +61,15 @@ Orchestrator (**parent only**) implements after plan task lists concrete paths, 
 
 ## Layer 2 — Harness (deterministic)
 
-On each **Write**, `file.edited` → `post-edit-verify.ps1`:
+On each **write/edit**, harness `file.edited` → `post-edit-verify.ps1`:
 
 1. `node scripts/affected-tests.mjs src/Domain/Users/User.cs` → e.g. `dotnet format` + filtered `Domain.UnitTests` + `dotnet build` Application.
 2. Edit OpenAPI / Api without updating contract → eslint/tsc or **`api:verify`** / integration test **red**.
-3. **Verify gate** set → `pre-tool-guard` / `before-shell-guard` block `Shell`/`Task` until fix saved and reverified.
+3. **Verify gate** set → harness blocks `bash` / `task` until fix saved and reverified.
 
 Example failure: forgot OpenAPI `phone` field → integration or `yarn --cwd web api:verify` fails → gate active → agent must fix schema, not say "done".
 
-**Stop gate** (`stop-gate.ps1`): on stop, full `git diff` + `tsc` (if web) + deduped affected steps must pass → else `followup_message` forces continue.
+**Stop gate** (`stop-gate.ps1` on `session.idle`): full `git diff` + `tsc` (if web) + deduped affected steps must pass — else harness throws and the build session continues.
 
 ---
 
@@ -77,10 +77,10 @@ Example failure: forgot OpenAPI `phone` field → integration or `yarn --cwd web
 
 | Phase | Agents | Parallel? |
 |-------|--------|-----------|
-| Scout | `graph-impact-analyst`, `codebase-explorer`, `test-impact-analyzer` | Yes (readonly) |
-| Red test | `build-test-writer` | No — alone |
-| Production code | **Parent** | No — never parallel writers |
-| Review | `code-reviewer` | After parent green |
+| Scout | `@graph-impact-analyst`, `@codebase-explorer`, `@test-impact-analyzer` | Yes (`permission.edit: deny`) |
+| Red test | `@build-test-writer` | No — alone |
+| Production code | **build** primary agent | No — never parallel writers |
+| Review | `@code-reviewer` | After parent green |
 
 ---
 

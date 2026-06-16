@@ -24,7 +24,9 @@ Deterministic guards and verification run via [`.opencode/plugins/harness.ts`](.
 
 ## Subagents
 
-Custom agents in [`.opencode/agents/`](.opencode/agents/) — invoke as subtasks (e.g. `code-reviewer`, `codebase-explorer`, `plan-*-researcher`). Parallel readonly scouts OK; **one writer** for production code.
+OpenCode **primary** agents: `build` (default), `plan` (Tab to switch). **Subagents**: built-in `@explore`, `@general`, `@scout`, plus project agents in [`.opencode/agents/`](.opencode/agents/).
+
+Invoke project agents with **`@<name>`** or the **`task`** tool from **build**. Parallel readonly scouts OK; **one writer** (build) for production code.
 
 ## Skills
 

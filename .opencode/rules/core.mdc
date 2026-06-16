@@ -91,19 +91,21 @@ Read the matching command file before executing. `/plan` and `/build` delegate t
 
 ## PROJECT SUBAGENTS (`.opencode/agents/<name>.md`)
 
-Invoke as OpenCode subtasks: `@<name>` or command `agent: <name>` with `subtask: true`. **Do not** substitute ad-hoc exploration for project subagents.
+OpenCode has **primary** agents (`build`, `plan` — switch with Tab) and **subagents** (built-in: `explore`, `general`, `scout`; plus project agents below).
 
-| name | When | readonly | parallel OK |
-|------|------|----------|-------------|
-| `codebase-explorer` | Before edits — path:line scout; no dumps | yes | yes |
-| `plan-domain-researcher` | `/plan` — Domain aggregates, `INV-*`, events | yes | yes |
-| `plan-application-researcher` | `/plan` — CQRS commands/queries/handlers/ports | yes | yes |
-| `plan-infrastructure-researcher` | `/plan` — EF, Api, integration tests | yes | yes |
-| `plan-web-researcher` | `/plan` — web routes, TanStack Query, UI | yes | yes |
-| `graph-impact-analyst` | `/plan` or `/build` — blast radius (neo4j-graphrag MCP) | yes | yes |
-| `test-impact-analyzer` | git diff → affected tests + coverage gaps | yes | yes |
-| `build-test-writer` | `/build` bug path — red test before fix | no (tests only) | **no** |
-| `code-reviewer` | After `/build` — Reflexion with command output | yes | no |
+Invoke project subagents via **`@<agent>`** in chat or the **`task`** tool from the **build** primary agent. Prefer project scouts over built-in `@explore` when EventHub paths matter.
+
+| Agent | When | `permission.edit` | parallel OK |
+|-------|------|-------------------|-------------|
+| `codebase-explorer` | Before edits — path:line scout | deny | yes |
+| `plan-domain-researcher` | `/plan` — Domain aggregates, `INV-*` | deny | yes |
+| `plan-application-researcher` | `/plan` — CQRS handlers, ports | deny | yes |
+| `plan-infrastructure-researcher` | `/plan` — EF, Api, integration tests | deny | yes |
+| `plan-web-researcher` | `/plan` — web routes, Query, UI | deny | yes |
+| `graph-impact-analyst` | `/plan` or `/build` — blast radius (neo4j-graphrag MCP) | deny | yes |
+| `test-impact-analyzer` | git diff → affected tests + gaps | deny | yes |
+| `build-test-writer` | `/build` bug path — red test before fix | allow (tests only) | **no** |
+| `code-reviewer` | After `/build` — Reflexion with command output | deny | no |
 
 **Topology:** parallel only for readonly scouts; **parent agent** writes production code alone. `reasoning-loop.mdc` Layer 5.
 

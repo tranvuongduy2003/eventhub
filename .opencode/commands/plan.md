@@ -21,7 +21,7 @@ Read in order before delegating:
 
 1. Spec (ACs, scope, edge cases)
 2. [`docs/constitution.md`](docs/constitution.md) · [`docs/ddd.md`](docs/ddd.md) · [`docs/technical.md`](docs/technical.md)
-3. [`architecture.mdc`](mdc:.opencode/rules/architecture.mdc) · applicable scoped rules
+3. [`architecture.mdc`](.opencode/rules/architecture.mdc) · applicable scoped rules
 4. `.opencode/notes/progress.md` if present
 
 Split ACs into **research workstreams** (skip empty streams):
@@ -44,14 +44,14 @@ ACs: AC-01, AC-02
 Return your structured research summary only (see your agent definition).
 ```
 
-| Call | subagent_type |
-|------|----------------|
-| 1 | `plan-domain-researcher` |
-| 2 | `plan-application-researcher` |
-| 3 | `plan-infrastructure-researcher` |
-| 4 | `plan-web-researcher` (if UI) |
-| 5 | `graph-impact-analyst` (recommended) |
-| 6 | `codebase-explorer` (optional — quick path:line scout if topic is narrow) |
+| # | Agent |
+|---|-------|
+| 1 | `@plan-domain-researcher` |
+| 2 | `@plan-application-researcher` |
+| 3 | `@plan-infrastructure-researcher` |
+| 4 | `@plan-web-researcher` (if UI) |
+| 5 | `@graph-impact-analyst` (recommended) |
+| 6 | `@codebase-explorer` (optional — quick path:line scout if topic is narrow) |
 
 Workers: **readonly** only · parallel OK · no product code · no plan file.
 

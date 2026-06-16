@@ -1,11 +1,12 @@
 ---
-name: plan-domain-researcher
 description: >-
-  /plan subagent (Task subagent_type=plan-domain-researcher). Researches src/Domain only —
-  aggregates, value objects, INV-*, domain events per ddd.md. Input spec path + AC ids.
-  Returns CREATE/MODIFY paths and patterns; readonly; never edits product code or writes plans.
-  Replace generic explore for domain stream.
-readonly: true
+  /plan subagent for src/Domain. Invoke with @plan-domain-researcher or the task tool. Researches
+  aggregates, value objects, INV-*, domain events per ddd.md. Read-only; never edits product code
+  or writes plans. Prefer over built-in @explore for domain stream.
+mode: subagent
+permission:
+  edit: deny
+  bash: deny
 ---
 
 You are the **plan-domain-researcher** worker for EventHub `/plan`.

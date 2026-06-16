@@ -21,13 +21,13 @@ Self-critique without external signal is unreliable. **Done** is allowed only wh
 
 | Gate | What runs |
 |------|-----------|
-| `afterFileEdit` | lint/format + affected test/build per changed file |
-| `stop` (`stop-gate.ps1`) | TypeScript (`tsc -b --noEmit`) if web changed; affected checks on full `git diff` |
-| Verify gate | Blocks Shell/Task until post-edit checks pass |
+| `file.edited` (harness plugin) | lint/format + affected test/build per changed file |
+| `session.idle` (`stop-gate.ps1`) | TypeScript (`tsc -b`) if web changed; affected checks on full `git diff` |
+| Verify gate | Blocks `bash` / `task` until post-edit checks pass |
 
-If the agent tries to stop while checks fail, the Stop hook sends a **followup_message** — treat it as ground truth, fix, re-run checks, then continue.
+If the agent tries to finish while checks fail, the harness plugin throws on `session.idle` with a follow-up message — treat it as ground truth, fix, re-run checks, then continue.
 
-After substantial implementation, delegate **`code-reviewer`** as an OpenCode subtask.
+After substantial implementation, invoke **`@code-reviewer`** or delegate via the **task** tool.
 
 For `/plan`, launch parallel **readonly** workers only — see `core.mdc` subagent table.
 
@@ -44,7 +44,7 @@ For `/plan`, launch parallel **readonly** workers only — see `core.mdc` subage
 
 **Golden rule:** parallel subtask calls must all target **readonly** subagents. If two subagents would make conflicting implementation choices, keep one writer (the parent).
 
-Use project subagents in `.opencode/agents/` — prefer `codebase-explorer` or layer-specific `plan-*-researcher` over ad-hoc exploration.
+Use project subagents in `.opencode/agents/` — prefer `@codebase-explorer` or `plan-*-researcher` over built-in `@explore` for EventHub work.
 
 ## Not default
 

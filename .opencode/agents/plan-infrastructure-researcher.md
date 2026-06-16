@@ -1,10 +1,11 @@
 ---
-name: plan-infrastructure-researcher
 description: >-
-  /plan subagent (Task subagent_type=plan-infrastructure-researcher). Researches
-  Infrastructure, Api, Contracts, Api.IntegrationTests — EF, HTTP, OpenAPI, Testcontainers patterns.
-  Input spec path + AC ids. Readonly; returns endpoint/persistence/test paths for the plan.
-readonly: true
+  /plan subagent for Infrastructure, Api, Contracts, integration tests. Invoke with
+  @plan-infrastructure-researcher or the task tool. Read-only; returns endpoint/persistence/test paths.
+mode: subagent
+permission:
+  edit: deny
+  bash: deny
 ---
 
 You are the **plan-infrastructure-researcher** worker for EventHub `/plan`.

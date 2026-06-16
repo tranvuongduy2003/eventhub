@@ -50,7 +50,7 @@ Manual **agent** cases (`mode: manual`) define prompts + post-conditions for Ope
 
 | Change | Run |
 |--------|-----|
-| `.opencode/hooks/**`, `hooks.json` | `.\evals\run.ps1 -Layer harness` |
+| `.opencode/hooks/**`, `.opencode/plugins/harness.ts` | `.\evals\run.ps1 -Layer harness` |
 | `.graph/index.json`, `affected-tests.mjs` | `.\evals\run.ps1 -Layer graph` |
 | Rules / prompts / agent defs | full suite + manual agent cases; invoke `code-reviewer` subagent after substantial edits |
 | Before merging harness PR | CI job `agent-evals` |

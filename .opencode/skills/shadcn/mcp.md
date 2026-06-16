@@ -17,7 +17,7 @@ Editor config files:
 |--------|------------|
 | Claude Code | `.mcp.json` |
 | OpenCode | `opencode.json` (`mcp` block) |
-| Legacy (other tools) | `.mcp.json` |
+| Other tools | `.mcp.json` |
 | VS Code | `.vscode/mcp.json` |
 | OpenCode | `opencode.json` |
 | Codex | `~/.codex/config.toml` (manual) |
