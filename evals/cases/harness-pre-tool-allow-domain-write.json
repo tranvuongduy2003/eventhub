@@ -4,7 +4,7 @@
   "description": "preToolUse allows edits to src/Domain/",
   "run": {
     "type": "hook",
-    "script": ".cursor/hooks/pre-tool-guard.ps1",
+    "script": ".opencode/hooks/pre-tool-guard.ps1",
     "stdinFixture": "evals/fixtures/pre-tool-write-allowed.json"
   },
   "assert": {
