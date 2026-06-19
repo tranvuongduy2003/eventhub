@@ -13,6 +13,8 @@ public sealed class ApplicationDatabaseContext(DbContextOptions<ApplicationDatab
 
     public DbSet<UserSessionRecord> UserSessions => Set<UserSessionRecord>();
 
+    public DbSet<EventRecord> Events => Set<EventRecord>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(SchemaName);
