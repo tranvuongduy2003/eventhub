@@ -8,17 +8,17 @@ using EventHub.Domain.Users;
 
 namespace EventHub.Application.Users.Commands;
 
-public sealed class RegisterUserCommandHandler(
+public sealed class RegisterAttendeeCommandHandler(
     IUserRepository userRepository,
     ISessionStore sessionStore,
     IPasswordHasher passwordHasher,
     IClock clock,
     IPendingDomainEventsCollector pendingDomainEventsCollector,
     IPendingSessionCacheCollector pendingSessionCacheCollector)
-    : CommandHandler<RegisterUserCommand, RegisterUserResult>
+    : CommandHandler<RegisterAttendeeCommand, RegisterAttendeeResult>
 {
-    public override async Task<Result<RegisterUserResult>> Handle(
-        RegisterUserCommand command,
+    public override async Task<Result<RegisterAttendeeResult>> Handle(
+        RegisterAttendeeCommand command,
         CancellationToken cancellationToken)
     {
         var normalizedEmail = EmailAddress.Create(command.Email).Value;
@@ -40,7 +40,7 @@ public sealed class RegisterUserCommandHandler(
                 displayName,
                 email,
                 passwordHash,
-                UserRole.Organizer,
+                UserRole.Attendee,
                 createdAt);
 
             await userRepository.AddAsync(user, cancellationToken);
@@ -55,10 +55,11 @@ public sealed class RegisterUserCommandHandler(
             pendingDomainEventsCollector.AddRange(user.DomainEvents);
             user.ClearDomainEvents();
 
-            return new RegisterUserResult(
+            return new RegisterAttendeeResult(
                 user.Id.Value,
                 user.DisplayName.Value,
                 email.DisplayValue,
+                user.Role.ToString(),
                 user.CreatedAt,
                 session.SessionId,
                 session.ExpiresAt);

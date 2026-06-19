@@ -11,6 +11,7 @@ public class UserUpdateProfileTests
             DisplayName.Create("Original Name"),
             EmailAddress.Create("original@example.com"),
             PasswordHash.Create("hashed-password"),
+            UserRole.Organizer,
             DateTimeOffset.UtcNow);
 
     [Fact]

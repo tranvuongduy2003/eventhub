@@ -27,6 +27,7 @@ public sealed class User : AggregateRoot<UserId>
         DisplayName displayName,
         EmailAddress email,
         PasswordHash passwordHash,
+        UserRole role,
         DateTimeOffset createdAt)
     {
         var userId = UserId.New();
@@ -36,7 +37,7 @@ public sealed class User : AggregateRoot<UserId>
             DisplayName = displayName,
             Email = email,
             PasswordHash = passwordHash,
-            Role = UserRole.Organizer,
+            Role = role,
             CreatedAt = createdAt,
             UpdatedAt = createdAt,
         };
