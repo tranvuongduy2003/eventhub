@@ -16,6 +16,8 @@ public sealed class EventUserRole
 
     public DateTimeOffset CreatedAt { get; private set; }
 
+    public void ChangeRole(EventRole newRole) => Role = newRole;
+
     public static EventUserRole Create(
         EventId eventId,
         UserId userId,

@@ -38,4 +38,32 @@ internal sealed class EventUserRoleRepository(ApplicationDatabaseContext databas
             .AnyAsync(
                 eventUserRole => eventUserRole.EventId == eventId.Value && eventUserRole.UserId == userId.Value,
                 cancellationToken);
+
+    public async Task UpdateRoleAsync(EventId eventId, UserId userId, EventRole newRole, CancellationToken cancellationToken = default)
+    {
+        var record = await databaseContext.EventUserRoles
+            .AsTracking()
+            .FirstOrDefaultAsync(
+                eventUserRole => eventUserRole.EventId == eventId.Value && eventUserRole.UserId == userId.Value,
+                cancellationToken);
+
+        if (record is not null)
+        {
+            record.Role = newRole;
+        }
+    }
+
+    public async Task DeleteByEventAndUserAsync(EventId eventId, UserId userId, CancellationToken cancellationToken = default)
+    {
+        var record = await databaseContext.EventUserRoles
+            .AsTracking()
+            .FirstOrDefaultAsync(
+                eventUserRole => eventUserRole.EventId == eventId.Value && eventUserRole.UserId == userId.Value,
+                cancellationToken);
+
+        if (record is not null)
+        {
+            databaseContext.EventUserRoles.Remove(record);
+        }
+    }
 }
