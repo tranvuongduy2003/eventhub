@@ -20,22 +20,8 @@ public sealed class AssignRoleCommandHandler(
         AssignRoleCommand command,
         CancellationToken cancellationToken)
     {
-        if (currentUserAccessor.UserId is not { } callerId)
-        {
-            return Error.Unauthorized("UNAUTHORIZED", "You must be logged in.");
-        }
-
+        var callerId = currentUserAccessor.UserId!.Value;
         var eventId = EventId.From(command.EventId);
-
-        var callerRole = await eventUserRoleRepository.GetByEventAndUserAsync(
-            eventId, callerId, cancellationToken);
-
-        if (callerRole is null || callerRole.Role != EventRole.Owner)
-        {
-            return Error.Forbidden(
-                "INSUFFICIENT_PERMISSIONS",
-                "Only the event owner can assign roles.");
-        }
 
         UserId targetUserId;
         try
