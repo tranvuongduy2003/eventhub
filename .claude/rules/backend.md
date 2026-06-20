@@ -17,6 +17,10 @@ Architecture, CQRS, DDD, and layer rules live in **`architecture.md`** — do no
 - **MediatR** + **FluentValidation** — see `architecture.md` §4
 - **EF Core** — Infrastructure only; read queries `AsNoTracking` by default (Tech §6)
 
+## Naming
+
+- No `@` prefix on variable names for C# keywords — use descriptive names instead (e.g. `draftEvent` not `@event`, `domain` not `@event` for parameters)
+
 ## DON'TS
 
 - No **Aspire client/component packages** (`Aspire.*`, `CommunityToolkit.Aspire.*`) in `Api`, `Application`, `Infrastructure`, or `ServiceDefaults` — use native SDKs (EF Core/Npgsql, StackExchange.Redis, RabbitMQ.Client, Minio SDK, OpenTelemetry OTLP). Aspire hosting packages are **AppHost-only** (orchestration).

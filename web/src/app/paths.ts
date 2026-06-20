@@ -3,6 +3,7 @@ export const paths = {
   login: '/login',
   register: '/register',
   events: '/events',
+  createEvent: '/events/create',
   checkout: '/checkout',
   tickets: '/tickets',
   checkIn: '/check-in',
