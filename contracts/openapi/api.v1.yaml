@@ -2,6 +2,13 @@
 #   yarn --cwd web api:export
 components:
   schemas:
+    AcceptInvitationRequest:
+      properties:
+        token:
+          type: string
+      required:
+        - token
+      type: object
     AssignRoleRequest:
       properties:
         role:
@@ -33,6 +40,47 @@ components:
     IFormFile:
       format: binary
       type: string
+    InvitationResponse:
+      properties:
+        acceptedAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        createdAt:
+          format: date-time
+          type: string
+        email:
+          type: string
+        expiresAt:
+          format: date-time
+          type: string
+        id:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        revokedAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        status:
+          type: string
+        token:
+          type:
+            - "null"
+            - string
+      required:
+        - id
+        - email
+        - status
+        - createdAt
+        - expiresAt
+        - acceptedAt
+        - revokedAt
+      type: object
     LoginUserRequest:
       properties:
         email:
@@ -102,6 +150,21 @@ components:
         - displayName
         - email
         - password
+      type: object
+    SendInvitationRequest:
+      properties:
+        email:
+          type: string
+        expiresInDays:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - "null"
+            - integer
+            - string
+      required:
+        - email
+        - expiresInDays
       type: object
     UpdateProfileRequest:
       properties:
@@ -270,6 +333,172 @@ paths:
           description: Unauthorized
       tags:
         - Auth
+  /api/events/{eventId}/invitations:
+    get:
+      operationId: ListInvitations
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/InvitationResponse"
+                type: array
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - EventInvitations
+    post:
+      operationId: SendInvitation
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendInvitationRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvitationResponse"
+          description: Created
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - EventInvitations
+  /api/events/{eventId}/invitations/{invitationId}:
+    delete:
+      operationId: RevokeInvitation
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+        - in: path
+          name: invitationId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - EventInvitations
   /api/events/{eventId}/roles:
     get:
       operationId: ListEventRoleAssignments
@@ -443,6 +672,68 @@ paths:
           description: OK
       tags:
         - Health
+  /api/invitations/{invitationId}/accept:
+    post:
+      operationId: AcceptInvitation
+      parameters:
+        - in: path
+          name: invitationId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AcceptInvitationRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvitationResponse"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - EventInvitations
   /api/users:
     post:
       operationId: RegisterUser
@@ -561,6 +852,7 @@ tags:
   - name: Health
   - name: Attendees
   - name: Auth
+  - name: EventInvitations
   - name: EventRoles
   - name: Profile
   - name: Users
