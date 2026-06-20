@@ -1,5 +1,8 @@
 import { CalendarDays } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
+import { paths } from '@/app/paths'
+import { buttonVariants } from '@/components/ui/button-variants'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function EventsPlaceholderPage() {
@@ -12,6 +15,10 @@ export function EventsPlaceholderPage() {
           Create event listings, set ticket types, and publish when you are ready to sell.
         </p>
       </div>
+
+      <Link to={paths.createEvent} className={buttonVariants({ variant: 'default', className: 'w-fit' })}>
+        Create event
+      </Link>
 
       <Card className="shadow-sm">
         <CardHeader>

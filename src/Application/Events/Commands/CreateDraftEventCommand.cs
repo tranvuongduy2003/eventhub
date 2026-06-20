@@ -11,6 +11,5 @@ public sealed record CreateDraftEventCommand(
     bool IsOnline) : ICommand<CreateDraftEventResult>;
 
 public sealed record CreateDraftEventResult(
-    int EventId,
     string Status,
     DateTimeOffset CreatedAt);

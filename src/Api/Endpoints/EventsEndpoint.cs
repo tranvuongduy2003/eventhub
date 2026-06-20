@@ -42,11 +42,10 @@ internal sealed class EventsEndpoint : IEndpoint
 
         var draftEvent = result.Value!;
 
-        return Results.Created(
-            $"/api/events/{draftEvent.EventId:D}",
+        return Results.Json(
             new DraftEventResponse(
-                draftEvent.EventId,
                 draftEvent.Status,
-                draftEvent.CreatedAt));
+                draftEvent.CreatedAt),
+            statusCode: StatusCodes.Status201Created);
     }
 }

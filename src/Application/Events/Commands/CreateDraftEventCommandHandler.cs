@@ -40,7 +40,6 @@ public sealed class CreateDraftEventCommandHandler(
             draftEvent.ClearDomainEvents();
 
             return new CreateDraftEventResult(
-                draftEvent.Id.Value,
                 draftEvent.Status.ToString(),
                 draftEvent.CreatedAt);
         }

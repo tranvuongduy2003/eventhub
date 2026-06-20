@@ -26,9 +26,6 @@ public sealed class CreateDraftEventTests(IntegrationTestFixture fixture)
 
         var draftEvent = await CreateDraftEventTestHelpers.AssertCreatedAsync(response);
         draftEvent.Status.Should().Be("Draft");
-
-        response.Headers.Location.Should().NotBeNull();
-        response.Headers.Location!.PathAndQuery.Should().Be($"/api/events/{draftEvent.EventId:D}");
     }
 
     [Fact]

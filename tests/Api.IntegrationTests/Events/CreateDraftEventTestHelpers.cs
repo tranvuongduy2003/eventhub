@@ -30,8 +30,7 @@ internal static class CreateDraftEventTestHelpers
 
         var draftEvent = await response.Content.ReadFromJsonAsync<DraftEventResponse>(JsonOptions);
         draftEvent.Should().NotBeNull();
-        draftEvent!.EventId.Should().BeGreaterThan(0);
-        draftEvent.Status.Should().Be("Draft");
+        draftEvent!.Status.Should().Be("Draft");
 
         return draftEvent;
     }

@@ -6,7 +6,7 @@ title: Create a draft event
 slug: create-draft-event
 filename_template: 20260619100000-create-draft-event.md
 created_at: 2026-06-19T10:00:00+07:00
-updated_at: 2026-06-19T10:00:00+07:00
+updated_at: 2026-06-20T10:00:00+07:00
 status: draft
 owner: product
 tags: [spec, eventhub, event-creation-management]
@@ -53,9 +53,9 @@ search_index:
 
 ## 2. Acceptance Criteria
 
-**AC-01:** GIVEN I am signed in as an organizer and I provide a valid title (non-empty, within length limit), a start date-time, an end date-time that is at or after the start, a time zone, and a location type (physical address or online), WHEN I submit the event creation form, THEN a new event is created in **Draft** status, owned by me, and I receive a success response containing the event identifier, title, schedule, location, status, and my ownership.
+**AC-01:** GIVEN I am signed in as an organizer and I provide a valid title (non-empty, within length limit), a start date-time, an end date-time that is at or after the start, a time zone, and a location type (physical address or online), WHEN I submit the event creation form, THEN a new event is created in **Draft** status, owned by me with the Owner role (F-1.5), and I receive a success response containing the event identifier, status, and created timestamp.
 
-**AC-02:** GIVEN I am signed in and I provide all required fields for a physical-address location (venue name, address lines, city), WHEN I submit, THEN the event is created with the physical address stored as the location.
+**AC-02:** GIVEN I am signed in and I provide a physical address, WHEN I submit, THEN the event is created with the physical address stored as the location.
 
 **AC-03:** GIVEN I am signed in and I mark the event as online (no physical address required), WHEN I submit, THEN the event is created with the location recorded as online.
 
@@ -81,9 +81,9 @@ Align with BC-2 Event Management and AGG-Event:
 
 | Rule | Detail |
 |------|--------|
-| **Ownership** | Every event is owned by exactly one organizer, identified by `OrganizerId` (the signed-in user's `UserId`). Ownership is set at creation and cannot be changed. |
+| **Ownership** | Every event is owned by exactly one organizer, identified by `OrganizerId` (the signed-in user's `UserId`). Ownership is set at creation and cannot be changed. On creation, the organizer is assigned the **Owner role** (F-1.5) via `EventUserRole`, handled by the `EventCreatedEvent` domain event handler. |
 | **Status** | A new event always starts as **Draft**. The Draft → Published transition (F-2.4) requires at least one ticket type (INV-11); that check is out of scope here. |
-| **Title** | Required. Trimmed; 1–128 characters after trim; must not be only whitespace. Not required to be unique — multiple events may share a title. |
+| **Title** | Required. Trimmed; 1–200 characters after trim; must not be only whitespace. Not required to be unique — multiple events may share a title. |
 | **Schedule (VO-EventSchedule)** | Required. Start date-time + end date-time + IANA time zone identifier. End must be ≥ start. Both stored as UTC internally; the time zone is preserved for display. |
 | **Location (VO-EventLocation)** | Required. Exactly one of: (a) a physical address with at least venue name and city, or (b) online (a flag). The organizer picks one mode; the form adapts. |
 | **Description** | Optional free-text field for the event description. No length limit enforced at creation (rich editing deferred). |
@@ -107,7 +107,7 @@ Align with BC-2 Event Management and AGG-Event:
   5. **End time** — time picker, required (defaults to 1 hour after start time).
   6. **Time zone** — dropdown or auto-detected from browser, required; shows IANA zone names (e.g. "Asia/Ho_Chi_Minh").
   7. **Location type** — toggle or radio: "Physical address" / "Online".
-  8. **Physical address fields** (shown when type = physical): venue name, address line 1, address line 2 (optional), city — all required except line 2.
+  8. **Physical address** (shown when type = physical): single text input for the full address, required.
   9. **Description** — textarea, optional.
 - Primary action: **Create event** (disabled while submitting; show loading state).
 - Secondary action: **Cancel** → return to organizer dashboard.
@@ -128,7 +128,7 @@ The endpoint requires a valid session cookie. The response does not include tick
 
 | Store | Impact |
 |-------|--------|
-| **PostgreSQL** | New row in the event table: stable event id, organizer id (FK to user), title, description (nullable), start time (timestamptz), end time (timestamptz), time zone (text), location type (enum: Physical/Online), location address fields (nullable when online), status (enum: Draft), created timestamp, row version (for optimistic concurrency). No slug yet (set at publish). |
+| **PostgreSQL** | New row in the event table: stable event id, organizer id (FK to user), title, start time (timestamptz), end time (timestamptz), time zone (text), physical address (nullable when online), is online (bool), status (enum: Draft), created timestamp, updated timestamp, row version (for optimistic concurrency). No slug yet (set at publish). |
 | **Redis** | None for this slice. |
 | **MinIO** | None for this slice (cover image is F-2.2). |
 | **RabbitMQ** | None for this slice. `EVT-DraftCreated` is a domain-scope event handled in-process. |
