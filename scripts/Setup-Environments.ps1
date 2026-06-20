@@ -140,10 +140,14 @@ function Invoke-YarnInstall([string] $WorkingDirectory) {
 
     Push-Location $WorkingDirectory
     try {
-        & $yarn install --frozen-lockfile 2>&1 | Out-Host
+        # Yarn writes progress/warnings to stderr — redirect to stdout to avoid
+        # PowerShell 5.1 wrapping them as NativeCommandError ErrorRecords.
+        $stderr = (& $yarn install --frozen-lockfile 2>&1)
+        $stderr | ForEach-Object { if ($_ -is [System.Management.Automation.ErrorRecord]) { $_.ToString() } else { $_ } } | Out-Host
         if ($LASTEXITCODE -ne 0) {
             Write-Warn 'yarn install --frozen-lockfile failed; retrying without --frozen-lockfile'
-            & $yarn install 2>&1 | Out-Host
+            $stderr2 = (& $yarn install 2>&1)
+            $stderr2 | ForEach-Object { if ($_ -is [System.Management.Automation.ErrorRecord]) { $_.ToString() } else { $_ } } | Out-Host
         }
 
         if ($LASTEXITCODE -ne 0) {
@@ -381,6 +385,32 @@ Aspire CLI not on PATH (optional but recommended).
     Write-Step 'Installing frontend dependencies (yarn)'
     Invoke-Checked 'yarn install' {
         Invoke-YarnInstall -WorkingDirectory $WebDir
+    }
+
+    # --- E2E tests (Playwright) ---
+    $E2eDir = Join-Path $RepoRoot 'e2e'
+    if (Test-Path (Join-Path $E2eDir 'package.json')) {
+        Write-Step 'Installing e2e test dependencies (Playwright)'
+        Invoke-Checked 'e2e yarn install' {
+            Invoke-YarnInstall -WorkingDirectory $E2eDir
+        }
+
+        Write-Step 'Installing Playwright Chromium browser'
+        $prevEap = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        try {
+            $yarnExe2 = Get-YarnExecutable
+            & $yarnExe2 --cwd $E2eDir playwright install chromium 2>&1 | Out-Host
+            if ($LASTEXITCODE -eq 0) {
+                Write-Ok 'Playwright Chromium installed'
+            }
+            else {
+                Write-Warn 'Playwright Chromium install failed — run manually: cd e2e && yarn install:browsers'
+            }
+        }
+        finally {
+            $ErrorActionPreference = $prevEap
+        }
     }
 
     # --- Local config (not committed) ---

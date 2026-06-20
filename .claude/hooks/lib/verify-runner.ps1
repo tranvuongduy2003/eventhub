@@ -114,6 +114,17 @@ function Invoke-VerificationSteps {
                     $errors.Add("dotnet build failed for $($step.project)")
                 }
             }
+            'shell-test' {
+                $cmd = [string]$step.command
+                $parts = $cmd -split ' ', 2
+                $exe = $parts[0]
+                $argStr = if ($parts.Length -gt 1) { $parts[1] } else { '' }
+                $argList = if ($argStr) { $argStr -split ' ' } else { @() }
+                $result = Invoke-VerifyQuiet -FilePath $exe -ArgumentList $argList -WorkingDirectory $ProjectRoot
+                if ($result.ExitCode -ne 0) {
+                    $errors.Add("e2e test failed: $cmd")
+                }
+            }
         }
     }
 
