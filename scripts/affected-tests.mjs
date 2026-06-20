@@ -79,6 +79,14 @@ function buildSteps(rel, graph) {
     }
   }
 
+  for (const [prefix, cfg] of Object.entries(graph.layers ?? {})) {
+    if (!rel.startsWith(prefix)) continue;
+    if (cfg.postEditAction === 'test' && cfg.testCommand) {
+      steps.push({ kind: 'shell-test', command: cfg.testCommand });
+    }
+    break;
+  }
+
   return steps;
 }
 

@@ -1,0 +1,21 @@
+[
+  {
+    "name": "Owner",
+    "description": "Full control over the event — all permissions",
+    "permissions": [
+      "EventManagement",
+      "Ticketing",
+      "CheckIn",
+      "Reporting",
+      "StaffManagement"
+    ]
+  },
+  {
+    "name": "Staff",
+    "description": "Operational access for door operations and reporting",
+    "permissions": [
+      "CheckIn",
+      "Reporting"
+    ]
+  }
+]

@@ -94,6 +94,165 @@ namespace EventHub.Infrastructure.Migrations
                     b.ToTable("events", "app");
                 });
 
+            modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.EventInvitationRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset?>("AcceptedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("accepted_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("email");
+
+                    b.Property<int>("EventId")
+                        .HasColumnType("integer")
+                        .HasColumnName("event_id");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid>("InviterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("inviter_id");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("role");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("token_hash");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId")
+                        .HasDatabaseName("ix_event_invitation_event_id");
+
+                    b.HasIndex("InviterId");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ux_event_invitation_token_hash");
+
+                    b.HasIndex("EventId", "Email")
+                        .IsUnique()
+                        .HasDatabaseName("ux_event_invitation_pending_email")
+                        .HasFilter("status = 'Pending'");
+
+                    b.HasIndex("EventId", "Email", "Status")
+                        .HasDatabaseName("ix_event_invitation_event_id_email_status");
+
+                    b.ToTable("event_invitation", "app");
+                });
+
+            modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.EventUserRoleRecord", b =>
+                {
+                    b.Property<int>("EventId")
+                        .HasColumnType("integer")
+                        .HasColumnName("event_id");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("role");
+
+                    b.HasKey("EventId", "UserId");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_event_user_roles_user_id");
+
+                    b.ToTable("event_user_roles", "app");
+                });
+
+            modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.PermissionAuditEntryRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("action");
+
+                    b.Property<Guid>("ActorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_id");
+
+                    b.Property<int>("EventId")
+                        .HasColumnType("integer")
+                        .HasColumnName("event_id");
+
+                    b.Property<string>("NewRole")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("new_role");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("OldRole")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("old_role");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("target_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorId");
+
+                    b.HasIndex("TargetId");
+
+                    b.HasIndex("EventId", "OccurredAt")
+                        .HasDatabaseName("ix_permission_audit_log_event_id_occurred_at");
+
+                    b.ToTable("permission_audit_log", "app");
+                });
+
             modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.UserRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -200,6 +359,47 @@ namespace EventHub.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_events_users_organizer_id");
+                });
+
+            modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.EventInvitationRecord", b =>
+                {
+                    b.HasOne("EventHub.Infrastructure.Persistence.Entities.UserRecord", "Inviter")
+                        .WithMany()
+                        .HasForeignKey("InviterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Inviter");
+                });
+
+            modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.EventUserRoleRecord", b =>
+                {
+                    b.HasOne("EventHub.Infrastructure.Persistence.Entities.UserRecord", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.PermissionAuditEntryRecord", b =>
+                {
+                    b.HasOne("EventHub.Infrastructure.Persistence.Entities.UserRecord", "Actor")
+                        .WithMany()
+                        .HasForeignKey("ActorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EventHub.Infrastructure.Persistence.Entities.UserRecord", "Target")
+                        .WithMany()
+                        .HasForeignKey("TargetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Actor");
+
+                    b.Navigation("Target");
                 });
 
             modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.UserSessionRecord", b =>

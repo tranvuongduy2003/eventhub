@@ -523,7 +523,7 @@
   },
   {
     "id": "3ebd5a98-b55b-4ae2-b2ae-dae28efa6682",
-    "displayName": "Lena Bergström",
+    "displayName": "Lena Bergstr\u00c3\u00b6m",
     "email": "lena.b@eventhub.dev",
     "role": "Attendee"
   },
@@ -565,7 +565,7 @@
   },
   {
     "id": "db224192-33bf-4ffe-8917-ba9129002abc",
-    "displayName": "Tomás Herrera",
+    "displayName": "Tom\u00c3\u00a1s Herrera",
     "email": "tomas.h@eventhub.dev",
     "role": "Attendee"
   },

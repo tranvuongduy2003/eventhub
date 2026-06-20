@@ -28,5 +28,9 @@
       "OPENAI_API_KEY": "",
       "EMBEDDING_MODEL": "text-embedding-3-small"
     }
+  },
+  "playwright": {
+    "command": "npx",
+    "args": ["@playwright/mcp@latest"]
   }
 }

@@ -31,6 +31,7 @@ When a **rule**, **skill**, or **doc** disagree, precedence is: **Constitution �
 | Aspire / local run | Constitution V · Tech §8–10 · `aspire.md` |
 | Naming, file size, quality | Constitution VI |
 | Tests | Constitution VII · Tech §11 · `backend-testing.md` |
+| E2E tests (Playwright) | `e2e-testing.md` · `playwright-e2e` skill |
 | Frontend (web/) | `frontend.md`, `design-system.md` |
 
 ## NON-NEGOTIABLE INVARIANTS
@@ -47,8 +48,9 @@ Summarized here for quick scan; **Constitution is authoritative** if anything di
 ## REPOSITORY LAYOUT
 
 ```
-src/       AppHost, ServiceDefaults, Api, Application, Domain, Infrastructure, Contracts
+src/       AppHost, ServiceDefaults, Api, Application, Domain, Infrastructure, Contracts, DataSeeder
 tests/     Domain.UnitTests, Api.IntegrationTests, Testing.Common  (see backend-testing.md)
+e2e/       Playwright e2e tests (Yarn; see e2e-testing.md)
 web/       React 19 + Vite (not in .slnx; Yarn; run via Aspire `web` Vite app)
 docs/      constitution, prd, features, ddd, technical, specs/
 .claude/   rules/, skills/, commands/, hooks/, notes/, agent-memory/, agents/
@@ -70,6 +72,7 @@ Read `.claude/skills/<name>/SKILL.md` only for these workflows:
 | shadcn / Tailwind UI | `shadcn`, `tailwind-patterns` |
 | Commits / PRs / GitHub | `create-pr`, `git-commit-writer`, `pr-description-writer`, `github-cli` |
 | Hooks blocked / verify gate / stop loop | See **Agent harness** section below |
+| Playwright e2e tests | `playwright-e2e` |
 | Context compaction / progress notes | See **Context memory** section below |
 | ReAct / Reflexion / subagent delegation | See **Reasoning loop** section below |
 | How layers compose (worked example) | `agent-stack.md` |
@@ -98,6 +101,7 @@ Invoke with `@agent-<name>` or `Agent(<name>)`. **Do not** substitute generic `E
 | `graph-impact-analyst` | `/plan` or `/build` — blast radius (neo4j-graphrag MCP) | yes | yes |
 | `test-impact-analyzer` | git diff → affected tests + coverage gaps | yes | yes |
 | `build-test-writer` | `/build` bug path — red test before fix | no (tests only) | **no** |
+| `e2e-test-writer` | `/build` TDD path — red e2e test before feature | no (tests only) | **no** |
 | `code-reviewer` | After `/build` — Reflexion with command output | yes | no |
 
 **Topology:** parallel only for readonly scouts; **parent agent** writes production code alone. See **Reasoning loop** Layer 5.
@@ -111,6 +115,7 @@ Worker memory: `.claude/agent-memory/<name>.md` (durable codepaths; parent uses 
 | Architecture, CQRS, DDD, layers | `architecture.md` |
 | .NET services (stack, DON'Ts) | `backend.md` |
 | Tests in `tests/**` | `backend-testing.md` |
+| E2E tests in `e2e/**` | `e2e-testing.md` |
 | React UI | `frontend.md` |
 | HTTP / API contracts | `api-guidelines.md` |
 | EF / PostgreSQL schema | `migration.md` |
@@ -189,7 +194,7 @@ Clear manually: delete `verify-gate.json`.
 |--------------|--------|
 | `web/**/*.{ts,tsx}` | eslint + tsc at stop if web touched |
 | `src/Domain/**` | dotnet format + filtered Domain.UnitTests |
-| `src/Application\|Infrastructure\|Api\|Contracts/**` | dotnet format + layer build |
+| `src/Application\|Infrastructure\|Api\|Contracts\|DataSeeder/**` | dotnet format + layer build |
 | Map source | `.graph/index.json` + `node scripts/affected-tests.mjs <path>` |
 
 ## Regression

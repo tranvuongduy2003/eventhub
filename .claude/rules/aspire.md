@@ -33,6 +33,7 @@ Source: [`docs/constitution.md`](../../docs/constitution.md) V, [`docs/technical
 | Seq | Logs / traces |
 | Api | REST + OpenAPI + SignalR |
 | `web/` (Yarn + Vite) | Frontend — `AddViteApp("web", ...).WithYarn(...)` |
+| `DataSeeder` | Console app — seeds PostgreSQL on first run (users, roles, permissions) |
 
 **No hand-authored docker-compose** for orchestration.
 
@@ -70,6 +71,10 @@ Aspire **hosting** packages (`Aspire.Hosting.*`, `CommunityToolkit.Aspire.Hostin
 4. Trust dev HTTPS cert on first setup
 
 EF migrations apply on startup in Development.
+
+## DataSeeder
+
+`src/DataSeeder/` is a standalone console app that runs against PostgreSQL directly (no Api dependency). Seeds users, roles, and permissions from `Data/*.json` files. Idempotent — skips if records already exist. See `backend.md` for structure and conventions.
 
 ## DON'TS
 

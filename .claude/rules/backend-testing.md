@@ -22,6 +22,7 @@ Source: [`docs/constitution.md`](../../docs/constitution.md) VII, [`docs/technic
 tests/
 ├── Domain.UnitTests/           ← aggregates, value objects (see ddd.md)
 └── Api.IntegrationTests/       ← HTTP + infrastructure wiring
+e2e/                            ← Playwright e2e tests (see e2e-testing.md)
 ```
 
 ## Naming

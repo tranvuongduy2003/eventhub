@@ -1,8 +1,8 @@
 using System.Text.Json;
-using EventHub.DataSeeder.Models;
+using EventHub.DataSeeder.Helpers;
+using EventHub.DataSeeder.Seeders;
 using EventHub.Domain.Users;
 using EventHub.Infrastructure.Persistence;
-using EventHub.Infrastructure.Persistence.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,12 +10,7 @@ const string defaultPassword = "DevPass123!";
 
 var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-// Priority: env var (Aspire injects ConnectionStrings__app) → appsettings.json
-var connectionString =
-    Environment.GetEnvironmentVariable("ConnectionStrings__app")
-    ?? ReadConnectionStringFromAppSettings()
-    ?? Environment.GetEnvironmentVariable("ConnectionStrings__App");
-
+var connectionString = ConnectionStringResolver.Resolve();
 if (string.IsNullOrWhiteSpace(connectionString))
 {
     Console.Error.WriteLine("Connection string 'App' not found.");
@@ -46,73 +41,10 @@ var hash = identityHasher.HashPassword(null!, password.Value);
 var passwordHash = PasswordHash.Create(hash);
 var now = DateTimeOffset.UtcNow;
 
-await SeedUsersAsync(dbContext, passwordHash, now, dataDirectory, jsonOptions);
+await UserSeeder.SeedAsync(dbContext, passwordHash, now, dataDirectory, jsonOptions);
+await PermissionSeeder.SeedAsync(dataDirectory, jsonOptions);
+await RoleSeeder.SeedAsync(dataDirectory, jsonOptions);
+await EventUserRoleSeeder.SeedAsync(dbContext, now, dataDirectory, jsonOptions);
 
 Console.WriteLine("Seeding complete.");
 return 0;
-
-// ── Helpers ─────────────────────────────────────────────────────
-
-static string? ReadConnectionStringFromAppSettings()
-{
-    var path = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
-    if (!File.Exists(path))
-    {
-        return null;
-    }
-
-    using var doc = JsonDocument.Parse(File.ReadAllText(path));
-    return doc.RootElement
-        .GetProperty("ConnectionStrings")
-        .GetProperty("App")
-        .GetString();
-}
-
-// ── Seed logic ──────────────────────────────────────────────────
-
-static async Task SeedUsersAsync(
-    ApplicationDatabaseContext dbContext,
-    PasswordHash passwordHash,
-    DateTimeOffset now,
-    string dataDirectory,
-    JsonSerializerOptions jsonOptions)
-{
-    if (await dbContext.Users.AnyAsync())
-    {
-        Console.WriteLine("Users already exist — skipping.");
-        return;
-    }
-
-    var filePath = Path.Combine(dataDirectory, "Users.json");
-    if (!File.Exists(filePath))
-    {
-        Console.Error.WriteLine($"Users.json not found: {filePath}");
-        return;
-    }
-
-    var json = await File.ReadAllTextAsync(filePath);
-    var seeds = JsonSerializer.Deserialize<List<UserSeed>>(json, jsonOptions);
-
-    if (seeds is null or { Count: 0 })
-    {
-        Console.Error.WriteLine("Users.json is empty or invalid.");
-        return;
-    }
-
-    var records = seeds.Select(seed => new UserRecord
-    {
-        Id = seed.Id,
-        DisplayName = seed.DisplayName,
-        Email = seed.Email.ToLowerInvariant(),
-        PasswordHash = passwordHash.Value,
-        Role = Enum.Parse<UserRole>(seed.Role),
-        CreatedAt = now,
-        UpdatedAt = now,
-        RowVersion = 1,
-    }).ToList();
-
-    dbContext.Users.AddRange(records);
-    await dbContext.SaveChangesAsync();
-
-    Console.WriteLine($"Seeded {records.Count} users.");
-}

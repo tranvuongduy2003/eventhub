@@ -10,7 +10,9 @@
     "**/contracts/openapi/.build/**",
     "**/Migrations/**",
     "**/bin/**",
-    "**/obj/**"
+    "**/obj/**",
+    "**/e2e/test-results/**",
+    "**/e2e/playwright-report/**"
   ],
   "layers": {
     "src/Domain/": {
@@ -42,6 +44,10 @@
       "postEditAction": "test",
       "testProject": "tests/Api.IntegrationTests/EventHub.Api.IntegrationTests.csproj",
       "namespaceFromSegment": true
+    },
+    "e2e/": {
+      "postEditAction": "test",
+      "testCommand": "yarn --cwd e2e test --reporter=line"
     }
   }
 }

@@ -1,0 +1,22 @@
+[
+  {
+    "name": "EventManagement",
+    "description": "Create, edit, publish, and cancel events"
+  },
+  {
+    "name": "Ticketing",
+    "description": "Manage ticket types, pricing, inventory, and holds"
+  },
+  {
+    "name": "CheckIn",
+    "description": "Scan QR tickets and perform manual check-in at the door"
+  },
+  {
+    "name": "Reporting",
+    "description": "View sales, attendance, and revenue reports"
+  },
+  {
+    "name": "StaffManagement",
+    "description": "Assign and revoke roles, manage invitations"
+  }
+]

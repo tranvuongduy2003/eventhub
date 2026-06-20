@@ -15,6 +15,12 @@ public sealed class ApplicationDatabaseContext(DbContextOptions<ApplicationDatab
 
     public DbSet<EventRecord> Events => Set<EventRecord>();
 
+    public DbSet<EventUserRoleRecord> EventUserRoles => Set<EventUserRoleRecord>();
+
+    public DbSet<EventInvitationRecord> EventInvitations => Set<EventInvitationRecord>();
+
+    public DbSet<PermissionAuditEntryRecord> PermissionAuditEntries => Set<PermissionAuditEntryRecord>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(SchemaName);

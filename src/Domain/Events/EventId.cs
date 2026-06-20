@@ -9,7 +9,7 @@ public readonly record struct EventId(int Value)
         if (value <= 0)
         {
             throw new BusinessRuleValidationException(
-                "EVENT_ID_EMPTY",
+                "EVENT_ID_INVALID",
                 "Event id must be a positive integer.");
         }
 

@@ -116,5 +116,5 @@ function Test-ShouldVerifyFile {
         }
     }
 
-    return ($rel -match '\.(cs|tsx?|jsx?|css)$|^tests/')
+    return ($rel -match '\.(cs|tsx?|jsx?|css)$|^tests/|^e2e/')
 }

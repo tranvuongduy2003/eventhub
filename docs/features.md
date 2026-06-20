@@ -55,20 +55,20 @@ You cannot sell a ticket before an event exists; you cannot price a ticket befor
 | EP-5 | Purchase & Checkout | MVP | EP-4, EP-3 |
 | EP-6 | Payment | MVP → Next | EP-5 |
 | EP-7 | Ticket Delivery & Attendee Access | MVP → Later | EP-6 |
-| EP-8 | Event-Day Check-in | MVP → Later | EP-7, EP-1 |
-| EP-9 | Audience & Results | Next → Later | EP-5, EP-6, EP-7, EP-8 |
+| EP-8 | Event-Day Check-in | MVP → Later | EP-7, F-1.7 |
+| EP-9 | Audience & Results | Next → Later | EP-5, EP-6, EP-7, EP-8, F-1.7 |
 | EP-10 | Fair Transfer & Returns | Next → Later | EP-7, EP-3, EP-6 |
 | EP-11 | Realtime Monitoring | Next → Later | EP-5, EP-6, EP-8 |
 
 ### 0.5 Roadmap by phase (feature-level)
-- **MVP:** F-1.1, F-1.2 · F-2.1, F-2.2, F-2.3, F-2.4, F-2.5 · F-3.1, F-3.2, F-3.3, F-3.4 · F-4.1, F-4.2 · F-5.1, F-5.2, F-5.3, F-5.4, F-5.5, F-5.6 · F-6.1, F-6.2, F-6.3, F-6.4, F-6.5 · F-7.1, F-7.2, F-7.3, F-7.4 · F-8.1, F-8.2, F-8.3, F-8.4
-- **Next:** F-1.3 · F-2.6 · F-3.5, F-3.6, F-3.7, F-3.8 · F-4.3, F-4.4, F-4.5 · F-6.6 · F-7.5 · F-8.5 · F-9.1, F-9.2, F-9.3, F-9.4 · F-10.1, F-10.2 · F-11.1
-- **Later:** F-1.4 · F-2.7 · F-7.6 · F-8.6 · F-9.5, F-9.6 · F-10.3, F-10.4 · F-11.2, F-11.3
+- **MVP:** F-1.1, F-1.2, F-1.5, F-1.6 · F-2.1, F-2.2, F-2.3, F-2.4, F-2.5 · F-3.1, F-3.2, F-3.3, F-3.4 · F-4.1, F-4.2 · F-5.1, F-5.2, F-5.3, F-5.4, F-5.5, F-5.6 · F-6.1, F-6.2, F-6.3, F-6.4, F-6.5 · F-7.1, F-7.2, F-7.3, F-7.4 · F-8.1, F-8.2, F-8.3, F-8.4
+- **Next:** F-1.3, F-1.7, F-1.8 · F-2.6 · F-3.5, F-3.6, F-3.7, F-3.8 · F-4.3, F-4.4, F-4.5 · F-6.6 · F-7.5 · F-8.5 · F-9.1, F-9.2, F-9.3, F-9.4 · F-10.1, F-10.2 · F-11.1
+- **Later:** F-1.4, F-1.9 · F-2.7 · F-7.6 · F-8.6 · F-9.5, F-9.6 · F-10.3, F-10.4 · F-11.2, F-11.3
 
 ---
 
 ## EP-1 — Organizer Accounts & Identity
-**Goal:** Let an organizer create an account and sign in, so every owner-scoped action (creating events, checking in, viewing their data) has an identity behind it.
+**Goal:** Let an organizer create an account and sign in, define roles and permissions, and control who can do what on each event — so every action has an identity and an authorization behind it.
 **Depends on:** nothing — this is the foundation every other epic stands on.
 
 #### F-1.1 — Register an organizer account
@@ -104,6 +104,54 @@ An attendee may optionally create an account to keep their tickets together; buy
   - When an attendee creates an account, then tickets bought with their email can be linked and viewed in one place (see F-7.6).
   - Given no account, when an attendee buys, then the purchase still completes as a guest.
 
+#### F-1.5 — Define roles and permissions
+`MVP · serves PER-O1, PER-O2 · depends on F-1.1`
+Establish a set of roles with distinct permission sets that govern what a user can do on an event.
+- *Story:* As an organizer, I want to define roles so that I can control who can manage my events and what they can do.
+- **Acceptance criteria**
+  - The system defines at least two roles: **Owner** (full control over the event — create, edit, publish, cancel, manage tickets, manage staff, check-in, view results) and **Staff** (limited to check-in operations and viewing attendee lists for assigned events).
+  - Permissions are grouped by capability area: Event Management, Ticketing, Check-in, Reporting, and Staff Management.
+  - A role's permissions are non-overlapping with system-level account capabilities (e.g., creating events is an Owner action, not a global permission).
+
+#### F-1.6 — Assign roles to users per event
+`MVP · serves PER-O1, PER-O2 · depends on F-1.5`
+An event owner can assign roles to other users for that specific event.
+- *Story:* As an organizer, I want to assign staff to my event so that they can help with check-in without having full control.
+- **Acceptance criteria**
+  - When I assign a user to a role for my event, then that user gains the permissions of that role for that event only.
+  - A user can hold different roles on different events (e.g., Staff on one event, Owner on another).
+  - An event must have exactly one Owner; assigning a new Owner transfers ownership and demotes the previous Owner to Staff.
+  - I cannot assign a role to a user who already holds that same role on the event (duplicate assignment is rejected).
+
+#### F-1.7 — Role-based access control for event operations
+`Next · serves PER-O1, PER-O2 · depends on F-1.6`
+Every event operation checks the caller's role before executing.
+- *Story:* As an organizer, I want my event operations protected so that only authorized users can perform them.
+- **Acceptance criteria**
+  - When a user attempts an operation (edit event, publish, cancel, manage tickets, check-in, view results), then the system verifies they hold a role with the required permission for that event.
+  - A user without the required role is refused with a clear "insufficient permissions" message; the operation does not execute.
+  - The check-in scan (F-8.1) requires the Check-in permission; a Staff user with only Check-in permission cannot edit the event or manage tickets.
+  - Public operations (viewing published event pages, purchasing tickets — EP-4, EP-5) are not affected by RBAC and remain accessible to all visitors.
+
+#### F-1.8 — Invite staff to an event
+`Next · serves PER-O1, PER-O2 · depends on F-1.6, F-7.2`
+An organizer invites a person by email to become Staff on an event.
+- *Story:* As an organizer, I want to invite my team members by email so that they can help run the event.
+- **Acceptance criteria**
+  - When I invite a person by email with the Staff role, then an invitation email is sent; upon acceptance, the person is assigned the Staff role for that event.
+  - If the invitee does not have an account, they are prompted to register (F-1.1) before accepting.
+  - An invitation can be revoked before acceptance; a revoked invitation cannot be accepted.
+  - An invitation expires after a configurable window (default 7 days); an expired invitation cannot be accepted.
+
+#### F-1.9 — Permission audit log
+`Later · serves PER-O1, PER-O2 · depends on F-1.7`
+A log of role assignments and permission changes for accountability.
+- *Story:* As an organizer, I want to see who changed permissions and when so that I can audit access to my events.
+- **Acceptance criteria**
+  - When a role is assigned, revoked, or transferred, then an audit entry is created recording the actor, the target user, the event, the old role (if any), the new role (if any), and the timestamp.
+  - I can view the audit log for my events, filtered by date range and action type.
+  - Audit entries are immutable once created.
+
 ---
 
 ## EP-2 — Event Creation & Management
@@ -116,7 +164,7 @@ An attendee may optionally create an account to keep their tickets together; buy
 An organizer creates an event with its core details; it starts as a private draft.
 - *Story:* As an organizer, I want to create an event so that I can begin setting it up before selling.
 - **Acceptance criteria**
-  - Given I am signed in, when I provide a title, start/end date-time with a time zone, and a location (a physical address **or** marked online), then a new event is created in **Draft**, owned by me.
+  - Given I am signed in, when I provide a title, start/end date-time with a time zone, and a location (a physical address **or** marked online), then a new event is created in **Draft**, owned by me with the Owner role (F-1.5).
   - A draft is visible only to its owner.
   - Missing required fields block creation with a clear message.
 
@@ -124,7 +172,8 @@ An organizer creates an event with its core details; it starts as a private draf
 `MVP · serves PER-O1, PER-O2 · depends on F-2.1`
 An organizer uploads a cover image shown on the public page.
 - **Acceptance criteria**
-  - When I upload a supported image within the size limit, then it is stored and shown as the event cover.
+  - Given I hold the Owner role for the event (F-1.5), when I upload a supported image within the size limit, then it is stored and shown as the event cover.
+  - A user without the Owner role is refused with an "insufficient permissions" message.
   - An unsupported or oversized file is rejected with a clear message.
 - *Note:* the image is stored as an object (see `technical.md` §5); the event keeps a reference, not the bytes.
 
@@ -132,36 +181,41 @@ An organizer uploads a cover image shown on the public page.
 `MVP · serves PER-O1, PER-O2 · depends on F-2.1`
 An organizer edits an event, with safeguards once it is live.
 - **Acceptance criteria**
-  - While **Draft**, I can edit any detail freely.
-  - While **Published**, I can edit descriptive fields, but a change that would harm sold tickets (for example, reducing a ticket type's capacity below the number already sold) is blocked with an explanation.
+  - Given I hold the Owner role for the event (F-1.5), while **Draft**, I can edit any detail freely.
+  - Given the Owner role, while **Published**, I can edit descriptive fields, but a change that would harm sold tickets (for example, reducing a ticket type's capacity below the number already sold) is blocked with an explanation.
+  - A user without the Owner role is refused with an "insufficient permissions" message.
 
 #### F-2.4 — Publish an event
 `MVP · serves PER-O1, PER-O2 · depends on F-2.1, F-3.1`
 An organizer makes an event public and sellable.
 - *Story:* As an organizer, I want to publish so that people can find and buy tickets.
 - **Acceptance criteria**
-  - Given the event has the required details and **at least one ticket type** (F-3.1), when I publish, then it moves **Draft → Published** and receives a stable public link (used by EP-4).
+  - Given I hold the Owner role for the event (F-1.5) and the event has the required details and **at least one ticket type** (F-3.1), when I publish, then it moves **Draft → Published** and receives a stable public link (used by EP-4).
+  - A user without the Owner role is refused with an "insufficient permissions" message.
   - Publishing is blocked, with reasons, if requirements are unmet.
 
 #### F-2.5 — Close or cancel an event
 `MVP · serves PER-O1, PER-O2 · depends on F-2.4`
 An organizer stops sales (Close) or cancels the event (Cancel).
 - **Acceptance criteria**
-  - When I **Close** an event, then no new purchases are allowed but issued tickets remain valid for entry.
-  - When I **Cancel** an event, then sales stop and it is marked cancelled; once payments exist, cancellation triggers refunds (F-6.6).
+  - Given I hold the Owner role for the event (F-1.5), when I **Close** an event, then no new purchases are allowed but issued tickets remain valid for entry.
+  - Given the Owner role, when I **Cancel** an event, then sales stop and it is marked cancelled; once payments exist, cancellation triggers refunds (F-6.6).
+  - A user without the Owner role is refused with an "insufficient permissions" message.
   - Attendees of a cancelled event can be notified (light messaging, F-9.5, when available).
 
 #### F-2.6 — Duplicate an event
 `Next · serves PER-O1, PER-O2 · depends on F-2.1`
 An organizer clones a past event's setup to reuse it.
 - **Acceptance criteria**
-  - When I duplicate an event, then a new **Draft** is created copying details and ticket-type definitions (not sales, attendees, or dates).
+  - Given I hold the Owner role for the source event (F-1.5), when I duplicate an event, then a new **Draft** is created copying details and ticket-type definitions (not sales, attendees, or dates), and I become the Owner of the new event.
+  - A user without the Owner role is refused with an "insufficient permissions" message.
 
 #### F-2.7 — Multiple occurrences / sessions
 `Later · serves PER-O2 · depends on F-2.1`
 An organizer offers an event that runs on several dates.
 - **Acceptance criteria**
-  - When I add occurrences, then each occurrence has its own date and its own inventory, while sharing the event's description and page.
+  - Given I hold the Owner role for the event (F-1.5), when I add occurrences, then each occurrence has its own date and its own inventory, while sharing the event's description and page.
+  - A user without the Owner role is refused with an "insufficient permissions" message.
 - *Note:* optional; kept out of the core to protect simplicity (`prd.md` QG-1).
 
 ---
@@ -176,7 +230,8 @@ An organizer offers an event that runs on several dates.
 An organizer creates a ticket type with a name, a price, and a quantity.
 - *Story:* As an organizer, I want to define a ticket so that there is something to sell.
 - **Acceptance criteria**
-  - When I add a ticket type with a name, a price (in the configured currency), and a capacity, then it is attached to the event.
+  - Given I hold the Owner role for the event (F-1.5), when I add a ticket type with a name, a price (in the configured currency), and a capacity, then it is attached to the event.
+  - A user without the Owner role is refused with an "insufficient permissions" message.
   - A price of zero makes it a **free** ticket type (F-3.2).
   - An event must have at least one ticket type before it can be published (F-2.4).
 
@@ -207,26 +262,30 @@ Track availability and never sell beyond capacity, even under simultaneous buyer
 `Next · serves PER-O1, PER-O2 · depends on F-3.1`
 Offer several tiers (for example General, VIP, Early-bird), each with its own price and capacity.
 - **Acceptance criteria**
-  - When I add more than one ticket type, then each is sold and tracked independently and all appear on the event page.
+  - Given I hold the Owner role for the event (F-1.5), when I add more than one ticket type, then each is sold and tracked independently and all appear on the event page.
+  - A user without the Owner role is refused with an "insufficient permissions" message.
 
 #### F-3.6 — Per-order purchase limit
 `Next · serves PER-O1 · depends on F-3.1`
 Cap how many tickets one order may buy, to keep access fair.
 - **Acceptance criteria**
-  - When a limit is set, then an order exceeding it is blocked with a clear message.
+  - Given I hold the Owner role for the event (F-1.5), when I set a limit, then an order exceeding it is blocked with a clear message.
+  - A user without the Owner role is refused with an "insufficient permissions" message.
 
 #### F-3.7 — Discount codes
 `Next · serves PER-O1, PER-O2 · depends on F-3.1, F-3.3`
 An organizer issues codes that reduce the price transparently at checkout.
 - **Acceptance criteria**
-  - When I create a code (percentage or fixed amount, with an optional validity window and usage cap), then a valid code applied at checkout lowers the final total, and the discounted total is the amount charged.
+  - Given I hold the Owner role for the event (F-1.5), when I create a code (percentage or fixed amount, with an optional validity window and usage cap), then a valid code applied at checkout lowers the final total, and the discounted total is the amount charged.
+  - A user without the Owner role is refused with an "insufficient permissions" message.
   - An expired, exhausted, or unknown code is rejected without changing the price.
 
 #### F-3.8 — Scheduled on-sale window
 `Next · serves PER-O1, PER-O2 · depends on F-3.1`
 A ticket type can be on sale only between set times.
 - **Acceptance criteria**
-  - Before the start time the ticket type is not purchasable; between start and end it is; after the end it stops selling — all reflected on the event page.
+  - Given I hold the Owner role for the event (F-1.5), when I set a sales window, then before the start time the ticket type is not purchasable; between start and end it is; after the end it stops selling — all reflected on the event page.
+  - A user without the Owner role is refused with an "insufficient permissions" message.
 
 ---
 
@@ -407,7 +466,7 @@ A signed-in attendee sees all their tickets in one place.
 
 ## EP-8 — Event-Day Check-in
 **Goal:** Validate tickets at the door and prevent double entry.
-**Depends on:** EP-7 (issued tickets to scan) and EP-1 (an authorized organizer/staff).
+**Depends on:** EP-7 (issued tickets to scan) and F-1.7 (role-based access control for check-in authorization).
 **Builds on previous:** scans the codes minted in EP-7 and produces the attendance data that EP-9 and EP-11 report on.
 
 #### F-8.1 — Scan and validate a ticket
@@ -415,7 +474,8 @@ A signed-in attendee sees all their tickets in one place.
 Staff scan a QR to admit an attendee.
 - *Story:* As an organizer at the door, I want to scan tickets so that only valid holders enter.
 - **Acceptance criteria**
-  - Given I am the event's owner (or authorized staff), when I scan a valid, unused ticket for this event, then it is accepted and marked **checked in**.
+  - Given I hold the Owner or Staff role with Check-in permission for the event (F-1.5), when I scan a valid, unused ticket for this event, then it is accepted and marked **checked in**.
+  - A user without Check-in permission is refused with an "insufficient permissions" message.
   - A code for a different event, a cancelled order, or an unknown code is rejected with a clear reason.
 
 #### F-8.2 — Prevent double scan
@@ -428,16 +488,18 @@ A ticket admits exactly once.
 `MVP · serves PER-O1, PER-O2 · depends on F-8.1`
 Check in by searching when scanning is not possible.
 - **Acceptance criteria**
-  - When I search by code or buyer email, then I can find the matching ticket and check it in manually, with the same double-entry protection (F-8.2).
+  - Given I hold the Owner or Staff role with Check-in permission for the event (F-1.5), when I search by code or buyer email, then I can find the matching ticket and check it in manually, with the same double-entry protection (F-8.2).
+  - A user without Check-in permission is refused with an "insufficient permissions" message.
 
 #### F-8.4 — Door counts
 `MVP · serves PER-O1, PER-O2 · depends on F-8.1`
 A simple running tally at the door.
 - **Acceptance criteria**
-  - During check-in, I can see how many tickets are checked in versus the total issued.
+  - Given I hold the Owner or Staff role with Check-in permission for the event (F-1.5), during check-in, I can see how many tickets are checked in versus the total issued.
+  - A user without Check-in permission cannot view door counts.
 
 #### F-8.5 — Multiple staff / devices
-`Next · serves PER-O2 · depends on F-8.1`
+`Next · serves PER-O2 · depends on F-8.1, F-1.7`
 Several people check in at once without conflicts.
 - **Acceptance criteria**
   - Given two staff scanning at the same time, when the same ticket is presented twice, then only the first is accepted (consistency holds across devices).
@@ -453,7 +515,7 @@ Keep scanning through brief connectivity gaps.
 
 ## EP-9 — Audience & Results
 **Goal:** Give organizers the audience data they own and simple results, then the ability to message attendees.
-**Depends on:** EP-5–EP-8 — there must be orders, attendees, tickets, and check-ins to work with.
+**Depends on:** EP-5–EP-8 — there must be orders, attendees, tickets, and check-ins to work with. Also F-1.7 (role-based access control for reporting authorization).
 **Builds on previous:** reads the records produced across the purchase, payment, delivery, and check-in epics.
 
 #### F-9.1 — Attendee list per event
@@ -461,37 +523,43 @@ Keep scanning through brief connectivity gaps.
 The organizer sees everyone who bought or attended.
 - *Story:* As an organizer, I want my attendee list so that I own my audience relationship (`prd.md` G-5).
 - **Acceptance criteria**
-  - For my event, I can see each attendee's name, email, ticket type, order, and check-in status.
+  - Given I hold the Owner or Staff role with Reporting permission for the event (F-1.5), I can see each attendee's name, email, ticket type, order, and check-in status.
+  - A user without Reporting permission is refused with an "insufficient permissions" message.
 
 #### F-9.2 — Export attendees
 `Next · serves PER-O1, PER-O2 · depends on F-9.1`
 Take the audience data elsewhere.
 - **Acceptance criteria**
-  - When I export, then I get a CSV of the attendee list for my event.
+  - Given I hold the Owner role for the event (F-1.5), when I export, then I get a CSV of the attendee list for my event.
+  - A user without the Owner role (including Staff) is refused with an "insufficient permissions" message.
 
 #### F-9.3 — Sales and attendance results
 `Next · serves PER-O1, PER-O2 · depends on F-3.1, F-6.3, F-8.1`
 A simple results view per event.
 - **Acceptance criteria**
-  - I can see tickets sold by type, total revenue (which equals gross, since there is no platform fee), the check-in rate, and the number of no-shows — the figures behind the North Star (`prd.md` §3.2).
+  - Given I hold the Owner or Staff role with Reporting permission for the event (F-1.5), I can see tickets sold by type, total revenue (which equals gross, since there is no platform fee), the check-in rate, and the number of no-shows — the figures behind the North Star (`prd.md` §3.2).
+  - A user without Reporting permission is refused with an "insufficient permissions" message.
 
 #### F-9.4 — Organizer events overview
 `Next · serves PER-O1, PER-O2 · depends on F-2.1, F-9.3`
 A home view of all the organizer's events.
 - **Acceptance criteria**
-  - I see a list of my events with quick stats (sold, revenue, date, status) and can open any one's results.
+  - Given I am signed in, I see a list of events where I hold the Owner role (F-1.5), with quick stats (sold, revenue, date, status), and can open any one's results.
+  - Events where I hold only the Staff role appear in a separate section with check-in stats only.
 
 #### F-9.5 — Light messaging to attendees
 `Later · serves PER-O1, PER-O2 · depends on F-9.1, F-7.2`
 Email an event's attendees.
 - **Acceptance criteria**
-  - When I send a message to an event's attendees (for example a reminder, update, or cancellation notice), then it is delivered to their emails (processed asynchronously — see `technical.md` §5).
+  - Given I hold the Owner role for the event (F-1.5), when I send a message to an event's attendees (for example a reminder, update, or cancellation notice), then it is delivered to their emails (processed asynchronously — see `technical.md` §5).
+  - A user without the Owner role (including Staff) is refused with an "insufficient permissions" message.
 
 #### F-9.6 — Automatic event reminder
 `Later · serves PER-O1, PER-A1 · depends on F-9.5`
 An optional reminder before the event.
 - **Acceptance criteria**
-  - When I enable a reminder, then attendees receive an email a set time before the event.
+  - Given I hold the Owner role for the event (F-1.5), when I enable a reminder, then attendees receive an email a set time before the event.
+  - A user without the Owner role is refused with an "insufficient permissions" message.
 
 ---
 
@@ -520,6 +588,7 @@ Transfers cannot be abused for entry.
 For a sold-out event, a holder can hand a ticket back to be re-sold.
 - **Acceptance criteria**
   - Given a sold-out event, when a holder returns a ticket, then it re-enters availability to be sold again at face value, and the returner is refunded through the provider.
+  - Given I hold the Owner role for the event (F-1.5), I can approve or process the return; a user without the Owner role cannot initiate returns on behalf of the event.
 
 #### F-10.4 — Return eligibility and limits
 `Later · serves PER-O1 · depends on F-10.3`
@@ -538,19 +607,22 @@ Clear, fair rules for returns.
 `Next · serves PER-O1, PER-O2 · depends on F-5.3, F-3.4`
 The organizer's event view updates as tickets sell.
 - **Acceptance criteria**
-  - When tickets are bought, then my open event view updates the sold count and remaining availability without a manual refresh (delivered in real time — see `technical.md` §5).
+  - Given I hold the Owner or Staff role with Reporting permission for the event (F-1.5), when tickets are bought, then my open event view updates the sold count and remaining availability without a manual refresh (delivered in real time — see `technical.md` §5).
+  - A user without Reporting permission does not receive live sales updates.
 
 #### F-11.2 — Live check-in progress
 `Later · serves PER-O1, PER-O2 · depends on F-8.4, F-8.5`
 The door count updates live across staff devices.
 - **Acceptance criteria**
-  - During check-in, the checked-in count updates in real time and stays consistent across all staff devices.
+  - Given I hold the Owner or Staff role with Check-in permission for the event (F-1.5), during check-in, the checked-in count updates in real time and stays consistent across all staff devices.
+  - A user without Check-in permission does not receive live check-in updates.
 
 #### F-11.3 — Sold-out / low-stock nudges
 `Later · serves PER-O1, PER-O2 · depends on F-3.4, F-11.1`
 A live heads-up as inventory runs low.
 - **Acceptance criteria**
-  - When a ticket type is nearly or fully sold, then the organizer receives a real-time notification.
+  - Given I hold the Owner role for the event (F-1.5), when a ticket type is nearly or fully sold, then I receive a real-time notification.
+  - A user without the Owner role (including Staff) does not receive sold-out nudges.
 
 ---
 
