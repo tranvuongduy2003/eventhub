@@ -13,6 +13,7 @@ public sealed class AssignRoleCommandHandler(
     ICurrentUserAccessor currentUserAccessor,
     IUserRepository userRepository,
     IEventUserRoleRepository eventUserRoleRepository,
+    IPermissionAuditEntryRepository auditEntryRepository,
     IClock clock)
     : CommandHandler<AssignRoleCommand, AssignRoleResult>
 {
@@ -73,6 +74,12 @@ public sealed class AssignRoleCommandHandler(
             {
                 await eventUserRoleRepository.UpdateRoleAsync(
                     eventId, currentOwner.UserId, EventRole.Staff, cancellationToken);
+
+                await auditEntryRepository.AddAsync(
+                    PermissionAuditEntry.Create(
+                        eventId, callerId, currentOwner.UserId,
+                        AuditAction.Transferred, EventRole.Owner, EventRole.Staff, clock.UtcNow),
+                    cancellationToken);
             }
 
             if (existingAssignment is not null)
@@ -86,6 +93,12 @@ public sealed class AssignRoleCommandHandler(
                     EventUserRole.Create(eventId, targetUserId, EventRole.Owner, clock.UtcNow),
                     cancellationToken);
             }
+
+            await auditEntryRepository.AddAsync(
+                PermissionAuditEntry.Create(
+                    eventId, callerId, targetUserId,
+                    AuditAction.Assigned, existingAssignment?.Role, EventRole.Owner, clock.UtcNow),
+                cancellationToken);
         }
         else
         {
@@ -100,6 +113,12 @@ public sealed class AssignRoleCommandHandler(
                     EventUserRole.Create(eventId, targetUserId, EventRole.Staff, clock.UtcNow),
                     cancellationToken);
             }
+
+            await auditEntryRepository.AddAsync(
+                PermissionAuditEntry.Create(
+                    eventId, callerId, targetUserId,
+                    AuditAction.Assigned, existingAssignment?.Role, EventRole.Staff, clock.UtcNow),
+                cancellationToken);
         }
 
         return new AssignRoleResult(

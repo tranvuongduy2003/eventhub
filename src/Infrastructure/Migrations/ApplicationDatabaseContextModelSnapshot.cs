@@ -129,6 +129,59 @@ namespace EventHub.Infrastructure.Migrations
                     b.ToTable("event_user_roles", "app");
                 });
 
+            modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.PermissionAuditEntryRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("action");
+
+                    b.Property<Guid>("ActorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_id");
+
+                    b.Property<int>("EventId")
+                        .HasColumnType("integer")
+                        .HasColumnName("event_id");
+
+                    b.Property<string>("NewRole")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("new_role");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("OldRole")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("old_role");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("target_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorId");
+
+                    b.HasIndex("TargetId");
+
+                    b.HasIndex("EventId", "OccurredAt")
+                        .HasDatabaseName("ix_permission_audit_log_event_id_occurred_at");
+
+                    b.ToTable("permission_audit_log", "app");
+                });
+
             modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.UserRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -247,6 +300,25 @@ namespace EventHub.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.PermissionAuditEntryRecord", b =>
+                {
+                    b.HasOne("EventHub.Infrastructure.Persistence.Entities.UserRecord", "Actor")
+                        .WithMany()
+                        .HasForeignKey("ActorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EventHub.Infrastructure.Persistence.Entities.UserRecord", "Target")
+                        .WithMany()
+                        .HasForeignKey("TargetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Actor");
+
+                    b.Navigation("Target");
                 });
 
             modelBuilder.Entity("EventHub.Infrastructure.Persistence.Entities.UserSessionRecord", b =>

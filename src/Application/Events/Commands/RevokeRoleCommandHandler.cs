@@ -1,5 +1,7 @@
+using EventHub.Application.Abstractions.Auth;
 using EventHub.Application.Abstractions.Messaging;
 using EventHub.Application.Abstractions.Persistence;
+using EventHub.Application.Abstractions.Services;
 using EventHub.Application.Common;
 using EventHub.Domain.Events;
 using EventHub.Domain.Exceptions;
@@ -8,13 +10,17 @@ using EventHub.Domain.Users;
 namespace EventHub.Application.Events.Commands;
 
 public sealed class RevokeRoleCommandHandler(
-    IEventUserRoleRepository eventUserRoleRepository)
+    ICurrentUserAccessor currentUserAccessor,
+    IEventUserRoleRepository eventUserRoleRepository,
+    IPermissionAuditEntryRepository auditEntryRepository,
+    IClock clock)
     : CommandHandler<RevokeRoleCommand>
 {
     public override async Task<Result> Handle(
         RevokeRoleCommand command,
         CancellationToken cancellationToken)
     {
+        var callerId = currentUserAccessor.UserId!.Value;
         var eventId = EventId.From(command.EventId);
 
         UserId targetUserId;
@@ -44,6 +50,12 @@ public sealed class RevokeRoleCommandHandler(
 
         await eventUserRoleRepository.DeleteByEventAndUserAsync(
             eventId, targetUserId, cancellationToken);
+
+        await auditEntryRepository.AddAsync(
+            PermissionAuditEntry.Create(
+                eventId, callerId, targetUserId,
+                AuditAction.Revoked, targetAssignment.Role, null, clock.UtcNow),
+            cancellationToken);
 
         return Result.Success();
     }

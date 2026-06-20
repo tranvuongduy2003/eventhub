@@ -20,6 +20,70 @@ components:
         - userId
         - role
       type: object
+    AuditLogEntryResponse:
+      properties:
+        action:
+          type: string
+        actorName:
+          type: string
+        id:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        newRole:
+          type:
+            - "null"
+            - string
+        occurredAt:
+          format: date-time
+          type: string
+        oldRole:
+          type:
+            - "null"
+            - string
+        targetName:
+          type: string
+      required:
+        - id
+        - actorName
+        - targetName
+        - action
+        - oldRole
+        - newRole
+        - occurredAt
+      type: object
+    AuditLogResponse:
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/AuditLogEntryResponse"
+          type: array
+        page:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        pageSize:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        totalCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+      required:
+        - items
+        - totalCount
+        - page
+        - pageSize
+      type: object
     EventRoleAssignmentResponse:
       properties:
         displayName:
@@ -333,6 +397,82 @@ paths:
           description: Unauthorized
       tags:
         - Auth
+  /api/events/{eventId}/audit-log:
+    get:
+      operationId: ListAuditLog
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+        - in: query
+          name: page
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+        - in: query
+          name: pageSize
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+        - in: query
+          name: from
+          schema:
+            format: date-time
+            type: string
+        - in: query
+          name: to
+          schema:
+            format: date-time
+            type: string
+        - in: query
+          name: action
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditLogResponse"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - AuditLog
   /api/events/{eventId}/invitations:
     get:
       operationId: ListInvitations
@@ -851,6 +991,7 @@ paths:
 tags:
   - name: Health
   - name: Attendees
+  - name: AuditLog
   - name: Auth
   - name: EventInvitations
   - name: EventRoles
