@@ -18,4 +18,10 @@ internal sealed class EventRepository(ApplicationDatabaseContext databaseContext
 
         return record is null ? null : EventPersistenceMapper.ToDomain(record);
     }
+
+    public void Update(Event domain)
+    {
+        var record = EventPersistenceMapper.ToRecord(domain);
+        databaseContext.Events.Update(record);
+    }
 }

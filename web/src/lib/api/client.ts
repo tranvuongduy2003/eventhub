@@ -153,6 +153,14 @@ export class ApiClient {
     return this.request<TResponse>(path, { ...options, method: 'POST', body })
   }
 
+  put<TResponse>(
+    path: string,
+    body?: unknown,
+    options?: Omit<ApiRequestOptions, 'method' | 'body'>,
+  ) {
+    return this.request<TResponse>(path, { ...options, method: 'PUT', body })
+  }
+
   delete<TResponse>(path: string, options?: Omit<ApiRequestOptions, 'method' | 'body'>) {
     return this.request<TResponse>(path, { ...options, method: 'DELETE' })
   }

@@ -68,6 +68,7 @@ public sealed class EventDraftTests
             EventSchedule.Create(StartsAt, EndsAt, "UTC"),
             EventLocation.Create("123 Main St", false),
             EventStatus.Draft,
+            null,
             CreatedAt,
             CreatedAt,
             1);

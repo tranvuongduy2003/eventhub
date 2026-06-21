@@ -18,6 +18,7 @@ internal static class EventPersistenceMapper
             LocationPhysicalAddress = domain.Location.PhysicalAddress,
             LocationIsOnline = domain.Location.IsOnline,
             Status = domain.Status,
+            CoverImageKey = domain.CoverImageRef?.Value,
             CreatedAt = domain.CreatedAt,
             UpdatedAt = domain.UpdatedAt,
             RowVersion = domain.RowVersion,
@@ -31,6 +32,7 @@ internal static class EventPersistenceMapper
             EventSchedule.Create(record.ScheduleStartsAt, record.ScheduleEndsAt, record.ScheduleTimeZoneId),
             EventLocation.Create(record.LocationPhysicalAddress, record.LocationIsOnline),
             record.Status,
+            record.CoverImageKey is not null ? CoverImageRef.Create(record.CoverImageKey) : null,
             record.CreatedAt,
             record.UpdatedAt,
             record.RowVersion);

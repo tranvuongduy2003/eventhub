@@ -19,6 +19,8 @@ public sealed class Event : AggregateRoot<EventId>
 
     public EventStatus Status { get; private set; }
 
+    public CoverImageRef? CoverImageRef { get; private set; }
+
     public DateTimeOffset CreatedAt { get; private set; }
 
     public DateTimeOffset UpdatedAt { get; private set; }
@@ -52,6 +54,11 @@ public sealed class Event : AggregateRoot<EventId>
         Raise(new EventCreatedEvent(Id, OrganizerId));
     }
 
+    public void SetCoverImage(CoverImageRef coverImageRef)
+    {
+        CoverImageRef = coverImageRef;
+    }
+
     public static Event FromPersistence(
         EventId id,
         UserId organizerId,
@@ -59,6 +66,7 @@ public sealed class Event : AggregateRoot<EventId>
         EventSchedule schedule,
         EventLocation location,
         EventStatus status,
+        CoverImageRef? coverImageRef,
         DateTimeOffset createdAt,
         DateTimeOffset updatedAt,
         long rowVersion) =>
@@ -70,6 +78,7 @@ public sealed class Event : AggregateRoot<EventId>
             Schedule = schedule,
             Location = location,
             Status = status,
+            CoverImageRef = coverImageRef,
             CreatedAt = createdAt,
             UpdatedAt = updatedAt,
             RowVersion = rowVersion,

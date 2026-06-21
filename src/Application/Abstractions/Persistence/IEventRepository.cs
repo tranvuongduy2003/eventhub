@@ -7,4 +7,6 @@ public interface IEventRepository
     Task AddAsync(Event domain, CancellationToken cancellationToken = default);
 
     Task<Event?> GetByIdAsync(EventId eventId, CancellationToken cancellationToken = default);
+
+    void Update(Event domain);
 }

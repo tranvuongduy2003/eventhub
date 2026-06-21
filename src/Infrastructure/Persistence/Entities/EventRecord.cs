@@ -22,6 +22,8 @@ public sealed class EventRecord
 
     public EventStatus Status { get; set; }
 
+    public string? CoverImageKey { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
