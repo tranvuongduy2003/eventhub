@@ -1,3 +1,4 @@
+using EventHub.Application.Abstractions.Auth;
 using EventHub.Application.Abstractions.Messaging;
 using EventHub.Application.Abstractions.Persistence;
 using EventHub.Application.Common;
@@ -7,7 +8,8 @@ using EventHub.Domain.Events;
 namespace EventHub.Application.Events.Queries;
 
 public sealed class GetEventDetailsQueryHandler(
-    IEventRepository eventRepository)
+    IEventRepository eventRepository,
+    ICurrentUserAccessor currentUserAccessor)
     : QueryHandler<GetEventDetailsQuery, EventDetailsResponse>
 {
     public override async Task<Result<EventDetailsResponse>> Handle(
@@ -18,6 +20,12 @@ public sealed class GetEventDetailsQueryHandler(
 
         var eventAggregate = await eventRepository.GetByIdAsync(eventId, cancellationToken);
         if (eventAggregate is null)
+        {
+            return Error.NotFound("EVENT_NOT_FOUND", "The event was not found.");
+        }
+
+        if (eventAggregate.Status == EventStatus.Draft &&
+            eventAggregate.OrganizerId != currentUserAccessor.UserId)
         {
             return Error.NotFound("EVENT_NOT_FOUND", "The event was not found.");
         }

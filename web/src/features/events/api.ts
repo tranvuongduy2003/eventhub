@@ -42,6 +42,12 @@ export type EventDetailsResponse = {
   updatedAt: string
 }
 
+export type PublishEventResponse = {
+  status: string
+  slug: string
+  updatedAt: string
+}
+
 export function createDraftEvent(request: CreateDraftEventRequest, signal?: AbortSignal) {
   return apiClient.post<DraftEventResponse>('/api/events', request, {
     signal,
@@ -71,6 +77,13 @@ export function uploadCoverImage(eventId: number, file: File, signal?: AbortSign
   formData.append('file', file)
 
   return apiClient.put<CoverImageResponse>(`/api/events/${eventId}/cover-image`, formData, {
+    signal,
+    suppressErrorToast: true,
+  })
+}
+
+export function publishEvent(eventId: number, signal?: AbortSignal) {
+  return apiClient.post<PublishEventResponse>(`/api/events/${eventId}/publish`, undefined, {
     signal,
     suppressErrorToast: true,
   })

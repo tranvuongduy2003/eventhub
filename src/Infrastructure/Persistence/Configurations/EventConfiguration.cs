@@ -23,12 +23,18 @@ internal sealed class EventConfiguration : IEntityTypeConfiguration<EventRecord>
         builder.Property(e => e.LocationIsOnline).HasColumnName("location_is_online");
         builder.Property(e => e.Description).HasColumnName("description").HasMaxLength(2000);
         builder.Property(e => e.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(32).IsRequired();
+        builder.Property(e => e.Slug).HasColumnName("slug").HasMaxLength(300);
         builder.Property(e => e.CoverImageKey).HasColumnName("cover_image_key").HasMaxLength(512);
         builder.Property(e => e.CreatedAt).HasColumnName("created_at");
         builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
         builder.Property(e => e.RowVersion).AsRowVersion();
 
         builder.HasIndex(e => e.OrganizerId).HasDatabaseName("ix_events_organizer_id");
+
+        builder.HasIndex(e => e.Slug)
+            .HasDatabaseName("ix_events_slug")
+            .IsUnique()
+            .HasFilter("slug IS NOT NULL");
 
         builder.HasOne<EventHub.Infrastructure.Persistence.Entities.UserRecord>()
             .WithMany()

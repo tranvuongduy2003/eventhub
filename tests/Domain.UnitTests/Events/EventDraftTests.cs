@@ -70,6 +70,7 @@ public sealed class EventDraftTests
             null,
             EventStatus.Draft,
             null,
+            null,
             CreatedAt,
             CreatedAt,
             1);

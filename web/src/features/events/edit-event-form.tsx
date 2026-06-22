@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRef, type FormEvent, useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
@@ -69,6 +69,7 @@ interface EditEventFormProps {
 
 export function EditEventForm({ event }: EditEventFormProps) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const submittingRef = useRef(false)
 
   const { date: startDate, time: startTime } = useMemo(
@@ -135,6 +136,23 @@ export function EditEventForm({ event }: EditEventFormProps) {
     },
     onSettled: () => {
       submittingRef.current = false
+    },
+  })
+
+  const publishMutation = useMutation({
+    mutationFn: () => eventsApi.publishEvent(event.eventId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['events', event.eventId] })
+      void queryClient.invalidateQueries({ queryKey: ['events'] })
+    },
+    onError: (error) => {
+      if (error instanceof ApiError && error.status === 422) {
+        form.setError('root', {
+          message: error.problem.detail ?? 'This event cannot be published.',
+        })
+      } else {
+        form.setError('root', { message: 'Something went wrong. Please try again.' })
+      }
     },
   })
 
@@ -312,7 +330,7 @@ export function EditEventForm({ event }: EditEventFormProps) {
       </FieldGroup>
 
       <div className="flex gap-3">
-        <Button type="submit" disabled={editMutation.isPending}>
+        <Button type="submit" disabled={editMutation.isPending || publishMutation.isPending}>
           {editMutation.isPending ? (
             <>
               <Spinner className="mr-2" />
@@ -325,11 +343,28 @@ export function EditEventForm({ event }: EditEventFormProps) {
         <Button
           type="button"
           variant="outline"
-          disabled={editMutation.isPending}
+          disabled={editMutation.isPending || publishMutation.isPending}
           onClick={() => navigate(paths.events)}
         >
           Cancel
         </Button>
+        {event.status === 'Draft' && (
+          <Button
+            type="button"
+            variant="default"
+            disabled={editMutation.isPending || publishMutation.isPending}
+            onClick={() => publishMutation.mutate()}
+          >
+            {publishMutation.isPending ? (
+              <>
+                <Spinner className="mr-2" />
+                Publishing…
+              </>
+            ) : (
+              'Publish event'
+            )}
+          </Button>
+        )}
       </div>
     </form>
   )

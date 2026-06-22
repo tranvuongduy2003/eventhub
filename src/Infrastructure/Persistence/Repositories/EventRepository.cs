@@ -19,6 +19,9 @@ internal sealed class EventRepository(ApplicationDatabaseContext databaseContext
         return record is null ? null : EventPersistenceMapper.ToDomain(record);
     }
 
+    public async Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken = default) =>
+        await databaseContext.Events.AnyAsync(e => e.Slug == slug, cancellationToken);
+
     public void Update(Event domain)
     {
         var record = EventPersistenceMapper.ToRecord(domain);

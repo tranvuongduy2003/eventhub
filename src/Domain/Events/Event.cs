@@ -22,6 +22,8 @@ public sealed class Event : AggregateRoot<EventId>
 
     public EventStatus Status { get; private set; }
 
+    public Slug? Slug { get; private set; }
+
     public CoverImageRef? CoverImageRef { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
@@ -63,6 +65,28 @@ public sealed class Event : AggregateRoot<EventId>
         CoverImageRef = coverImageRef;
     }
 
+    public void Publish(Slug slug, DateTimeOffset publishedAt)
+    {
+        if (Status is not EventStatus.Draft)
+        {
+            throw new BusinessRuleValidationException(
+                "EVENT_NOT_PUBLISHABLE",
+                Status switch
+                {
+                    EventStatus.Published => "The event is already published.",
+                    EventStatus.Closed => "Cannot publish a closed event.",
+                    EventStatus.Cancelled => "Cannot publish a cancelled event.",
+                    _ => "The event cannot be published in its current status.",
+                });
+        }
+
+        Status = EventStatus.Published;
+        Slug = slug;
+        UpdatedAt = publishedAt;
+
+        Raise(new EventPublishedEvent(Id, slug));
+    }
+
     public void UpdateDetails(
         EventTitle title,
         EventSchedule schedule,
@@ -92,6 +116,7 @@ public sealed class Event : AggregateRoot<EventId>
         EventLocation location,
         string? description,
         EventStatus status,
+        Slug? slug,
         CoverImageRef? coverImageRef,
         DateTimeOffset createdAt,
         DateTimeOffset updatedAt,
@@ -105,6 +130,7 @@ public sealed class Event : AggregateRoot<EventId>
             Location = location,
             Description = description,
             Status = status,
+            Slug = slug,
             CoverImageRef = coverImageRef,
             CreatedAt = createdAt,
             UpdatedAt = updatedAt,

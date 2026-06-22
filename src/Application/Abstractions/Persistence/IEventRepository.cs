@@ -8,5 +8,7 @@ public interface IEventRepository
 
     Task<Event?> GetByIdAsync(EventId eventId, CancellationToken cancellationToken = default);
 
+    Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken = default);
+
     void Update(Event domain);
 }

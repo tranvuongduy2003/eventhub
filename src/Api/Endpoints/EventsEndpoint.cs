@@ -44,6 +44,18 @@ internal sealed class EventsEndpoint : IEndpoint
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        endpoints.MapPost("/api/events/{eventId}/publish", PublishEvent)
+            .WithName("PublishEvent")
+            .WithTags("Events")
+            .RequireAuthorization()
+            .Produces<PublishEventResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
     }
 
     private static async Task<IResult> CreateDraftEvent(
@@ -120,5 +132,26 @@ internal sealed class EventsEndpoint : IEndpoint
             request.IsOnline,
             editResult.Status,
             editResult.UpdatedAt));
+    }
+
+    private static async Task<IResult> PublishEvent(
+        int eventId,
+        ISender sender)
+    {
+        var command = new PublishEventCommand(eventId);
+
+        var result = await sender.Send(command);
+
+        if (!result.IsSuccess)
+        {
+            return result.ToHttpResult();
+        }
+
+        var publishResult = result.Value!;
+
+        return Results.Ok(new PublishEventResponse(
+            publishResult.Status,
+            publishResult.Slug,
+            publishResult.UpdatedAt));
     }
 }
