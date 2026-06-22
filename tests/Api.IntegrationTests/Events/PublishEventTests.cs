@@ -121,6 +121,15 @@ public sealed class PublishEventTests(IntegrationTestFixture fixture)
         databaseContext.Events.Add(eventRecord);
         await databaseContext.SaveChangesAsync();
 
+        databaseContext.EventUserRoles.Add(new EventUserRoleRecord
+        {
+            EventId = eventRecord.Id,
+            UserId = organizerId,
+            Role = EventRole.Owner,
+            CreatedAt = DateTimeOffset.UtcNow,
+        });
+        await databaseContext.SaveChangesAsync();
+
         return eventRecord.Id;
     }
 }
