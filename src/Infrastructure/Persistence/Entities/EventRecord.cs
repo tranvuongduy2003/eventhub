@@ -20,6 +20,8 @@ public sealed class EventRecord
 
     public bool LocationIsOnline { get; set; }
 
+    public string? Description { get; set; }
+
     public EventStatus Status { get; set; }
 
     public string? CoverImageKey { get; set; }

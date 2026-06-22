@@ -4,6 +4,7 @@ export const paths = {
   register: '/register',
   events: '/events',
   createEvent: '/events/create',
+  editEvent: '/events/:eventId/edit',
   checkout: '/checkout',
   tickets: '/tickets',
   checkIn: '/check-in',

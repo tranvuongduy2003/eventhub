@@ -19,8 +19,48 @@ export type CoverImageResponse = {
   coverImageUrl: string
 }
 
+export type EditEventDetailsRequest = {
+  title: string
+  startsAt: string
+  endsAt: string
+  timeZoneId: string
+  physicalAddress: string | null
+  isOnline: boolean
+  description: string | null
+}
+
+export type EventDetailsResponse = {
+  eventId: number
+  title: string
+  description: string | null
+  startsAt: string
+  endsAt: string
+  timeZoneId: string
+  physicalAddress: string | null
+  isOnline: boolean
+  status: string
+  updatedAt: string
+}
+
 export function createDraftEvent(request: CreateDraftEventRequest, signal?: AbortSignal) {
   return apiClient.post<DraftEventResponse>('/api/events', request, {
+    signal,
+    suppressErrorToast: true,
+  })
+}
+
+export function getEventDetails(eventId: number, signal?: AbortSignal) {
+  return apiClient.get<EventDetailsResponse>(`/api/events/${eventId}`, {
+    signal,
+  })
+}
+
+export function editEventDetails(
+  eventId: number,
+  request: EditEventDetailsRequest,
+  signal?: AbortSignal,
+) {
+  return apiClient.put<EventDetailsResponse>(`/api/events/${eventId}`, request, {
     signal,
     suppressErrorToast: true,
   })
