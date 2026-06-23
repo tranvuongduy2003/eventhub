@@ -33,9 +33,9 @@ export type EventDetailsResponse = {
   eventId: number
   title: string
   description: string | null
-  startsAt: string
-  endsAt: string
-  timeZoneId: string
+  startsAt: string | null
+  endsAt: string | null
+  timeZoneId: string | null
   physicalAddress: string | null
   isOnline: boolean
   status: string
@@ -57,6 +57,11 @@ export type CancelEventResponse = {
   status: string
   cancelledAt: string
   updatedAt: string
+}
+
+export type DuplicateEventResponse = {
+  status: string
+  createdAt: string
 }
 
 export function createDraftEvent(request: CreateDraftEventRequest, signal?: AbortSignal) {
@@ -109,6 +114,13 @@ export function closeEvent(eventId: number, signal?: AbortSignal) {
 
 export function cancelEvent(eventId: number, signal?: AbortSignal) {
   return apiClient.post<CancelEventResponse>(`/api/events/${eventId}/cancel`, undefined, {
+    signal,
+    suppressErrorToast: true,
+  })
+}
+
+export function duplicateEvent(eventId: number, signal?: AbortSignal) {
+  return apiClient.post<DuplicateEventResponse>(`/api/events/${eventId}/duplicate`, undefined, {
     signal,
     suppressErrorToast: true,
   })

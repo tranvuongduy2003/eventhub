@@ -18,7 +18,7 @@ internal sealed class EventConfiguration : IEntityTypeConfiguration<EventRecord>
         builder.Property(e => e.Title).HasColumnName("title").HasMaxLength(200).IsRequired();
         builder.Property(e => e.ScheduleStartsAt).HasColumnName("schedule_starts_at");
         builder.Property(e => e.ScheduleEndsAt).HasColumnName("schedule_ends_at");
-        builder.Property(e => e.ScheduleTimeZoneId).HasColumnName("schedule_time_zone_id").HasMaxLength(100).IsRequired();
+        builder.Property(e => e.ScheduleTimeZoneId).HasColumnName("schedule_time_zone_id").HasMaxLength(100);
         builder.Property(e => e.LocationPhysicalAddress).HasColumnName("location_physical_address").HasMaxLength(500);
         builder.Property(e => e.LocationIsOnline).HasColumnName("location_is_online");
         builder.Property(e => e.Description).HasColumnName("description").HasMaxLength(2000);

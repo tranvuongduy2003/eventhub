@@ -14,7 +14,7 @@ public sealed class Event : AggregateRoot<EventId>
 
     public EventTitle Title { get; private set; } = null!;
 
-    public EventSchedule Schedule { get; private set; } = null!;
+    public EventSchedule? Schedule { get; private set; }
 
     public EventLocation Location { get; private set; } = null!;
 
@@ -60,6 +60,25 @@ public sealed class Event : AggregateRoot<EventId>
     public void MarkAsPersisted()
     {
         Raise(new EventCreatedEvent(Id, OrganizerId));
+    }
+
+    public Event Duplicate(UserId organizerId, DateTimeOffset createdAt)
+    {
+        return new Event
+        {
+            OrganizerId = organizerId,
+            Title = EventTitle.Create($"Copy of {Title.Value}"),
+            Schedule = null,
+            Location = Location,
+            Description = Description,
+            Status = EventStatus.Draft,
+            Slug = null,
+            CoverImageRef = CoverImageRef,
+            CancelledAt = null,
+            CreatedAt = createdAt,
+            UpdatedAt = createdAt,
+            RowVersion = 1,
+        };
     }
 
     public void SetCoverImage(CoverImageRef coverImageRef)
@@ -156,7 +175,7 @@ public sealed class Event : AggregateRoot<EventId>
         EventId id,
         UserId organizerId,
         EventTitle title,
-        EventSchedule schedule,
+        EventSchedule? schedule,
         EventLocation location,
         string? description,
         EventStatus status,

@@ -10,11 +10,11 @@ public sealed class EventRecord
 
     public required string Title { get; set; }
 
-    public DateTimeOffset ScheduleStartsAt { get; set; }
+    public DateTimeOffset? ScheduleStartsAt { get; set; }
 
-    public DateTimeOffset ScheduleEndsAt { get; set; }
+    public DateTimeOffset? ScheduleEndsAt { get; set; }
 
-    public required string ScheduleTimeZoneId { get; set; }
+    public string? ScheduleTimeZoneId { get; set; }
 
     public string? LocationPhysicalAddress { get; set; }
 

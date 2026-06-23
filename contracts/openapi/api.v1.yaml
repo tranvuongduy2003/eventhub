@@ -84,6 +84,32 @@ components:
         - page
         - pageSize
       type: object
+    CancelEventResponse:
+      properties:
+        cancelledAt:
+          format: date-time
+          type: string
+        status:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - status
+        - cancelledAt
+        - updatedAt
+      type: object
+    CloseEventResponse:
+      properties:
+        status:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - status
+        - updatedAt
+      type: object
     CoverImageResponse:
       properties:
         coverImageUrl:
@@ -118,6 +144,17 @@ components:
         - isOnline
       type: object
     DraftEventResponse:
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        status:
+          type: string
+      required:
+        - status
+        - createdAt
+      type: object
+    DuplicateEventResponse:
       properties:
         createdAt:
           format: date-time
@@ -167,7 +204,9 @@ components:
             - string
         endsAt:
           format: date-time
-          type: string
+          type:
+            - "null"
+            - string
         eventId:
           format: int32
           pattern: ^-?(?:0|[1-9]\d*)$
@@ -182,11 +221,15 @@ components:
             - string
         startsAt:
           format: date-time
-          type: string
+          type:
+            - "null"
+            - string
         status:
           type: string
         timeZoneId:
-          type: string
+          type:
+            - "null"
+            - string
         title:
           type: string
         updatedAt:
@@ -334,32 +377,6 @@ components:
       required:
         - status
         - slug
-        - updatedAt
-      type: object
-    CloseEventResponse:
-      properties:
-        status:
-          type: string
-        updatedAt:
-          format: date-time
-          type: string
-      required:
-        - status
-        - updatedAt
-      type: object
-    CancelEventResponse:
-      properties:
-        cancelledAt:
-          format: date-time
-          type: string
-        status:
-          type: string
-        updatedAt:
-          format: date-time
-          type: string
-      required:
-        - status
-        - cancelledAt
         - updatedAt
       type: object
     RegisterUserRequest:
@@ -772,6 +789,122 @@ paths:
           description: Internal Server Error
       tags:
         - AuditLog
+  /api/events/{eventId}/cancel:
+    post:
+      operationId: CancelEvent
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CancelEventResponse"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Events
+  /api/events/{eventId}/close:
+    post:
+      operationId: CloseEvent
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CloseEventResponse"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Events
   /api/events/{eventId}/cover-image:
     put:
       operationId: UploadCoverImage
@@ -827,6 +960,52 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
           description: Unprocessable Entity
+      tags:
+        - Events
+  /api/events/{eventId}/duplicate:
+    post:
+      operationId: DuplicateEvent
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DuplicateEventResponse"
+          description: Created
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
       tags:
         - Events
   /api/events/{eventId}/invitations:
@@ -1014,122 +1193,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PublishEventResponse"
-          description: OK
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-          description: Not Found
-        "409":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-          description: Conflict
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-          description: Internal Server Error
-      tags:
-        - Events
-  /api/events/{eventId}/close:
-    post:
-      operationId: CloseEvent
-      parameters:
-        - in: path
-          name: eventId
-          required: true
-          schema:
-            format: int32
-            pattern: ^-?(?:0|[1-9]\d*)$
-            type:
-              - integer
-              - string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CloseEventResponse"
-          description: OK
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-          description: Not Found
-        "409":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-          description: Conflict
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-          description: Internal Server Error
-      tags:
-        - Events
-  /api/events/{eventId}/cancel:
-    post:
-      operationId: CancelEvent
-      parameters:
-        - in: path
-          name: eventId
-          required: true
-          schema:
-            format: int32
-            pattern: ^-?(?:0|[1-9]\d*)$
-            type:
-              - integer
-              - string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CancelEventResponse"
           description: OK
         "401":
           content:

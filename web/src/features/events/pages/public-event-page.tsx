@@ -60,25 +60,29 @@ export function PublicEventPage() {
           {event.description && <p className="text-muted-foreground">{event.description}</p>}
 
           <div className="text-muted-foreground text-sm">
-            <p>
-              {new Date(event.startsAt).toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </p>
-            <p>
-              {new Date(event.startsAt).toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}{' '}
-              –{' '}
-              {new Date(event.endsAt).toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </p>
+            {event.startsAt && (
+              <p>
+                {new Date(event.startsAt).toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </p>
+            )}
+            {event.startsAt && event.endsAt && (
+              <p>
+                {new Date(event.startsAt).toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}{' '}
+                –{' '}
+                {new Date(event.endsAt).toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </p>
+            )}
             {event.physicalAddress && <p>{event.physicalAddress}</p>}
             {event.isOnline && <p>Online event</p>}
           </div>
