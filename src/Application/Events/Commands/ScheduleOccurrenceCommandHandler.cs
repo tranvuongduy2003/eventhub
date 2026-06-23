@@ -7,14 +7,14 @@ using EventHub.Domain.Exceptions;
 
 namespace EventHub.Application.Events.Commands;
 
-public sealed class CancelEventCommandHandler(
+public sealed class ScheduleOccurrenceCommandHandler(
     IEventRepository eventRepository,
     IClock clock,
     IPendingDomainEventsCollector pendingDomainEventsCollector)
-    : CommandHandler<CancelEventCommand, CancelEventResult>
+    : CommandHandler<ScheduleOccurrenceCommand, ScheduleOccurrenceResult>
 {
-    public override async Task<Result<CancelEventResult>> Handle(
-        CancelEventCommand command,
+    public override async Task<Result<ScheduleOccurrenceResult>> Handle(
+        ScheduleOccurrenceCommand command,
         CancellationToken cancellationToken)
     {
         var eventId = EventId.From(command.EventId);
@@ -22,22 +22,30 @@ public sealed class CancelEventCommandHandler(
         var eventAggregate = await eventRepository.GetByIdAsync(eventId, cancellationToken);
         if (eventAggregate is null)
         {
-            return EventCancelErrors.EventNotFound;
+            return OccurrenceErrors.EventNotFound;
         }
 
         try
         {
-            eventAggregate.Cancel(clock.UtcNow);
+            var occurrence = eventAggregate.ScheduleOccurrence(
+                command.StartsAt,
+                command.EndsAt,
+                command.VenueName,
+                command.Address,
+                clock.UtcNow);
 
             await eventRepository.Update(eventAggregate, cancellationToken);
 
             pendingDomainEventsCollector.AddRange(eventAggregate.DomainEvents);
             eventAggregate.ClearDomainEvents();
 
-            return new CancelEventResult(
-                eventAggregate.Status.ToString(),
-                eventAggregate.CancelledAt!.Value,
-                eventAggregate.UpdatedAt);
+            return new ScheduleOccurrenceResult(
+                occurrence.Id.Value,
+                occurrence.StartsAt,
+                occurrence.EndsAt,
+                occurrence.VenueName,
+                occurrence.Address,
+                occurrence.CreatedAt);
         }
         catch (BusinessRuleValidationException exception)
         {

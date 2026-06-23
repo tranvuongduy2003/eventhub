@@ -10,5 +10,5 @@ public interface IEventRepository
 
     Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken = default);
 
-    void Update(Event domain);
+    Task Update(Event domain, CancellationToken cancellationToken = default);
 }

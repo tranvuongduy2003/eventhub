@@ -7,14 +7,14 @@ using EventHub.Domain.Exceptions;
 
 namespace EventHub.Application.Events.Commands;
 
-public sealed class CancelEventCommandHandler(
+public sealed class RescheduleOccurrenceCommandHandler(
     IEventRepository eventRepository,
     IClock clock,
     IPendingDomainEventsCollector pendingDomainEventsCollector)
-    : CommandHandler<CancelEventCommand, CancelEventResult>
+    : CommandHandler<RescheduleOccurrenceCommand, RescheduleOccurrenceResult>
 {
-    public override async Task<Result<CancelEventResult>> Handle(
-        CancelEventCommand command,
+    public override async Task<Result<RescheduleOccurrenceResult>> Handle(
+        RescheduleOccurrenceCommand command,
         CancellationToken cancellationToken)
     {
         var eventId = EventId.From(command.EventId);
@@ -22,22 +22,33 @@ public sealed class CancelEventCommandHandler(
         var eventAggregate = await eventRepository.GetByIdAsync(eventId, cancellationToken);
         if (eventAggregate is null)
         {
-            return EventCancelErrors.EventNotFound;
+            return OccurrenceErrors.EventNotFound;
         }
 
         try
         {
-            eventAggregate.Cancel(clock.UtcNow);
+            var occurrenceId = OccurrenceId.From(command.OccurrenceId);
+
+            eventAggregate.RescheduleOccurrence(
+                occurrenceId,
+                command.StartsAt,
+                command.EndsAt,
+                command.VenueName,
+                command.Address,
+                clock.UtcNow);
 
             await eventRepository.Update(eventAggregate, cancellationToken);
 
             pendingDomainEventsCollector.AddRange(eventAggregate.DomainEvents);
             eventAggregate.ClearDomainEvents();
 
-            return new CancelEventResult(
-                eventAggregate.Status.ToString(),
-                eventAggregate.CancelledAt!.Value,
-                eventAggregate.UpdatedAt);
+            return new RescheduleOccurrenceResult(
+                command.OccurrenceId,
+                command.StartsAt,
+                command.EndsAt,
+                command.VenueName,
+                command.Address,
+                clock.UtcNow);
         }
         catch (BusinessRuleValidationException exception)
         {

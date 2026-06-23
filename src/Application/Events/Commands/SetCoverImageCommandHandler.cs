@@ -83,7 +83,7 @@ public sealed class SetCoverImageCommandHandler(
                 exception.Message);
         }
 
-        eventRepository.Update(eventAggregate);
+        await eventRepository.Update(eventAggregate, cancellationToken);
 
         pendingDomainEventsCollector.AddRange(eventAggregate.DomainEvents);
         eventAggregate.ClearDomainEvents();

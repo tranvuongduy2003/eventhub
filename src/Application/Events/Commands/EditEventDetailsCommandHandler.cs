@@ -33,7 +33,7 @@ public sealed class EditEventDetailsCommandHandler(
 
             eventAggregate.UpdateDetails(title, schedule, location, command.Description, clock.UtcNow);
 
-            eventRepository.Update(eventAggregate);
+            await eventRepository.Update(eventAggregate, cancellationToken);
 
             pendingDomainEventsCollector.AddRange(eventAggregate.DomainEvents);
             eventAggregate.ClearDomainEvents();

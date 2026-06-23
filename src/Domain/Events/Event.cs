@@ -6,11 +6,15 @@ namespace EventHub.Domain.Events;
 
 public sealed class Event : AggregateRoot<EventId>
 {
+    private readonly List<Occurrence> _occurrences = [];
+
     private Event()
     {
     }
 
     public UserId OrganizerId { get; private set; }
+
+    public IReadOnlyCollection<Occurrence> Occurrences => _occurrences.AsReadOnly();
 
     public EventTitle Title { get; private set; } = null!;
 
@@ -169,6 +173,106 @@ public sealed class Event : AggregateRoot<EventId>
         Location = location;
         Description = description;
         UpdatedAt = updatedAt;
+    }
+
+    public Occurrence ScheduleOccurrence(
+        DateTimeOffset startsAt,
+        DateTimeOffset endsAt,
+        string? venueName,
+        string? address,
+        DateTimeOffset createdAt)
+    {
+        if (Status is EventStatus.Closed or EventStatus.Cancelled)
+        {
+            throw new BusinessRuleValidationException(
+                "EVENT_CLOSED_OR_CANCELLED",
+                "Cannot add occurrences to a closed or cancelled event.");
+        }
+
+        var overlapping = _occurrences.Any(o =>
+            startsAt < o.EndsAt && endsAt > o.StartsAt);
+
+        if (overlapping)
+        {
+            throw new BusinessRuleValidationException(
+                "OCCURRENCE_OVERLAPS",
+                "The occurrence overlaps with an existing occurrence.");
+        }
+
+        var occurrence = Occurrence.Schedule(startsAt, endsAt, venueName, address, createdAt);
+
+        _occurrences.Add(occurrence);
+
+        UpdatedAt = createdAt;
+
+        Raise(new OccurrenceScheduledEvent(Id, occurrence.Id, startsAt, endsAt));
+
+        return occurrence;
+    }
+
+    public void RescheduleOccurrence(
+        OccurrenceId occurrenceId,
+        DateTimeOffset startsAt,
+        DateTimeOffset endsAt,
+        string? venueName,
+        string? address,
+        DateTimeOffset updatedAt)
+    {
+        if (Status is EventStatus.Closed or EventStatus.Cancelled)
+        {
+            throw new BusinessRuleValidationException(
+                "EVENT_CLOSED_OR_CANCELLED",
+                "Cannot edit occurrences on a closed or cancelled event.");
+        }
+
+        var occurrence = _occurrences.FirstOrDefault(o => o.Id == occurrenceId)
+            ?? throw new BusinessRuleValidationException(
+                "OCCURRENCE_NOT_FOUND",
+                "The occurrence was not found.");
+
+        var overlapping = _occurrences.Any(o =>
+            o.Id != occurrenceId &&
+            startsAt < o.EndsAt && endsAt > o.StartsAt);
+
+        if (overlapping)
+        {
+            throw new BusinessRuleValidationException(
+                "OCCURRENCE_OVERLAPS",
+                "The updated occurrence would overlap with an existing occurrence.");
+        }
+
+        occurrence.Reschedule(startsAt, endsAt, venueName, address, updatedAt);
+
+        UpdatedAt = updatedAt;
+
+        Raise(new OccurrenceUpdatedEvent(Id, occurrenceId, startsAt, endsAt));
+    }
+
+    public void RemoveOccurrence(OccurrenceId occurrenceId, DateTimeOffset updatedAt)
+    {
+        if (Status is EventStatus.Closed or EventStatus.Cancelled)
+        {
+            throw new BusinessRuleValidationException(
+                "EVENT_CLOSED_OR_CANCELLED",
+                "Cannot remove occurrences from a closed or cancelled event.");
+        }
+
+        var occurrence = _occurrences.FirstOrDefault(o => o.Id == occurrenceId)
+            ?? throw new BusinessRuleValidationException(
+                "OCCURRENCE_NOT_FOUND",
+                "The occurrence was not found.");
+
+        _occurrences.Remove(occurrence);
+
+        UpdatedAt = updatedAt;
+
+        Raise(new OccurrenceRemovedEvent(Id, occurrenceId));
+    }
+
+    public void LoadOccurrences(List<Occurrence> occurrences)
+    {
+        _occurrences.Clear();
+        _occurrences.AddRange(occurrences);
     }
 
     public static Event FromPersistence(

@@ -7,14 +7,14 @@ using EventHub.Domain.Exceptions;
 
 namespace EventHub.Application.Events.Commands;
 
-public sealed class CancelEventCommandHandler(
+public sealed class CancelOccurrenceCommandHandler(
     IEventRepository eventRepository,
     IClock clock,
     IPendingDomainEventsCollector pendingDomainEventsCollector)
-    : CommandHandler<CancelEventCommand, CancelEventResult>
+    : CommandHandler<CancelOccurrenceCommand>
 {
-    public override async Task<Result<CancelEventResult>> Handle(
-        CancelEventCommand command,
+    public override async Task<Result> Handle(
+        CancelOccurrenceCommand command,
         CancellationToken cancellationToken)
     {
         var eventId = EventId.From(command.EventId);
@@ -22,22 +22,21 @@ public sealed class CancelEventCommandHandler(
         var eventAggregate = await eventRepository.GetByIdAsync(eventId, cancellationToken);
         if (eventAggregate is null)
         {
-            return EventCancelErrors.EventNotFound;
+            return OccurrenceErrors.EventNotFound;
         }
 
         try
         {
-            eventAggregate.Cancel(clock.UtcNow);
+            var occurrenceId = OccurrenceId.From(command.OccurrenceId);
+
+            eventAggregate.RemoveOccurrence(occurrenceId, clock.UtcNow);
 
             await eventRepository.Update(eventAggregate, cancellationToken);
 
             pendingDomainEventsCollector.AddRange(eventAggregate.DomainEvents);
             eventAggregate.ClearDomainEvents();
 
-            return new CancelEventResult(
-                eventAggregate.Status.ToString(),
-                eventAggregate.CancelledAt!.Value,
-                eventAggregate.UpdatedAt);
+            return Result.Success();
         }
         catch (BusinessRuleValidationException exception)
         {

@@ -32,7 +32,7 @@ public sealed class PublishEventCommandHandler(
 
             eventAggregate.Publish(slug, clock.UtcNow);
 
-            eventRepository.Update(eventAggregate);
+            await eventRepository.Update(eventAggregate, cancellationToken);
 
             pendingDomainEventsCollector.AddRange(eventAggregate.DomainEvents);
             eventAggregate.ClearDomainEvents();

@@ -29,7 +29,7 @@ public sealed class CloseEventCommandHandler(
         {
             eventAggregate.Close(clock.UtcNow);
 
-            eventRepository.Update(eventAggregate);
+            await eventRepository.Update(eventAggregate, cancellationToken);
 
             pendingDomainEventsCollector.AddRange(eventAggregate.DomainEvents);
             eventAggregate.ClearDomainEvents();
