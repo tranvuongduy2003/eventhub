@@ -80,6 +80,16 @@ internal sealed class EventsEndpoint : IEndpoint
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        endpoints.MapPost("/api/events/{eventId}/duplicate", DuplicateEvent)
+            .WithName("DuplicateEvent")
+            .WithTags("Events")
+            .RequireAuthorization()
+            .Produces<DuplicateEventResponse>(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
     }
 
     private static async Task<IResult> CreateDraftEvent(
@@ -218,5 +228,27 @@ internal sealed class EventsEndpoint : IEndpoint
             cancelResult.Status,
             cancelResult.CancelledAt,
             cancelResult.UpdatedAt));
+    }
+
+    private static async Task<IResult> DuplicateEvent(
+        int eventId,
+        ISender sender)
+    {
+        var command = new DuplicateEventCommand(eventId);
+
+        var result = await sender.Send(command);
+
+        if (!result.IsSuccess)
+        {
+            return result.ToHttpResult();
+        }
+
+        var duplicateResult = result.Value!;
+
+        return Results.Json(
+            new DuplicateEventResponse(
+                duplicateResult.Status,
+                duplicateResult.CreatedAt),
+            statusCode: StatusCodes.Status201Created);
     }
 }

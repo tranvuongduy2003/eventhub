@@ -12,9 +12,9 @@ internal static class EventPersistenceMapper
             Id = domain.Id.Value,
             OrganizerId = domain.OrganizerId.Value,
             Title = domain.Title.Value,
-            ScheduleStartsAt = domain.Schedule.StartsAt,
-            ScheduleEndsAt = domain.Schedule.EndsAt,
-            ScheduleTimeZoneId = domain.Schedule.TimeZoneId,
+            ScheduleStartsAt = domain.Schedule?.StartsAt,
+            ScheduleEndsAt = domain.Schedule?.EndsAt,
+            ScheduleTimeZoneId = domain.Schedule?.TimeZoneId,
             LocationPhysicalAddress = domain.Location.PhysicalAddress,
             LocationIsOnline = domain.Location.IsOnline,
             Description = domain.Description,
@@ -32,7 +32,9 @@ internal static class EventPersistenceMapper
             EventId.From(record.Id),
             UserId.From(record.OrganizerId),
             EventTitle.Create(record.Title),
-            EventSchedule.Create(record.ScheduleStartsAt, record.ScheduleEndsAt, record.ScheduleTimeZoneId),
+            record.ScheduleStartsAt.HasValue && record.ScheduleEndsAt.HasValue && record.ScheduleTimeZoneId is not null
+                ? EventSchedule.Create(record.ScheduleStartsAt.Value, record.ScheduleEndsAt.Value, record.ScheduleTimeZoneId)
+                : null,
             EventLocation.Create(record.LocationPhysicalAddress, record.LocationIsOnline),
             record.Description,
             record.Status,

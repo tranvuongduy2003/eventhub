@@ -61,7 +61,10 @@ function toIsoString(date: string, time: string): string {
   return new Date(`${date}T${time}`).toISOString()
 }
 
-function splitIsoDateTime(isoString: string): { date: string; time: string } {
+function splitIsoDateTime(isoString: string | null | undefined): { date: string; time: string } {
+  if (!isoString) {
+    return { date: '', time: '' }
+  }
   const d = new Date(isoString)
   const year = d.getFullYear()
   const month = String(d.getMonth() + 1).padStart(2, '0')
@@ -104,7 +107,7 @@ export function EditEventForm({ event }: EditEventFormProps) {
       startTime,
       endDate,
       endTime,
-      timeZoneId: event.timeZoneId,
+      timeZoneId: event.timeZoneId ?? '',
       isOnline: event.isOnline,
       physicalAddress: event.physicalAddress ?? '',
       description: event.description ?? '',
@@ -201,21 +204,52 @@ export function EditEventForm({ event }: EditEventFormProps) {
     },
   })
 
+  const duplicateMutation = useMutation({
+    mutationFn: () => eventsApi.duplicateEvent(event.eventId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['events'] })
+      navigate(paths.events)
+    },
+    onError: () => {
+      form.setError('root', { message: 'Something went wrong. Please try again.' })
+    },
+  })
+
   const rootError = form.formState.errors.root
 
   const isAnyPending =
     editMutation.isPending ||
     publishMutation.isPending ||
     closeMutation.isPending ||
-    cancelMutation.isPending
+    cancelMutation.isPending ||
+    duplicateMutation.isPending
 
   if (isTerminal) {
     return (
-      <Alert>
-        <AlertDescription>
-          This event is {event.status.toLowerCase()} and cannot be edited.
-        </AlertDescription>
-      </Alert>
+      <div className="flex flex-col gap-6">
+        <Alert>
+          <AlertDescription>
+            This event is {event.status.toLowerCase()} and cannot be edited.
+          </AlertDescription>
+        </Alert>
+        <div>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={duplicateMutation.isPending}
+            onClick={() => duplicateMutation.mutate()}
+          >
+            {duplicateMutation.isPending ? (
+              <>
+                <Spinner className="mr-2" />
+                Duplicating…
+              </>
+            ) : (
+              'Duplicate event'
+            )}
+          </Button>
+        </div>
+      </div>
     )
   }
 
@@ -465,6 +499,21 @@ export function EditEventForm({ event }: EditEventFormProps) {
             </AlertDialogContent>
           </AlertDialog>
         )}
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isAnyPending}
+          onClick={() => duplicateMutation.mutate()}
+        >
+          {duplicateMutation.isPending ? (
+            <>
+              <Spinner className="mr-2" />
+              Duplicating…
+            </>
+          ) : (
+            'Duplicate event'
+          )}
+        </Button>
       </div>
     </form>
   )
