@@ -124,7 +124,7 @@ If blocked: `[SKIP]` + reason in plan; stop unless user says continue.
 
 ## Step 4: Finish
 
-- Full sweep: `dotnet test EventHub.slnx`; `yarn --cwd web lint`; `yarn --cwd web build` if UI touched
+- Full sweep: `dotnet test EventHub.slnx`; `yarn --cwd web api:verify` if Api/Contracts changed; `yarn --cwd web lint`; `yarn --cwd web build` if UI touched
 - Optional Reflexion: invoke **`@agent-code-reviewer`** on the diff
 - **Delete** plan file when all tasks succeed
 - **Do not** commit unless user asks · **Do not** update GitHub issues

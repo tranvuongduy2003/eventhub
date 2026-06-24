@@ -91,7 +91,7 @@ Report PR URL, linked issues, and what metadata was applied (or skipped / failed
 
 Run the same checks as [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). Full command list: [references/ci-pipeline.md](references/ci-pipeline.md).
 
-**Summary (repo root):**
+**MANDATORY — run all steps sequentially, verify each exits 0 before proceeding:**
 
 ```powershell
 dotnet restore EventHub.slnx
@@ -100,18 +100,21 @@ dotnet build EventHub.slnx --no-restore -c Release
 dotnet test EventHub.slnx --no-build -c Release --verbosity normal
 
 yarn --cwd web install --frozen-lockfile
+yarn --cwd web api:verify
 yarn --cwd web lint
 yarn --cwd web format:check
 yarn --cwd web build
 ```
 
+**`yarn api:verify` is MANDATORY even for backend-only changes** — API endpoint changes modify the OpenAPI contract. If it fails: run `yarn --cwd web api:export`, commit the updated `contracts/openapi/api.v1.yaml`, then re-verify.
+
 **If `yarn format:check` fails:** run `yarn --cwd web format`, then re-check.
 
 **If `dotnet format` fails on Windows (CRLF):** CI runs on Ubuntu with LF â€” note in PR Testing section; fix only if the **changed** files fail on CI, not pre-existing tree-wide CRLF noise.
 
-**If any step fails:** fix, re-run failed steps, then continue. Do not open a PR with known red checks unless the user accepts it.
+**GATE: Do not proceed to Step 3 until every step above exits 0.** If any step fails, fix it and re-run the full pipeline. Never open a PR with known red checks.
 
-**Scope:** Skip `web/*` steps when the PR touches only backend/docs; skip .NET steps when the PR is frontend-only.
+**Scope:** Skip `yarn lint`/`format:check`/`build` when the PR touches only backend/docs; skip .NET steps when the PR is frontend-only. **Never skip `yarn api:verify`** when `src/Api/` or `src/Contracts/` changed.
 
 ---
 
