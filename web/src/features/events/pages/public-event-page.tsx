@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 
 import * as eventsApi from '../api'
+import { TicketTypeList } from '../components/ticket-type-list'
 
 export function PublicEventPage() {
   const { eventId } = useParams<{ eventId: string }>()
@@ -15,6 +16,12 @@ export function PublicEventPage() {
     queryKey: ['public-event', eventId],
     queryFn: ({ signal }) => eventsApi.getEventDetails(Number(eventId), signal),
     enabled: !!eventId,
+  })
+
+  const ticketTypesQuery = useQuery({
+    queryKey: ['ticket-types', eventId],
+    queryFn: ({ signal }) => eventsApi.getTicketTypes(Number(eventId), signal),
+    enabled: !!eventId && eventQuery.isSuccess && eventQuery.data.status === 'Published',
   })
 
   if (eventQuery.isPending) {
@@ -88,9 +95,17 @@ export function PublicEventPage() {
           </div>
 
           {event.status === 'Published' && (
-            <Button size="lg" className="w-full sm:w-auto">
-              Get tickets
-            </Button>
+            <>
+              <TicketTypeList
+                ticketTypes={ticketTypesQuery.data ?? []}
+                isPending={ticketTypesQuery.isPending}
+                isError={ticketTypesQuery.isError}
+              />
+
+              <Button size="lg" className="w-full sm:w-auto">
+                Get tickets
+              </Button>
+            </>
           )}
 
           {event.status === 'Closed' && (

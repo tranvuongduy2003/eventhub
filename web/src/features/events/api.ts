@@ -125,3 +125,21 @@ export function duplicateEvent(eventId: number, signal?: AbortSignal) {
     suppressErrorToast: true,
   })
 }
+
+export type TicketTypeResponse = {
+  ticketTypeId: number
+  name: string
+  priceAmount: number
+  priceCurrency: string
+  capacity: number
+  sold: number
+  reserved: number
+  createdAt: string
+}
+
+export function getTicketTypes(eventId: number, signal?: AbortSignal) {
+  return apiClient.get<TicketTypeResponse[]>(`/api/events/${eventId}/ticket-types`, {
+    signal,
+    suppressErrorToast: true,
+  })
+}
