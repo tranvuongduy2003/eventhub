@@ -449,6 +449,178 @@ components:
         - createdAt
         - updatedAt
       type: object
+    OrderLineResponse:
+      properties:
+        lineTotalAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        lineTotalCurrency:
+          type: string
+        orderLineId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        quantity:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketTypeId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        unitPriceAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        unitPriceCurrency:
+          type: string
+      required:
+        - orderLineId
+        - ticketTypeId
+        - quantity
+        - unitPriceAmount
+        - unitPriceCurrency
+        - lineTotalAmount
+        - lineTotalCurrency
+      type: object
+    OrderStatusResponse:
+      properties:
+        confirmedAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        lines:
+          items:
+            $ref: "#/components/schemas/OrderLineResponse"
+          type: array
+        orderId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        paymentId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - "null"
+            - integer
+            - string
+        placedAt:
+          format: date-time
+          type: string
+        status:
+          type: string
+        totalAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        totalCurrency:
+          type: string
+      required:
+        - orderId
+        - status
+        - totalAmount
+        - totalCurrency
+        - paymentId
+        - placedAt
+        - confirmedAt
+        - lines
+      type: object
+    PlaceOrderLineRequest:
+      properties:
+        quantity:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketTypeId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+      required:
+        - ticketTypeId
+        - quantity
+      type: object
+    PlaceOrderRequest:
+      properties:
+        contactEmail:
+          type: string
+        contactName:
+          type: string
+        lines:
+          items:
+            $ref: "#/components/schemas/PlaceOrderLineRequest"
+          type: array
+      required:
+        - contactName
+        - contactEmail
+        - lines
+      type: object
+    PlaceOrderResponse:
+      properties:
+        confirmedAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        lines:
+          items:
+            $ref: "#/components/schemas/OrderLineResponse"
+          type: array
+        orderId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        paymentId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - "null"
+            - integer
+            - string
+        placedAt:
+          format: date-time
+          type: string
+        status:
+          type: string
+        totalAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        totalCurrency:
+          type: string
+      required:
+        - orderId
+        - status
+        - totalAmount
+        - totalCurrency
+        - paymentId
+        - placedAt
+        - confirmedAt
+        - lines
+      type: object
     ProblemDetails:
       properties:
         detail:
@@ -1604,6 +1776,58 @@ paths:
           description: Internal Server Error
       tags:
         - Occurrences
+  /api/events/{eventId}/orders:
+    post:
+      operationId: PlaceOrder
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlaceOrderRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaceOrderResponse"
+          description: Created
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Bad Request
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Orders
   /api/events/{eventId}/publish:
     post:
       operationId: PublishEvent
@@ -1955,6 +2179,40 @@ paths:
           description: Internal Server Error
       tags:
         - EventInvitations
+  /api/orders/{orderId}:
+    get:
+      operationId: GetOrderStatus
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderStatusResponse"
+          description: OK
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Orders
   /api/users:
     post:
       operationId: RegisterUser
@@ -2078,6 +2336,7 @@ tags:
   - name: EventInvitations
   - name: EventRoles
   - name: Occurrences
+  - name: Orders
   - name: Profile
   - name: TicketTypes
   - name: Users

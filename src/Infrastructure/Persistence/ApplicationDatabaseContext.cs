@@ -25,6 +25,10 @@ public sealed class ApplicationDatabaseContext(DbContextOptions<ApplicationDatab
 
     public DbSet<PermissionAuditEntryRecord> PermissionAuditEntries => Set<PermissionAuditEntryRecord>();
 
+    public DbSet<OrderRecord> Orders => Set<OrderRecord>();
+
+    public DbSet<OrderLineRecord> OrderLines => Set<OrderLineRecord>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(SchemaName);
