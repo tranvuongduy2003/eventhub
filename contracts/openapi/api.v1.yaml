@@ -647,6 +647,103 @@ components:
             - "null"
             - string
       type: object
+    PublicEventResponse:
+      properties:
+        description:
+          type:
+            - "null"
+            - string
+        endsAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        eventId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        isOnline:
+          type: boolean
+        physicalAddress:
+          type:
+            - "null"
+            - string
+        startsAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        ticketTypes:
+          items:
+            $ref: "#/components/schemas/PublicTicketTypeResponse"
+          type: array
+        timeZoneId:
+          type:
+            - "null"
+            - string
+        title:
+          type: string
+      required:
+        - eventId
+        - title
+        - description
+        - startsAt
+        - endsAt
+        - timeZoneId
+        - physicalAddress
+        - isOnline
+        - ticketTypes
+      type: object
+    PublicTicketTypeResponse:
+      properties:
+        capacity:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        isSoldOut:
+          type: boolean
+        name:
+          type: string
+        priceAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        priceCurrency:
+          type: string
+        reserved:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        sold:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketTypeId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+      required:
+        - ticketTypeId
+        - name
+        - priceAmount
+        - priceCurrency
+        - capacity
+        - sold
+        - reserved
+        - isSoldOut
+      type: object
     PublishEventResponse:
       properties:
         slug:
@@ -1828,6 +1925,34 @@ paths:
           description: Internal Server Error
       tags:
         - Orders
+  /api/events/{eventId}/public:
+    get:
+      operationId: GetPublicEvent
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicEventResponse"
+          description: OK
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+      tags:
+        - Events
   /api/events/{eventId}/publish:
     post:
       operationId: PublishEvent

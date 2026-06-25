@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -14,14 +13,8 @@ export function PublicEventPage() {
 
   const eventQuery = useQuery({
     queryKey: ['public-event', eventId],
-    queryFn: ({ signal }) => eventsApi.getEventDetails(Number(eventId), signal),
+    queryFn: ({ signal }) => eventsApi.getPublicEventDetails(Number(eventId), signal),
     enabled: !!eventId,
-  })
-
-  const ticketTypesQuery = useQuery({
-    queryKey: ['ticket-types', eventId],
-    queryFn: ({ signal }) => eventsApi.getTicketTypes(Number(eventId), signal),
-    enabled: !!eventId && eventQuery.isSuccess && eventQuery.data.status === 'Published',
   })
 
   if (eventQuery.isPending) {
@@ -46,16 +39,6 @@ export function PublicEventPage() {
   }
 
   const event = eventQuery.data
-
-  if (event.status === 'Draft') {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-8">
-        <Alert variant="destructive">
-          <AlertDescription>Event not found.</AlertDescription>
-        </Alert>
-      </div>
-    )
-  }
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
@@ -94,33 +77,7 @@ export function PublicEventPage() {
             {event.isOnline && <p>Online event</p>}
           </div>
 
-          {event.status === 'Published' && (
-            <>
-              <TicketTypeList
-                ticketTypes={ticketTypesQuery.data ?? []}
-                isPending={ticketTypesQuery.isPending}
-                isError={ticketTypesQuery.isError}
-              />
-
-              <Button size="lg" className="w-full sm:w-auto">
-                Get tickets
-              </Button>
-            </>
-          )}
-
-          {event.status === 'Closed' && (
-            <Alert>
-              <AlertDescription>
-                This event is closed for registration. Tickets are no longer available.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {event.status === 'Cancelled' && (
-            <Alert variant="destructive">
-              <AlertDescription>This event has been cancelled.</AlertDescription>
-            </Alert>
-          )}
+          <TicketTypeList ticketTypes={event.ticketTypes} />
         </CardContent>
       </Card>
     </div>

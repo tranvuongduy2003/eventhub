@@ -71,6 +71,13 @@ export function createDraftEvent(request: CreateDraftEventRequest, signal?: Abor
   })
 }
 
+export function getPublicEventDetails(eventId: number, signal?: AbortSignal) {
+  return apiClient.get<PublicEventResponse>(`/api/events/${eventId}/public`, {
+    signal,
+    suppressErrorToast: true,
+  })
+}
+
 export function getEventDetails(eventId: number, signal?: AbortSignal) {
   return apiClient.get<EventDetailsResponse>(`/api/events/${eventId}`, {
     signal,
@@ -124,6 +131,29 @@ export function duplicateEvent(eventId: number, signal?: AbortSignal) {
     signal,
     suppressErrorToast: true,
   })
+}
+
+export type PublicTicketTypeResponse = {
+  ticketTypeId: number
+  name: string
+  priceAmount: number
+  priceCurrency: string
+  capacity: number
+  sold: number
+  reserved: number
+  isSoldOut: boolean
+}
+
+export type PublicEventResponse = {
+  eventId: number
+  title: string
+  description: string | null
+  startsAt: string | null
+  endsAt: string | null
+  timeZoneId: string | null
+  physicalAddress: string | null
+  isOnline: boolean
+  ticketTypes: PublicTicketTypeResponse[]
 }
 
 export type TicketTypeResponse = {

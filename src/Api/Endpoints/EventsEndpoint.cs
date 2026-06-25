@@ -81,6 +81,13 @@ internal sealed class EventsEndpoint : IEndpoint
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
+        endpoints.MapGet("/api/events/{eventId}/public", GetPublicEvent)
+            .WithName("GetPublicEvent")
+            .WithTags("Events")
+            .AllowAnonymous()
+            .Produces<PublicEventResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         endpoints.MapPost("/api/events/{eventId}/duplicate", DuplicateEvent)
             .WithName("DuplicateEvent")
             .WithTags("Events")
@@ -125,6 +132,17 @@ internal sealed class EventsEndpoint : IEndpoint
         ISender sender)
     {
         var query = new GetEventDetailsQuery(eventId);
+
+        var result = await sender.Send(query);
+
+        return result.ToHttpResult();
+    }
+
+    private static async Task<IResult> GetPublicEvent(
+        int eventId,
+        ISender sender)
+    {
+        var query = new GetPublicEventQuery(eventId);
 
         var result = await sender.Send(query);
 
