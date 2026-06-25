@@ -62,7 +62,7 @@ public sealed class EditTicketTypeTests(IntegrationTestFixture fixture)
         var eventId = await SeedDraftEventAsync(ownerUserId);
         var ticketTypeId = await SeedTicketTypeAsync(eventId, "General", 50m, 100);
 
-        await RegisterOrganizerAsync("other");
+        await RegisterOrganizerAsync();
 
         var request = new EditTicketTypeRequest("VIP", 200m, "VND", 50);
 

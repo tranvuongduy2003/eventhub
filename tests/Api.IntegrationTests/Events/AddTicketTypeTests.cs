@@ -78,7 +78,7 @@ public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
         var eventId = await SeedDraftEventAsync(ownerUserId);
 
         // Register a second user (non-owner)
-        await RegisterOrganizerAsync("other");
+        await RegisterOrganizerAsync();
 
         var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50);
 

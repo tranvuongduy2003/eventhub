@@ -50,7 +50,7 @@ public sealed class RemoveTicketTypeTests(IntegrationTestFixture fixture)
         var eventId = await SeedDraftEventAsync(ownerUserId);
         var ticketTypeId = await SeedTicketTypeAsync(eventId);
 
-        await RegisterOrganizerAsync("other");
+        await RegisterOrganizerAsync();
 
         using var response = await _client.DeleteAsync(
             $"/api/events/{eventId}/ticket-types/{ticketTypeId}");
