@@ -141,6 +141,7 @@ export type PublicTicketTypeResponse = {
   capacity: number
   sold: number
   reserved: number
+  available: number
   isSoldOut: boolean
 }
 

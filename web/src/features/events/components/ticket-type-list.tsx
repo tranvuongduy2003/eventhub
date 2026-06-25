@@ -31,9 +31,7 @@ export function TicketTypeList({ ticketTypes }: TicketTypeListProps) {
                 {ticketType.isSoldOut ? (
                   <Badge variant="destructive">Sold out</Badge>
                 ) : (
-                  <span>
-                    {ticketType.capacity - ticketType.sold - ticketType.reserved} remaining
-                  </span>
+                  <span>{ticketType.available} remaining</span>
                 )}
               </span>
             </div>

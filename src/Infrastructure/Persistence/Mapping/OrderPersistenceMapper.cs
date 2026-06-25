@@ -17,6 +17,7 @@ internal static class OrderPersistenceMapper
             TotalAmount = domain.Total.Amount,
             TotalCurrency = domain.Total.Currency,
             PaymentId = domain.PaymentId,
+            ReservationId = domain.ReservationId?.Value,
             PlacedAt = domain.PlacedAt,
             ConfirmedAt = domain.ConfirmedAt,
             ExpiresAt = domain.ExpiresAt,
@@ -32,6 +33,10 @@ internal static class OrderPersistenceMapper
 
         var status = Enum.Parse<OrderStatus>(record.Status);
 
+        var reservationId = record.ReservationId.HasValue
+            ? ReservationId.From(record.ReservationId.Value)
+            : (ReservationId?)null;
+
         var order = Order.FromPersistence(
             OrderId.From(record.Id),
             EventId.From(record.EventId),
@@ -39,6 +44,7 @@ internal static class OrderPersistenceMapper
             status,
             total,
             record.PaymentId,
+            reservationId,
             record.PlacedAt,
             record.ConfirmedAt,
             record.ExpiresAt,

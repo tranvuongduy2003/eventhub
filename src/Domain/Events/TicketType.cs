@@ -1,4 +1,5 @@
 using EventHub.Domain.Abstractions;
+using EventHub.Domain.Exceptions;
 
 namespace EventHub.Domain.Events;
 
@@ -17,6 +18,8 @@ public sealed class TicketType : Entity<TicketTypeId>
     public int Sold { get; private set; }
 
     public int Reserved { get; private set; }
+
+    public int Available => Capacity.Value - Sold - Reserved;
 
     public DateTimeOffset CreatedAt { get; private set; }
 
@@ -58,4 +61,92 @@ public sealed class TicketType : Entity<TicketTypeId>
             CreatedAt = createdAt,
             UpdatedAt = updatedAt,
         };
+
+    public void Reserve(int quantity)
+    {
+        if (quantity <= 0)
+        {
+            throw new BusinessRuleValidationException(
+                "RESERVATION_QUANTITY_INVALID",
+                "Reservation quantity must be at least 1.");
+        }
+
+        // INV-10: Reserved + Sold must not exceed Capacity
+        if (Reserved + Sold + quantity > Capacity.Value)
+        {
+            throw new BusinessRuleValidationException(
+                "TICKET_TYPE_SOLD_OUT",
+                $"Not enough availability for ticket type '{Name.Value}'. Available: {Available}, requested: {quantity}.");
+        }
+
+        Reserved += quantity;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    public void CommitReservation(int quantity)
+    {
+        if (quantity <= 0)
+        {
+            throw new BusinessRuleValidationException(
+                "RESERVATION_QUANTITY_INVALID",
+                "Commit quantity must be at least 1.");
+        }
+
+        if (quantity > Reserved)
+        {
+            throw new BusinessRuleValidationException(
+                "INSUFFICIENT_RESERVED",
+                $"Cannot commit {quantity} reservation(s) — only {Reserved} reserved.");
+        }
+
+        Reserved -= quantity;
+        Sold += quantity;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    public void ReleaseReservation(int quantity)
+    {
+        if (quantity <= 0)
+        {
+            throw new BusinessRuleValidationException(
+                "RESERVATION_QUANTITY_INVALID",
+                "Release quantity must be at least 1.");
+        }
+
+        if (quantity > Reserved)
+        {
+            throw new BusinessRuleValidationException(
+                "INSUFFICIENT_RESERVED",
+                $"Cannot release {quantity} reservation(s) — only {Reserved} reserved.");
+        }
+
+        Reserved -= quantity;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    public void ReturnToPool(int quantity)
+    {
+        if (quantity <= 0)
+        {
+            throw new BusinessRuleValidationException(
+                "RETURN_QUANTITY_INVALID",
+                "Return quantity must be at least 1.");
+        }
+
+        if (quantity > Sold)
+        {
+            throw new BusinessRuleValidationException(
+                "INSUFFICIENT_SOLD",
+                $"Cannot return {quantity} sold ticket(s) — only {Sold} sold.");
+        }
+
+        Sold -= quantity;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    public void SetCapacity(Capacity newCapacity)
+    {
+        Capacity = newCapacity;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
 }

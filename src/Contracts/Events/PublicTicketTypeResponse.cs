@@ -8,4 +8,5 @@ public sealed record PublicTicketTypeResponse(
     int Capacity,
     int Sold,
     int Reserved,
+    int Available,
     bool IsSoldOut);

@@ -15,6 +15,8 @@ public sealed class PlaceOrderCommandHandler(
     IPendingDomainEventsCollector pendingDomainEventsCollector)
     : CommandHandler<PlaceOrderCommand, PlaceOrderResult>
 {
+    private const int HoldDurationMinutes = 15;
+
     public override async Task<Result<PlaceOrderResult>> Handle(
         PlaceOrderCommand command,
         CancellationToken cancellationToken)
@@ -76,16 +78,55 @@ public sealed class PlaceOrderCommandHandler(
 
             var order = Order.Place(eventId, contact, orderLines, now);
 
-            // Free-order auto-confirm: if total is zero, confirm immediately without payment
+            // Reserve inventory for each ticket type line
+            var expiresAt = now.AddMinutes(HoldDurationMinutes);
+            var reservations = new List<Reservation>();
+
+            foreach (var line in quantityByType)
+            {
+                try
+                {
+                    var reservation = eventAggregate.Reserve(
+                        line.Key,
+                        line.Value,
+                        order.Id,
+                        expiresAt,
+                        now);
+
+                    reservations.Add(reservation);
+                }
+                catch (BusinessRuleValidationException exception)
+                {
+                    return Error.Validation(
+                        exception.Code ?? Error.ValidationFailedCode,
+                        exception.Message);
+                }
+            }
+
+            // Set reservation back-reference on order (use first reservation)
+            if (reservations.Count > 0)
+            {
+                order.SetReservationId(reservations[0].Id);
+            }
+
+            // Free-order auto-confirm: if total is zero, commit reservation immediately
             if (order.Total.Amount == 0)
             {
                 order.MarkConfirmed(paymentId: null, confirmedAt: now);
+
+                foreach (var reservation in reservations)
+                {
+                    eventAggregate.CommitReservation(reservation.Id, now);
+                }
             }
 
             await orderRepository.AddAsync(order, cancellationToken);
 
+            // Collect domain events from both aggregates
             pendingDomainEventsCollector.AddRange(order.DomainEvents);
             order.ClearDomainEvents();
+            pendingDomainEventsCollector.AddRange(eventAggregate.DomainEvents);
+            eventAggregate.ClearDomainEvents();
 
             return new PlaceOrderResult(
                 order.Id.Value,

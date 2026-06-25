@@ -18,6 +18,8 @@ public sealed class OrderRecord
 
     public int? PaymentId { get; set; }
 
+    public int? ReservationId { get; set; }
+
     public DateTimeOffset PlacedAt { get; set; }
 
     public DateTimeOffset? ConfirmedAt { get; set; }

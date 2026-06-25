@@ -430,6 +430,7 @@ public sealed class OrderTests
             OrderStatus.Confirmed,
             total,
             paymentId: null,
+            reservationId: null,
             PlacedAt,
             confirmedAt: PlacedAt,
             expiresAt: null,

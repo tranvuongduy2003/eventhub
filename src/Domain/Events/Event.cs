@@ -1,5 +1,6 @@
 using EventHub.Domain.Abstractions;
 using EventHub.Domain.Exceptions;
+using EventHub.Domain.Orders;
 using EventHub.Domain.Users;
 
 namespace EventHub.Domain.Events;
@@ -8,6 +9,7 @@ public sealed class Event : AggregateRoot<EventId>
 {
     private readonly List<Occurrence> _occurrences = [];
     private readonly List<TicketType> _ticketTypes = [];
+    private readonly List<Reservation> _reservations = [];
 
     private Event()
     {
@@ -18,6 +20,8 @@ public sealed class Event : AggregateRoot<EventId>
     public IReadOnlyCollection<Occurrence> Occurrences => _occurrences.AsReadOnly();
 
     public IReadOnlyCollection<TicketType> TicketTypes => _ticketTypes.AsReadOnly();
+
+    public IReadOnlyCollection<Reservation> Reservations => _reservations.AsReadOnly();
 
     public EventTitle Title { get; private set; } = null!;
 
@@ -319,6 +323,132 @@ public sealed class Event : AggregateRoot<EventId>
     {
         _ticketTypes.Clear();
         _ticketTypes.AddRange(ticketTypes);
+    }
+
+    public Reservation Reserve(
+        TicketTypeId ticketTypeId,
+        int quantity,
+        OrderId orderId,
+        DateTimeOffset expiresAt,
+        DateTimeOffset now)
+    {
+        // INV-14: event must be published
+        if (Status is not EventStatus.Published)
+        {
+            throw new BusinessRuleValidationException(
+                "EVENT_NOT_PUBLISHED",
+                "Cannot reserve tickets for an event that is not published.");
+        }
+
+        var ticketType = _ticketTypes.FirstOrDefault(t => t.Id == ticketTypeId)
+            ?? throw new BusinessRuleValidationException(
+                "TICKET_TYPE_NOT_FOUND",
+                "The ticket type was not found on this event.");
+
+        ticketType.Reserve(quantity);
+
+        var nextId = _reservations.Count > 0
+            ? ReservationId.From(_reservations.Max(r => r.Id.Value) + 1)
+            : ReservationId.From(1);
+
+        var reservation = Reservation.Create(
+            nextId,
+            ticketTypeId,
+            quantity,
+            orderId,
+            expiresAt,
+            now);
+
+        _reservations.Add(reservation);
+
+        Raise(new InventoryReservedEvent(Id, ticketTypeId, nextId, quantity, now));
+
+        if (ticketType.Available == 0)
+        {
+            Raise(new EventSoldOutEvent(Id, ticketTypeId, now));
+        }
+
+        return reservation;
+    }
+
+    public void CommitReservation(ReservationId reservationId, DateTimeOffset now)
+    {
+        var reservation = _reservations.FirstOrDefault(r => r.Id == reservationId)
+            ?? throw new BusinessRuleValidationException(
+                "RESERVATION_NOT_FOUND",
+                "The reservation was not found.");
+
+        var ticketType = _ticketTypes.FirstOrDefault(t => t.Id == reservation.TicketTypeId)
+            ?? throw new BusinessRuleValidationException(
+                "TICKET_TYPE_NOT_FOUND",
+                "The ticket type was not found on this event.");
+
+        ticketType.CommitReservation(reservation.Quantity);
+
+        _reservations.Remove(reservation);
+
+        Raise(new ReservationCommittedEvent(Id, reservation.TicketTypeId, reservationId, reservation.Quantity, now));
+
+        if (ticketType.Available == 0)
+        {
+            Raise(new EventSoldOutEvent(Id, reservation.TicketTypeId, now));
+        }
+    }
+
+    public void ReleaseReservation(ReservationId reservationId, DateTimeOffset now)
+    {
+        var reservation = _reservations.FirstOrDefault(r => r.Id == reservationId)
+            ?? throw new BusinessRuleValidationException(
+                "RESERVATION_NOT_FOUND",
+                "The reservation was not found.");
+
+        var ticketType = _ticketTypes.FirstOrDefault(t => t.Id == reservation.TicketTypeId)
+            ?? throw new BusinessRuleValidationException(
+                "TICKET_TYPE_NOT_FOUND",
+                "The ticket type was not found on this event.");
+
+        ticketType.ReleaseReservation(reservation.Quantity);
+
+        _reservations.Remove(reservation);
+
+        Raise(new ReservationReleasedEvent(Id, reservation.TicketTypeId, reservationId, reservation.Quantity, now));
+    }
+
+    public void ReturnToPool(TicketTypeId ticketTypeId, int quantity, DateTimeOffset now)
+    {
+        var ticketType = _ticketTypes.FirstOrDefault(t => t.Id == ticketTypeId)
+            ?? throw new BusinessRuleValidationException(
+                "TICKET_TYPE_NOT_FOUND",
+                "The ticket type was not found on this event.");
+
+        ticketType.ReturnToPool(quantity);
+
+        Raise(new InventoryReturnedToPoolEvent(Id, ticketTypeId, quantity, now));
+    }
+
+    public void ChangeTicketTypeCapacity(TicketTypeId ticketTypeId, int newCapacity, DateTimeOffset now)
+    {
+        var ticketType = _ticketTypes.FirstOrDefault(t => t.Id == ticketTypeId)
+            ?? throw new BusinessRuleValidationException(
+                "TICKET_TYPE_NOT_FOUND",
+                "The ticket type was not found on this event.");
+
+        // INV-12: new capacity must be >= Reserved + Sold
+        if (newCapacity < ticketType.Reserved + ticketType.Sold)
+        {
+            throw new BusinessRuleValidationException(
+                "CAPACITY_REDUCTION_INVALID",
+                $"Cannot reduce capacity below {ticketType.Reserved + ticketType.Sold} (reserved + sold).");
+        }
+
+        ticketType.SetCapacity(Capacity.Create(newCapacity));
+        UpdatedAt = now;
+    }
+
+    public void LoadReservations(List<Reservation> reservations)
+    {
+        _reservations.Clear();
+        _reservations.AddRange(reservations);
     }
 
     public static Event FromPersistence(

@@ -22,6 +22,8 @@ public sealed class Order : AggregateRoot<OrderId>
 
     public int? PaymentId { get; private set; }
 
+    public ReservationId? ReservationId { get; private set; }
+
     public DateTimeOffset PlacedAt { get; private set; }
 
     public DateTimeOffset? ConfirmedAt { get; private set; }
@@ -146,6 +148,11 @@ public sealed class Order : AggregateRoot<OrderId>
         Raise(new OrderCancelledEvent(Id, cancelledAt));
     }
 
+    public void SetReservationId(ReservationId reservationId)
+    {
+        ReservationId = reservationId;
+    }
+
     public void LoadLines(List<OrderLine> lines)
     {
         _lines.Clear();
@@ -159,6 +166,7 @@ public sealed class Order : AggregateRoot<OrderId>
         OrderStatus status,
         Money total,
         int? paymentId,
+        ReservationId? reservationId,
         DateTimeOffset placedAt,
         DateTimeOffset? confirmedAt,
         DateTimeOffset? expiresAt,
@@ -172,6 +180,7 @@ public sealed class Order : AggregateRoot<OrderId>
             Status = status,
             Total = total,
             PaymentId = paymentId,
+            ReservationId = reservationId,
             PlacedAt = placedAt,
             ConfirmedAt = confirmedAt,
             ExpiresAt = expiresAt,

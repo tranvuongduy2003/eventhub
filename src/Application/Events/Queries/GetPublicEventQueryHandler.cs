@@ -31,7 +31,8 @@ public sealed class GetPublicEventQueryHandler(
                 tt.Capacity.Value,
                 tt.Sold,
                 tt.Reserved,
-                tt.Capacity.Value - tt.Sold - tt.Reserved <= 0))
+                tt.Available,
+                tt.Available <= 0))
             .ToList();
 
         return new PublicEventResponse(

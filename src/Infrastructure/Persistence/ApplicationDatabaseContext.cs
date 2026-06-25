@@ -29,6 +29,8 @@ public sealed class ApplicationDatabaseContext(DbContextOptions<ApplicationDatab
 
     public DbSet<OrderLineRecord> OrderLines => Set<OrderLineRecord>();
 
+    public DbSet<ReservationRecord> Reservations => Set<ReservationRecord>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(SchemaName);

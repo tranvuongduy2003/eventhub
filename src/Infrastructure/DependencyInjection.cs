@@ -6,6 +6,7 @@ using EventHub.Application.Abstractions.Payments;
 using EventHub.Application.Abstractions.Persistence;
 using EventHub.Application.Abstractions.Storage;
 using EventHub.Infrastructure.Auth;
+using EventHub.Infrastructure.BackgroundJobs;
 using EventHub.Infrastructure.Cache;
 using EventHub.Infrastructure.Email;
 using EventHub.Infrastructure.Messaging;
@@ -96,6 +97,8 @@ public static class DependencyInjection
         services.AddSingleton<IIntegrationEventPublisher, NoOpIntegrationEventPublisher>();
         services.AddSingleton<IEmailSender, NoOpEmailSender>();
         services.AddSingleton<IPaymentGateway, NoOpPaymentGateway>();
+
+        services.AddHostedService<ReservationHoldExpiryJob>();
 
         return services;
     }

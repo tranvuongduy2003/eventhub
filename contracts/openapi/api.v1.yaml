@@ -698,6 +698,12 @@ components:
       type: object
     PublicTicketTypeResponse:
       properties:
+        available:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
         capacity:
           format: int32
           pattern: ^-?(?:0|[1-9]\d*)$
@@ -742,6 +748,7 @@ components:
         - capacity
         - sold
         - reserved
+        - available
         - isSoldOut
       type: object
     PublishEventResponse:
