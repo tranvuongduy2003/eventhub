@@ -8,7 +8,6 @@ internal static class TicketTypePersistenceMapper
     public static TicketTypeRecord ToRecord(TicketType domain, int eventId) =>
         new()
         {
-            Id = domain.Id.Value,
             EventId = eventId,
             Name = domain.Name.Value,
             PriceAmount = domain.Price.Amount,

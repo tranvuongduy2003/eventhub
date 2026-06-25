@@ -6,11 +6,11 @@ public readonly record struct TicketTypeId(int Value)
 {
     public static TicketTypeId From(int value)
     {
-        if (value <= 0)
+        if (value == 0)
         {
             throw new BusinessRuleValidationException(
                 "TICKET_TYPE_ID_INVALID",
-                "Ticket type id must be a positive integer.");
+                "Ticket type id must not be zero.");
         }
 
         return new TicketTypeId(value);

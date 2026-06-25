@@ -2,9 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 
 import * as eventsApi from '../api'
+import { TicketTypeManager } from '../components/ticket-type-manager'
 import { EditEventForm } from '../edit-event-form'
 
 export function EditEventPage() {
@@ -73,6 +75,12 @@ export function EditEventPage() {
 
       <div className="max-w-xl">
         <EditEventForm event={event} />
+      </div>
+
+      <Separator className="max-w-xl" />
+
+      <div className="max-w-xl">
+        <TicketTypeManager eventId={event.eventId} eventStatus={event.status} />
       </div>
     </div>
   )

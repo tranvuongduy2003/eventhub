@@ -174,3 +174,42 @@ export function getTicketTypes(eventId: number, signal?: AbortSignal) {
     suppressErrorToast: true,
   })
 }
+
+export type EditTicketTypeRequest = {
+  name: string
+  priceAmount: number
+  priceCurrency: string
+  capacity: number
+}
+
+export type EditTicketTypeResponse = {
+  ticketTypeId: number
+  name: string
+  priceAmount: number
+  priceCurrency: string
+  capacity: number
+  sold: number
+  reserved: number
+  createdAt: string
+  updatedAt: string
+}
+
+export function editTicketType(
+  eventId: number,
+  ticketTypeId: number,
+  request: EditTicketTypeRequest,
+  signal?: AbortSignal,
+) {
+  return apiClient.put<EditTicketTypeResponse>(
+    `/api/events/${eventId}/ticket-types/${ticketTypeId}`,
+    request,
+    { signal, suppressErrorToast: true },
+  )
+}
+
+export function removeTicketType(eventId: number, ticketTypeId: number, signal?: AbortSignal) {
+  return apiClient.delete<void>(`/api/events/${eventId}/ticket-types/${ticketTypeId}`, {
+    signal,
+    suppressErrorToast: true,
+  })
+}

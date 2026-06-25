@@ -308,7 +308,30 @@ public sealed class Event : AggregateRoot<EventId>
                 });
         }
 
-        var ticketType = TicketType.Create(name, price, capacity, createdAt);
+        // AC-11: maximum 10 ticket types per event
+        if (_ticketTypes.Count >= 10)
+        {
+            throw new BusinessRuleValidationException(
+                "TICKET_TYPE_MAX_REACHED",
+                "An event cannot have more than 10 ticket types.");
+        }
+
+        // EC-01: duplicate name check
+        if (_ticketTypes.Any(t => t.Name.Value == name.Value))
+        {
+            throw new BusinessRuleValidationException(
+                "TICKET_TYPE_NAME_DUPLICATE",
+                $"A ticket type with the name '{name.Value}' already exists on this event.");
+        }
+
+        // Assign negative IDs for new types — the database generates positive IDs on persist.
+        // Negative IDs ensure uniqueness in-memory without conflicting with DB-generated IDs.
+        var minId = _ticketTypes.Count > 0
+            ? _ticketTypes.Min(t => t.Id.Value)
+            : 0;
+        var nextId = minId < 0 ? TicketTypeId.From(minId - 1) : TicketTypeId.From(-1);
+
+        var ticketType = TicketType.Create(nextId, name, price, capacity, createdAt);
 
         _ticketTypes.Add(ticketType);
 
@@ -317,6 +340,91 @@ public sealed class Event : AggregateRoot<EventId>
         Raise(new TicketTypeAddedEvent(Id, ticketType.Id));
 
         return ticketType;
+    }
+
+    public void EditTicketType(
+        TicketTypeId ticketTypeId,
+        TicketName name,
+        Money price,
+        Capacity capacity,
+        DateTimeOffset updatedAt)
+    {
+        if (Status is not EventStatus.Draft)
+        {
+            throw new BusinessRuleValidationException(
+                "INVALID_EVENT_STATUS",
+                Status switch
+                {
+                    EventStatus.Published => "Cannot edit ticket types on a published event.",
+                    EventStatus.Closed => "Cannot edit ticket types on a closed event.",
+                    EventStatus.Cancelled => "Cannot edit ticket types on a cancelled event.",
+                    _ => "Cannot edit ticket types on an event in its current status.",
+                });
+        }
+
+        var ticketType = _ticketTypes.FirstOrDefault(t => t.Id == ticketTypeId)
+            ?? throw new BusinessRuleValidationException(
+                "TICKET_TYPE_NOT_FOUND",
+                "The ticket type was not found on this event.");
+
+        // EC-01: duplicate name check (exclude current type)
+        if (_ticketTypes.Any(t => t.Id != ticketTypeId && t.Name.Value == name.Value))
+        {
+            throw new BusinessRuleValidationException(
+                "TICKET_TYPE_NAME_DUPLICATE",
+                $"A ticket type with the name '{name.Value}' already exists on this event.");
+        }
+
+        // INV-12: capacity cannot drop below Reserved + Sold
+        if (capacity.Value < ticketType.Reserved + ticketType.Sold)
+        {
+            throw new BusinessRuleValidationException(
+                "CAPACITY_REDUCTION_INVALID",
+                $"Cannot reduce capacity below {ticketType.Reserved + ticketType.Sold} (reserved + sold).");
+        }
+
+        ticketType.Update(name, price, capacity, updatedAt);
+
+        UpdatedAt = updatedAt;
+
+        Raise(new TicketTypeUpdatedEvent(Id, ticketTypeId));
+    }
+
+    public void RemoveTicketType(TicketTypeId ticketTypeId, DateTimeOffset updatedAt)
+    {
+        if (Status is EventStatus.Closed or EventStatus.Cancelled)
+        {
+            throw new BusinessRuleValidationException(
+                "EVENT_CLOSED_OR_CANCELLED",
+                "Cannot remove ticket types from a closed or cancelled event.");
+        }
+
+        var ticketType = _ticketTypes.FirstOrDefault(t => t.Id == ticketTypeId)
+            ?? throw new BusinessRuleValidationException(
+                "TICKET_TYPE_NOT_FOUND",
+                "The ticket type was not found on this event.");
+
+        // EC-02: cannot remove if Reserved + Sold > 0
+        if (ticketType.Reserved + ticketType.Sold > 0)
+        {
+            throw new BusinessRuleValidationException(
+                "TICKET_TYPE_HAS_SALES",
+                "Cannot remove a ticket type that has reserved or sold tickets.");
+        }
+
+        // EC-03 / INV-11: cannot remove last ticket type from a Published event
+        if (Status is EventStatus.Published && _ticketTypes.Count <= 1)
+        {
+            throw new BusinessRuleValidationException(
+                "TICKET_TYPE_LAST_ON_PUBLISHED_EVENT",
+                "Cannot remove the last ticket type from a published event. Unpublish or cancel the event first.");
+        }
+
+        _ticketTypes.Remove(ticketType);
+
+        UpdatedAt = updatedAt;
+
+        Raise(new TicketTypeRemovedEvent(Id, ticketTypeId));
     }
 
     public void LoadTicketTypes(List<TicketType> ticketTypes)
@@ -424,25 +532,6 @@ public sealed class Event : AggregateRoot<EventId>
         ticketType.ReturnToPool(quantity);
 
         Raise(new InventoryReturnedToPoolEvent(Id, ticketTypeId, quantity, now));
-    }
-
-    public void ChangeTicketTypeCapacity(TicketTypeId ticketTypeId, int newCapacity, DateTimeOffset now)
-    {
-        var ticketType = _ticketTypes.FirstOrDefault(t => t.Id == ticketTypeId)
-            ?? throw new BusinessRuleValidationException(
-                "TICKET_TYPE_NOT_FOUND",
-                "The ticket type was not found on this event.");
-
-        // INV-12: new capacity must be >= Reserved + Sold
-        if (newCapacity < ticketType.Reserved + ticketType.Sold)
-        {
-            throw new BusinessRuleValidationException(
-                "CAPACITY_REDUCTION_INVALID",
-                $"Cannot reduce capacity below {ticketType.Reserved + ticketType.Sold} (reserved + sold).");
-        }
-
-        ticketType.SetCapacity(Capacity.Create(newCapacity));
-        UpdatedAt = now;
     }
 
     public void LoadReservations(List<Reservation> reservations)

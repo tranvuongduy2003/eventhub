@@ -26,12 +26,14 @@ public sealed class TicketType : Entity<TicketTypeId>
     public DateTimeOffset UpdatedAt { get; private set; }
 
     public static TicketType Create(
+        TicketTypeId id,
         TicketName name,
         Money price,
         Capacity capacity,
         DateTimeOffset createdAt) =>
         new()
         {
+            Id = id,
             Name = name,
             Price = price,
             Capacity = capacity,
@@ -148,5 +150,13 @@ public sealed class TicketType : Entity<TicketTypeId>
     {
         Capacity = newCapacity;
         UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    public void Update(TicketName newName, Money newPrice, Capacity newCapacity, DateTimeOffset updatedAt)
+    {
+        Name = newName;
+        Price = newPrice;
+        Capacity = newCapacity;
+        UpdatedAt = updatedAt;
     }
 }
