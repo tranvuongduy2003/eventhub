@@ -2,6 +2,7 @@ using EventHub.Application.Abstractions.Messaging;
 using EventHub.Application.Abstractions.Persistence;
 using EventHub.Application.Abstractions.Services;
 using EventHub.Application.Common;
+using EventHub.Domain.DiscountCodes;
 using EventHub.Domain.Events;
 using EventHub.Domain.Exceptions;
 using EventHub.Domain.Orders;
@@ -11,6 +12,7 @@ namespace EventHub.Application.Orders.Commands;
 public sealed class PlaceOrderCommandHandler(
     IEventRepository eventRepository,
     IOrderRepository orderRepository,
+    IDiscountCodeRepository discountCodeRepository,
     IClock clock,
     IPendingDomainEventsCollector pendingDomainEventsCollector)
     : CommandHandler<PlaceOrderCommand, PlaceOrderResult>
@@ -88,7 +90,56 @@ public sealed class PlaceOrderCommandHandler(
                     ticketType.Price);
             }).ToList();
 
-            var order = Order.Place(eventId, contact, orderLines, now);
+            // Discount code validation and computation
+            DiscountCodeId? discountCodeId = null;
+            Money? discountAmount = null;
+            DiscountCode? discountCode = null;
+
+            if (!string.IsNullOrWhiteSpace(command.DiscountCode))
+            {
+                var normalizedCode = DiscountCode.NormalizeCode(command.DiscountCode);
+
+                discountCode = await discountCodeRepository.GetByCodeAsync(
+                    command.EventId, normalizedCode, cancellationToken);
+
+                if (discountCode is null || discountCode.DeletedAt.HasValue)
+                {
+                    return Error.Validation(
+                        "DISCOUNT_CODE_NOT_FOUND",
+                        "The discount code is invalid.");
+                }
+
+                if (discountCode.StartAt.HasValue && now < discountCode.StartAt.Value)
+                {
+                    return Error.Validation(
+                        "DISCOUNT_CODE_NOT_YET_VALID",
+                        "The discount code is not yet valid.");
+                }
+
+                if (discountCode.EndAt.HasValue && now > discountCode.EndAt.Value)
+                {
+                    return Error.Validation(
+                        "DISCOUNT_CODE_EXPIRED",
+                        "The discount code has expired.");
+                }
+
+                if (discountCode.UsageCap.HasValue && discountCode.UsedCount >= discountCode.UsageCap.Value)
+                {
+                    return Error.Validation(
+                        "DISCOUNT_CODE_EXHAUSTED",
+                        "The discount code has reached its usage cap.");
+                }
+
+                // Compute discount against the subtotal
+                var subtotalCurrency = orderLines[0].LineTotal.Currency;
+                var subtotalAmount = orderLines.Sum(l => l.LineTotal.Amount);
+                var subtotal = Money.Create(subtotalAmount, subtotalCurrency);
+
+                discountAmount = discountCode.ComputeDiscount(subtotal);
+                discountCodeId = discountCode.Id;
+            }
+
+            var order = Order.Place(eventId, contact, orderLines, now, discountCodeId, discountAmount);
 
             // Reserve inventory for each ticket type line
             var expiresAt = now.AddMinutes(HoldDurationMinutes);
@@ -132,6 +183,13 @@ public sealed class PlaceOrderCommandHandler(
                 }
             }
 
+            // Mark discount code as used (same transaction — atomic)
+            if (discountCode is not null)
+            {
+                discountCode.MarkUsed(now);
+                await discountCodeRepository.Update(discountCode, cancellationToken);
+            }
+
             await orderRepository.AddAsync(order, cancellationToken);
 
             // Collect domain events from both aggregates
@@ -155,7 +213,9 @@ public sealed class PlaceOrderCommandHandler(
                     l.UnitPriceSnapshot.Amount,
                     l.UnitPriceSnapshot.Currency,
                     l.LineTotal.Amount,
-                    l.LineTotal.Currency)).ToList());
+                    l.LineTotal.Currency)).ToList(),
+                discountCode?.Code,
+                discountAmount?.Amount);
         }
         catch (BusinessRuleValidationException exception)
         {

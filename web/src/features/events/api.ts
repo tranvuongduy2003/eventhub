@@ -217,3 +217,97 @@ export function removeTicketType(eventId: number, ticketTypeId: number, signal?:
     suppressErrorToast: true,
   })
 }
+
+// --- Discount Codes ---
+
+export type DiscountCodeResponse = {
+  discountCodeId: number
+  eventId: number
+  code: string
+  type: string
+  value: number
+  startAt: string | null
+  endAt: string | null
+  usageCap: number | null
+  usedCount: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string | null
+}
+
+export type CreateDiscountCodeRequest = {
+  code: string
+  type: string
+  value: number
+  startAt: string | null
+  endAt: string | null
+  usageCap: number | null
+}
+
+export type UpdateDiscountCodeRequest = {
+  type: string
+  value: number
+  startAt: string | null
+  endAt: string | null
+  usageCap: number | null
+}
+
+export type ValidateDiscountCodeResponse = {
+  discountCodeId: number
+  code: string
+  type: string
+  value: number
+  discountAmount: number
+  finalTotal: number
+  currency: string
+}
+
+export function getDiscountCodes(eventId: number, signal?: AbortSignal) {
+  return apiClient.get<DiscountCodeResponse[]>(`/api/events/${eventId}/discount-codes`, {
+    signal,
+    suppressErrorToast: true,
+  })
+}
+
+export function createDiscountCode(
+  eventId: number,
+  request: CreateDiscountCodeRequest,
+  signal?: AbortSignal,
+) {
+  return apiClient.post<DiscountCodeResponse>(`/api/events/${eventId}/discount-codes`, request, {
+    signal,
+    suppressErrorToast: true,
+  })
+}
+
+export function updateDiscountCode(
+  eventId: number,
+  discountCodeId: number,
+  request: UpdateDiscountCodeRequest,
+  signal?: AbortSignal,
+) {
+  return apiClient.put<DiscountCodeResponse>(
+    `/api/events/${eventId}/discount-codes/${discountCodeId}`,
+    request,
+    { signal, suppressErrorToast: true },
+  )
+}
+
+export function deleteDiscountCode(eventId: number, discountCodeId: number, signal?: AbortSignal) {
+  return apiClient.delete<void>(`/api/events/${eventId}/discount-codes/${discountCodeId}`, {
+    signal,
+    suppressErrorToast: true,
+  })
+}
+
+export function validateDiscountCode(
+  eventId: number,
+  request: { code: string; orderTotalAmount: number; orderTotalCurrency: string },
+  signal?: AbortSignal,
+) {
+  return apiClient.post<ValidateDiscountCodeResponse>(
+    `/api/events/${eventId}/discount-codes/validate`,
+    request,
+    { signal, suppressErrorToast: true },
+  )
+}

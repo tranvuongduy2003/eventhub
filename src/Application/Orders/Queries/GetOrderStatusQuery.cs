@@ -13,7 +13,9 @@ public sealed record GetOrderStatusResult(
     int? PaymentId,
     DateTimeOffset PlacedAt,
     DateTimeOffset? ConfirmedAt,
-    List<GetOrderStatusLineResult> Lines);
+    List<GetOrderStatusLineResult> Lines,
+    string? DiscountCode = null,
+    decimal? DiscountAmount = null);
 
 public sealed record GetOrderStatusLineResult(
     int OrderLineId,

@@ -6,7 +6,8 @@ public sealed record PlaceOrderCommand(
     int EventId,
     string ContactName,
     string ContactEmail,
-    List<PlaceOrderLineRequest> Lines)
+    List<PlaceOrderLineRequest> Lines,
+    string? DiscountCode = null)
     : ICommand<PlaceOrderResult>;
 
 public sealed record PlaceOrderLineRequest(
@@ -21,7 +22,9 @@ public sealed record PlaceOrderResult(
     int? PaymentId,
     DateTimeOffset PlacedAt,
     DateTimeOffset? ConfirmedAt,
-    List<PlaceOrderLineResult> Lines);
+    List<PlaceOrderLineResult> Lines,
+    string? DiscountCode = null,
+    decimal? DiscountAmount = null);
 
 public sealed record PlaceOrderLineResult(
     int OrderLineId,

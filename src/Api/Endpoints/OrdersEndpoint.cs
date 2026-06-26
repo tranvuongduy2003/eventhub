@@ -41,7 +41,8 @@ internal sealed class OrdersEndpoint : IEndpoint
             request.ContactEmail,
             request.Lines.Select(l => new Application.Orders.Commands.PlaceOrderLineRequest(
                 l.TicketTypeId,
-                l.Quantity)).ToList());
+                l.Quantity)).ToList(),
+            request.DiscountCode);
 
         var result = await sender.Send(command);
 
@@ -68,7 +69,9 @@ internal sealed class OrdersEndpoint : IEndpoint
                     l.UnitPriceAmount,
                     l.UnitPriceCurrency,
                     l.LineTotalAmount,
-                    l.LineTotalCurrency)).ToList()),
+                    l.LineTotalCurrency)).ToList(),
+                order.DiscountCode,
+                order.DiscountAmount),
             statusCode: StatusCodes.Status201Created);
     }
 
@@ -102,6 +105,8 @@ internal sealed class OrdersEndpoint : IEndpoint
                     l.UnitPriceAmount,
                     l.UnitPriceCurrency,
                     l.LineTotalAmount,
-                    l.LineTotalCurrency)).ToList()));
+                    l.LineTotalCurrency)).ToList(),
+                order.DiscountCode,
+                order.DiscountAmount));
     }
 }

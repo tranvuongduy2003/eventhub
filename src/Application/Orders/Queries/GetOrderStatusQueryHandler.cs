@@ -1,12 +1,14 @@
 using EventHub.Application.Abstractions.Messaging;
 using EventHub.Application.Abstractions.Persistence;
 using EventHub.Application.Common;
+using EventHub.Domain.DiscountCodes;
 using EventHub.Domain.Orders;
 
 namespace EventHub.Application.Orders.Queries;
 
 public sealed class GetOrderStatusQueryHandler(
-    IOrderRepository orderRepository)
+    IOrderRepository orderRepository,
+    IDiscountCodeRepository discountCodeRepository)
     : QueryHandler<GetOrderStatusQuery, GetOrderStatusResult>
 {
     public override async Task<Result<GetOrderStatusResult>> Handle(
@@ -19,6 +21,14 @@ public sealed class GetOrderStatusQueryHandler(
         if (order is null)
         {
             return Error.NotFound("ORDER_NOT_FOUND", "The order was not found.");
+        }
+
+        // Resolve discount code string from ID (if any)
+        string? discountCode = null;
+        if (order.DiscountCodeId.HasValue)
+        {
+            var dc = await discountCodeRepository.GetByIdAsync(order.DiscountCodeId.Value, cancellationToken);
+            discountCode = dc?.Code;
         }
 
         return new GetOrderStatusResult(
@@ -36,6 +46,8 @@ public sealed class GetOrderStatusQueryHandler(
                 l.UnitPriceSnapshot.Amount,
                 l.UnitPriceSnapshot.Currency,
                 l.LineTotal.Amount,
-                l.LineTotal.Currency)).ToList());
+                l.LineTotal.Currency)).ToList(),
+            discountCode,
+            order.DiscountAmount?.Amount);
     }
 }

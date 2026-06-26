@@ -431,6 +431,8 @@ public sealed class OrderTests
             total,
             paymentId: null,
             reservationId: null,
+            discountCodeId: null,
+            discountAmount: null,
             PlacedAt,
             confirmedAt: PlacedAt,
             expiresAt: null,

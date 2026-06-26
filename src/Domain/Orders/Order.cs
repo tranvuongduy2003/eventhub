@@ -1,4 +1,5 @@
 using EventHub.Domain.Abstractions;
+using EventHub.Domain.DiscountCodes;
 using EventHub.Domain.Events;
 using EventHub.Domain.Exceptions;
 
@@ -24,6 +25,10 @@ public sealed class Order : AggregateRoot<OrderId>
 
     public ReservationId? ReservationId { get; private set; }
 
+    public DiscountCodeId? DiscountCodeId { get; private set; }
+
+    public Money? DiscountAmount { get; private set; }
+
     public DateTimeOffset PlacedAt { get; private set; }
 
     public DateTimeOffset? ConfirmedAt { get; private set; }
@@ -40,7 +45,9 @@ public sealed class Order : AggregateRoot<OrderId>
         EventId eventId,
         Contact contact,
         List<OrderLine> lines,
-        DateTimeOffset placedAt)
+        DateTimeOffset placedAt,
+        DiscountCodeId? discountCodeId = null,
+        Money? discountAmount = null)
     {
         if (lines.Count == 0)
         {
@@ -50,8 +57,16 @@ public sealed class Order : AggregateRoot<OrderId>
         }
 
         var currency = lines[0].LineTotal.Currency;
-        var totalAmount = lines.Sum(l => l.LineTotal.Amount);
+        var subtotalAmount = lines.Sum(l => l.LineTotal.Amount);
+
+        // INV-20: Total = sum of line totals - discount, clamped at zero
+        var discount = discountAmount?.Amount ?? 0m;
+        var totalAmount = Math.Max(0, subtotalAmount - discount);
         var total = Money.Create(totalAmount, currency);
+
+        var effectiveDiscount = discount > 0
+            ? Money.Create(Math.Min(discount, subtotalAmount), currency)
+            : null;
 
         var order = new Order
         {
@@ -60,6 +75,8 @@ public sealed class Order : AggregateRoot<OrderId>
             Status = OrderStatus.Pending,
             Total = total,
             PaymentId = null,
+            DiscountCodeId = discountCodeId,
+            DiscountAmount = effectiveDiscount,
             PlacedAt = placedAt,
             ConfirmedAt = null,
             ExpiresAt = null,
@@ -69,7 +86,14 @@ public sealed class Order : AggregateRoot<OrderId>
 
         order._lines.AddRange(lines);
 
-        order.Raise(new OrderPlacedEvent(order.Id, eventId, total.Amount, total.Currency, placedAt));
+        order.Raise(new OrderPlacedEvent(
+            order.Id,
+            eventId,
+            total.Amount,
+            total.Currency,
+            discountCodeId,
+            effectiveDiscount?.Amount,
+            placedAt));
 
         return order;
     }
@@ -167,6 +191,8 @@ public sealed class Order : AggregateRoot<OrderId>
         Money total,
         int? paymentId,
         ReservationId? reservationId,
+        DiscountCodeId? discountCodeId,
+        Money? discountAmount,
         DateTimeOffset placedAt,
         DateTimeOffset? confirmedAt,
         DateTimeOffset? expiresAt,
@@ -181,6 +207,8 @@ public sealed class Order : AggregateRoot<OrderId>
             Total = total,
             PaymentId = paymentId,
             ReservationId = reservationId,
+            DiscountCodeId = discountCodeId,
+            DiscountAmount = discountAmount,
             PlacedAt = placedAt,
             ConfirmedAt = confirmedAt,
             ExpiresAt = expiresAt,

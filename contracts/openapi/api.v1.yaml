@@ -206,6 +206,43 @@ components:
       required:
         - coverImageUrl
       type: object
+    CreateDiscountCodeRequest:
+      properties:
+        code:
+          type: string
+        endAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        startAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        type:
+          type: string
+        usageCap:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - "null"
+            - integer
+            - string
+        value:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+      required:
+        - code
+        - type
+        - value
+        - startAt
+        - endAt
+        - usageCap
+      type: object
     CreateDraftEventRequest:
       properties:
         endsAt:
@@ -231,6 +268,118 @@ components:
         - timeZoneId
         - physicalAddress
         - isOnline
+      type: object
+    DiscountCodeResponse:
+      properties:
+        code:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        discountCodeId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        endAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        eventId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        isActive:
+          type: boolean
+        startAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        type:
+          type: string
+        updatedAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        usageCap:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - "null"
+            - integer
+            - string
+        usedCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        value:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+      required:
+        - discountCodeId
+        - eventId
+        - code
+        - type
+        - value
+        - startAt
+        - endAt
+        - usageCap
+        - usedCount
+        - isActive
+        - createdAt
+        - updatedAt
+      type: object
+    DiscountCodeValidationResponse:
+      properties:
+        code:
+          type: string
+        currency:
+          type: string
+        discountAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        discountCodeId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        finalTotal:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        type:
+          type: string
+        value:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+      required:
+        - discountCodeId
+        - code
+        - type
+        - value
+        - discountAmount
+        - finalTotal
+        - currency
       type: object
     DraftEventResponse:
       properties:
@@ -610,6 +759,17 @@ components:
           type:
             - "null"
             - string
+        discountAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - "null"
+            - number
+            - string
+        discountCode:
+          type:
+            - "null"
+            - string
         lines:
           items:
             $ref: "#/components/schemas/OrderLineResponse"
@@ -674,6 +834,10 @@ components:
           type: string
         contactName:
           type: string
+        discountCode:
+          type:
+            - "null"
+            - string
         lines:
           items:
             $ref: "#/components/schemas/PlaceOrderLineRequest"
@@ -687,6 +851,17 @@ components:
       properties:
         confirmedAt:
           format: date-time
+          type:
+            - "null"
+            - string
+        discountAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - "null"
+            - number
+            - string
+        discountCode:
           type:
             - "null"
             - string
@@ -1020,6 +1195,40 @@ components:
         - email
         - expiresInDays
       type: object
+    UpdateDiscountCodeRequest:
+      properties:
+        endAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        startAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        type:
+          type: string
+        usageCap:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - "null"
+            - integer
+            - string
+        value:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+      required:
+        - type
+        - value
+        - startAt
+        - endAt
+        - usageCap
+      type: object
     UpdateProfileRequest:
       properties:
         displayName:
@@ -1077,6 +1286,23 @@ components:
         - displayName
         - email
         - createdAt
+      type: object
+    ValidateDiscountCodeRequest:
+      properties:
+        code:
+          type: string
+        orderTotalAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        orderTotalCurrency:
+          type: string
+      required:
+        - code
+        - orderTotalAmount
+        - orderTotalCurrency
       type: object
 info:
   title: EventHub.Api | v1
@@ -1575,6 +1801,274 @@ paths:
           description: Unprocessable Entity
       tags:
         - Events
+  /api/events/{eventId}/discount-codes:
+    get:
+      operationId: GetDiscountCodes
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/DiscountCodeResponse"
+                type: array
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - DiscountCodes
+    post:
+      operationId: CreateDiscountCode
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDiscountCodeRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscountCodeResponse"
+          description: Created
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - DiscountCodes
+  /api/events/{eventId}/discount-codes/validate:
+    post:
+      operationId: ValidateDiscountCode
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ValidateDiscountCodeRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscountCodeValidationResponse"
+          description: OK
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - DiscountCodes
+  /api/events/{eventId}/discount-codes/{discountCodeId}:
+    delete:
+      operationId: DeleteDiscountCode
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+        - in: path
+          name: discountCodeId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - DiscountCodes
+    put:
+      operationId: UpdateDiscountCode
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+        - in: path
+          name: discountCodeId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDiscountCodeRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscountCodeResponse"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - DiscountCodes
   /api/events/{eventId}/duplicate:
     post:
       operationId: DuplicateEvent
@@ -2704,6 +3198,7 @@ tags:
   - name: Attendees
   - name: AuditLog
   - name: Auth
+  - name: DiscountCodes
   - name: Events
   - name: EventInvitations
   - name: EventRoles

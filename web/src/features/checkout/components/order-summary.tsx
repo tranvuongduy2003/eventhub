@@ -10,12 +10,20 @@ export interface OrderLineItem {
   quantity: number
 }
 
-interface OrderSummaryProps {
-  lineItems: OrderLineItem[]
+export interface DiscountInfo {
+  code: string
+  amount: number
 }
 
-export function OrderSummary({ lineItems }: OrderSummaryProps) {
-  const total = lineItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
+interface OrderSummaryProps {
+  lineItems: OrderLineItem[]
+  discount?: DiscountInfo | null
+}
+
+export function OrderSummary({ lineItems, discount }: OrderSummaryProps) {
+  const subtotal = lineItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
+  const discountAmount = discount?.amount ?? 0
+  const total = Math.max(0, subtotal - discountAmount)
   const currency = lineItems[0]?.currency ?? 'VND'
 
   return (
@@ -45,6 +53,14 @@ export function OrderSummary({ lineItems }: OrderSummaryProps) {
           </div>
         ))}
         <Separator />
+        {discount && discountAmount > 0 && (
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Discount ({discount.code})</span>
+            <span className="font-medium text-green-600">
+              -{formatPrice(discountAmount, currency)}
+            </span>
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <span className="text-base font-semibold">Total</span>
           <span className="text-lg font-bold">{formatPrice(total, currency)}</span>

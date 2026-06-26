@@ -8,4 +8,6 @@ public sealed record OrderStatusResponse(
     int? PaymentId,
     DateTimeOffset PlacedAt,
     DateTimeOffset? ConfirmedAt,
-    List<OrderLineResponse> Lines);
+    List<OrderLineResponse> Lines,
+    string? DiscountCode = null,
+    decimal? DiscountAmount = null);

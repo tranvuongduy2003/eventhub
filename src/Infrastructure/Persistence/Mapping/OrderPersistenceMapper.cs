@@ -1,3 +1,4 @@
+using EventHub.Domain.DiscountCodes;
 using EventHub.Domain.Events;
 using EventHub.Domain.Orders;
 using EventHub.Infrastructure.Persistence.Entities;
@@ -18,6 +19,8 @@ internal static class OrderPersistenceMapper
             TotalCurrency = domain.Total.Currency,
             PaymentId = domain.PaymentId,
             ReservationId = domain.ReservationId?.Value,
+            DiscountCodeId = domain.DiscountCodeId?.Value,
+            DiscountAmount = domain.DiscountAmount?.Amount,
             PlacedAt = domain.PlacedAt,
             ConfirmedAt = domain.ConfirmedAt,
             ExpiresAt = domain.ExpiresAt,
@@ -37,6 +40,14 @@ internal static class OrderPersistenceMapper
             ? ReservationId.From(record.ReservationId.Value)
             : (ReservationId?)null;
 
+        var discountCodeId = record.DiscountCodeId.HasValue
+            ? DiscountCodeId.From(record.DiscountCodeId.Value)
+            : (DiscountCodeId?)null;
+
+        var discountAmount = record.DiscountAmount.HasValue
+            ? Money.Create(record.DiscountAmount.Value, record.TotalCurrency)
+            : null;
+
         var order = Order.FromPersistence(
             OrderId.From(record.Id),
             EventId.From(record.EventId),
@@ -45,6 +56,8 @@ internal static class OrderPersistenceMapper
             total,
             record.PaymentId,
             reservationId,
+            discountCodeId,
+            discountAmount,
             record.PlacedAt,
             record.ConfirmedAt,
             record.ExpiresAt,

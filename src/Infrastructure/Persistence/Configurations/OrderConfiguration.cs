@@ -21,6 +21,8 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<OrderRecord>
         builder.Property(o => o.TotalCurrency).HasColumnName("total_currency").HasMaxLength(3).IsRequired();
         builder.Property(o => o.PaymentId).HasColumnName("payment_id");
         builder.Property(o => o.ReservationId).HasColumnName("reservation_id");
+        builder.Property(o => o.DiscountCodeId).HasColumnName("discount_code_id");
+        builder.Property(o => o.DiscountAmount).HasColumnName("discount_amount").HasColumnType("numeric(12,2)");
         builder.Property(o => o.PlacedAt).HasColumnName("placed_at").IsRequired();
         builder.Property(o => o.ConfirmedAt).HasColumnName("confirmed_at");
         builder.Property(o => o.ExpiresAt).HasColumnName("expires_at");

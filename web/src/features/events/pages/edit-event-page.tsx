@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 
 import * as eventsApi from '../api'
+import { DiscountCodeManager } from '../components/discount-code-manager'
 import { TicketTypeManager } from '../components/ticket-type-manager'
 import { EditEventForm } from '../edit-event-form'
 
@@ -81,6 +82,12 @@ export function EditEventPage() {
 
       <div className="max-w-xl">
         <TicketTypeManager eventId={event.eventId} eventStatus={event.status} />
+      </div>
+
+      <Separator className="max-w-xl" />
+
+      <div className="max-w-xl">
+        <DiscountCodeManager eventId={event.eventId} />
       </div>
     </div>
   )

@@ -20,6 +20,10 @@ public sealed class OrderRecord
 
     public int? ReservationId { get; set; }
 
+    public int? DiscountCodeId { get; set; }
+
+    public decimal? DiscountAmount { get; set; }
+
     public DateTimeOffset PlacedAt { get; set; }
 
     public DateTimeOffset? ConfirmedAt { get; set; }
