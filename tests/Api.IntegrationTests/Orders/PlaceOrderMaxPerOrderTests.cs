@@ -124,8 +124,27 @@ public sealed class PlaceOrderMaxPerOrderTests(IntegrationTestFixture fixture)
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
 
+    private async Task<Guid> RegisterOrganizerAsync()
+    {
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        var request = new RegisterUserRequest(
+            $"Organizer_{suffix}",
+            $"organizer_{suffix}@example.com",
+            "SecurePass1!");
+
+        using var response = await _client.PostAsJsonAsync("/api/users", request);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await using var scope = fixture.Factory.Services.CreateAsyncScope();
+        var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
+        var user = databaseContext.Users.OrderByDescending(u => u.CreatedAt).First();
+        return user.Id;
+    }
+
     private async Task<int> SeedPublishedEventWithTicketTypeAsync(int? maxPerOrder)
     {
+        var organizerId = await RegisterOrganizerAsync();
+
         await using var scope = fixture.Factory.Services.CreateAsyncScope();
         var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
 
@@ -133,7 +152,7 @@ public sealed class PlaceOrderMaxPerOrderTests(IntegrationTestFixture fixture)
         var eventRecord = new EventRecord
         {
             Title = $"Tech Conference {suffix}",
-            OrganizerId = Guid.NewGuid(),
+            OrganizerId = organizerId,
             ScheduleStartsAt = new DateTimeOffset(2026, 7, 15, 14, 0, 0, TimeSpan.Zero),
             ScheduleEndsAt = new DateTimeOffset(2026, 7, 15, 16, 0, 0, TimeSpan.Zero),
             ScheduleTimeZoneId = "UTC",
@@ -168,6 +187,8 @@ public sealed class PlaceOrderMaxPerOrderTests(IntegrationTestFixture fixture)
 
     private async Task<int> SeedPublishedEventWithTwoTypesAsync(int? maxPerOrder1, int? maxPerOrder2)
     {
+        var organizerId = await RegisterOrganizerAsync();
+
         await using var scope = fixture.Factory.Services.CreateAsyncScope();
         var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
 
@@ -175,7 +196,7 @@ public sealed class PlaceOrderMaxPerOrderTests(IntegrationTestFixture fixture)
         var eventRecord = new EventRecord
         {
             Title = $"Tech Conference {suffix}",
-            OrganizerId = Guid.NewGuid(),
+            OrganizerId = organizerId,
             ScheduleStartsAt = new DateTimeOffset(2026, 7, 15, 14, 0, 0, TimeSpan.Zero),
             ScheduleEndsAt = new DateTimeOffset(2026, 7, 15, 16, 0, 0, TimeSpan.Zero),
             ScheduleTimeZoneId = "UTC",
