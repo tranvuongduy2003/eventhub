@@ -25,12 +25,12 @@ public sealed class PlaceOrderMaxPerOrderTests(IntegrationTestFixture fixture)
     [Fact]
     public async Task PlaceOrder_ExceedsMaxPerOrder_Returns422()
     {
-        var eventId = await SeedPublishedEventWithTicketTypeAsync(maxPerOrder: 4);
+        var (eventId, ticketTypeId) = await SeedPublishedEventWithTicketTypeAsync(maxPerOrder: 4);
 
         var request = new PlaceOrderRequest(
             "John Doe",
             "john@example.com",
-            [new PlaceOrderLineRequest(1, 5)]);
+            [new PlaceOrderLineRequest(ticketTypeId, 5)]);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/orders", request);
 
@@ -44,12 +44,12 @@ public sealed class PlaceOrderMaxPerOrderTests(IntegrationTestFixture fixture)
     [Fact]
     public async Task PlaceOrder_WithinMaxPerOrder_Returns201()
     {
-        var eventId = await SeedPublishedEventWithTicketTypeAsync(maxPerOrder: 4);
+        var (eventId, ticketTypeId) = await SeedPublishedEventWithTicketTypeAsync(maxPerOrder: 4);
 
         var request = new PlaceOrderRequest(
             "John Doe",
             "john@example.com",
-            [new PlaceOrderLineRequest(1, 4)]);
+            [new PlaceOrderLineRequest(ticketTypeId, 4)]);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/orders", request);
 
@@ -59,12 +59,12 @@ public sealed class PlaceOrderMaxPerOrderTests(IntegrationTestFixture fixture)
     [Fact]
     public async Task PlaceOrder_NoMaxPerOrder_Returns201()
     {
-        var eventId = await SeedPublishedEventWithTicketTypeAsync(maxPerOrder: null);
+        var (eventId, ticketTypeId) = await SeedPublishedEventWithTicketTypeAsync(maxPerOrder: null);
 
         var request = new PlaceOrderRequest(
             "John Doe",
             "john@example.com",
-            [new PlaceOrderLineRequest(1, 10)]);
+            [new PlaceOrderLineRequest(ticketTypeId, 10)]);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/orders", request);
 
@@ -74,12 +74,12 @@ public sealed class PlaceOrderMaxPerOrderTests(IntegrationTestFixture fixture)
     [Fact]
     public async Task PlaceOrder_MaxPerOrderOf1_ExceedsLimit_Returns422()
     {
-        var eventId = await SeedPublishedEventWithTicketTypeAsync(maxPerOrder: 1);
+        var (eventId, ticketTypeId) = await SeedPublishedEventWithTicketTypeAsync(maxPerOrder: 1);
 
         var request = new PlaceOrderRequest(
             "John Doe",
             "john@example.com",
-            [new PlaceOrderLineRequest(1, 2)]);
+            [new PlaceOrderLineRequest(ticketTypeId, 2)]);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/orders", request);
 
@@ -89,15 +89,15 @@ public sealed class PlaceOrderMaxPerOrderTests(IntegrationTestFixture fixture)
     [Fact]
     public async Task PlaceOrder_MultipleTypes_IndependentLimits_Returns201()
     {
-        var eventId = await SeedPublishedEventWithTwoTypesAsync(
+        var (eventId, type1Id, type2Id) = await SeedPublishedEventWithTwoTypesAsync(
             maxPerOrder1: 4, maxPerOrder2: 2);
 
         var request = new PlaceOrderRequest(
             "John Doe",
             "john@example.com",
             [
-                new PlaceOrderLineRequest(1, 4),
-                new PlaceOrderLineRequest(2, 2),
+                new PlaceOrderLineRequest(type1Id, 4),
+                new PlaceOrderLineRequest(type2Id, 2),
             ]);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/orders", request);
@@ -108,15 +108,15 @@ public sealed class PlaceOrderMaxPerOrderTests(IntegrationTestFixture fixture)
     [Fact]
     public async Task PlaceOrder_MultipleTypes_OneExceedsLimit_Returns422()
     {
-        var eventId = await SeedPublishedEventWithTwoTypesAsync(
+        var (eventId, type1Id, type2Id) = await SeedPublishedEventWithTwoTypesAsync(
             maxPerOrder1: 4, maxPerOrder2: 2);
 
         var request = new PlaceOrderRequest(
             "John Doe",
             "john@example.com",
             [
-                new PlaceOrderLineRequest(1, 4),
-                new PlaceOrderLineRequest(2, 3),
+                new PlaceOrderLineRequest(type1Id, 4),
+                new PlaceOrderLineRequest(type2Id, 3),
             ]);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/orders", request);
@@ -141,7 +141,7 @@ public sealed class PlaceOrderMaxPerOrderTests(IntegrationTestFixture fixture)
         return user.Id;
     }
 
-    private async Task<int> SeedPublishedEventWithTicketTypeAsync(int? maxPerOrder)
+    private async Task<(int EventId, int TicketTypeId)> SeedPublishedEventWithTicketTypeAsync(int? maxPerOrder)
     {
         var organizerId = await RegisterOrganizerAsync();
 
@@ -167,7 +167,7 @@ public sealed class PlaceOrderMaxPerOrderTests(IntegrationTestFixture fixture)
         databaseContext.Events.Add(eventRecord);
         await databaseContext.SaveChangesAsync();
 
-        databaseContext.TicketTypes.Add(new TicketTypeRecord
+        var ticketTypeRecord = new TicketTypeRecord
         {
             EventId = eventRecord.Id,
             Name = "General Admission",
@@ -179,13 +179,15 @@ public sealed class PlaceOrderMaxPerOrderTests(IntegrationTestFixture fixture)
             Reserved = 0,
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow,
-        });
+        };
+
+        databaseContext.TicketTypes.Add(ticketTypeRecord);
         await databaseContext.SaveChangesAsync();
 
-        return eventRecord.Id;
+        return (eventRecord.Id, ticketTypeRecord.Id);
     }
 
-    private async Task<int> SeedPublishedEventWithTwoTypesAsync(int? maxPerOrder1, int? maxPerOrder2)
+    private async Task<(int EventId, int Type1Id, int Type2Id)> SeedPublishedEventWithTwoTypesAsync(int? maxPerOrder1, int? maxPerOrder2)
     {
         var organizerId = await RegisterOrganizerAsync();
 
@@ -211,7 +213,7 @@ public sealed class PlaceOrderMaxPerOrderTests(IntegrationTestFixture fixture)
         databaseContext.Events.Add(eventRecord);
         await databaseContext.SaveChangesAsync();
 
-        databaseContext.TicketTypes.Add(new TicketTypeRecord
+        var type1 = new TicketTypeRecord
         {
             EventId = eventRecord.Id,
             Name = "General",
@@ -223,9 +225,9 @@ public sealed class PlaceOrderMaxPerOrderTests(IntegrationTestFixture fixture)
             Reserved = 0,
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow,
-        });
+        };
 
-        databaseContext.TicketTypes.Add(new TicketTypeRecord
+        var type2 = new TicketTypeRecord
         {
             EventId = eventRecord.Id,
             Name = "VIP",
@@ -237,9 +239,12 @@ public sealed class PlaceOrderMaxPerOrderTests(IntegrationTestFixture fixture)
             Reserved = 0,
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow,
-        });
+        };
+
+        databaseContext.TicketTypes.Add(type1);
+        databaseContext.TicketTypes.Add(type2);
         await databaseContext.SaveChangesAsync();
 
-        return eventRecord.Id;
+        return (eventRecord.Id, type1.Id, type2.Id);
     }
 }
