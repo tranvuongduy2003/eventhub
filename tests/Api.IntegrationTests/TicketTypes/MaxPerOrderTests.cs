@@ -166,9 +166,10 @@ public sealed class MaxPerOrderTests(IntegrationTestFixture fixture)
     private async Task<Guid> RegisterOrganizerAsync(string? suffix = null)
     {
         suffix ??= Guid.NewGuid().ToString("N")[..8];
+        var email = $"organizer_{suffix}@example.com";
         var request = new RegisterUserRequest(
             $"Organizer_{suffix}",
-            $"organizer_{suffix}@example.com",
+            email,
             "SecurePass1!");
 
         using var response = await _client.PostAsJsonAsync("/api/users", request);
@@ -176,7 +177,7 @@ public sealed class MaxPerOrderTests(IntegrationTestFixture fixture)
 
         await using var scope = fixture.Factory.Services.CreateAsyncScope();
         var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
-        var user = databaseContext.Users.OrderByDescending(u => u.CreatedAt).First();
+        var user = databaseContext.Users.Single(u => u.Email == email);
         return user.Id;
     }
 
