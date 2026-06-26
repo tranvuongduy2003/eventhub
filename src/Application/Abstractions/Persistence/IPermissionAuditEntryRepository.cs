@@ -1,3 +1,4 @@
+using EventHub.Application.Common;
 using EventHub.Domain.Events;
 
 namespace EventHub.Application.Abstractions.Persistence;
@@ -6,7 +7,7 @@ public interface IPermissionAuditEntryRepository
 {
     Task AddAsync(PermissionAuditEntry entry, CancellationToken cancellationToken = default);
 
-    Task<(IReadOnlyList<PermissionAuditEntry> Items, int TotalCount)> GetByEventAsync(
+    Task<PaginatedResult<PermissionAuditEntry>> GetByEventAsync(
         EventId eventId,
         int page,
         int pageSize,

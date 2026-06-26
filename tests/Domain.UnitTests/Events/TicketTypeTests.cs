@@ -177,7 +177,7 @@ public sealed class TicketTypeTests
         var price = Money.Create(50.00m, "VND");
         var capacity = Capacity.Create(100);
 
-        var ticketType = TicketType.Create(TicketTypeId.From(1), name, price, capacity, CreatedAt);
+        var ticketType = TicketType.Create(TicketTypeId.From(1), name, price, capacity, null, CreatedAt);
 
         ticketType.Name.Should().Be(name);
         ticketType.Price.Should().Be(price);
@@ -198,6 +198,7 @@ public sealed class TicketTypeTests
             TicketName.Create("VIP"),
             Money.Create(100m, "VND"),
             Capacity.Create(50),
+            null,
             10,
             5,
             CreatedAt,
@@ -221,7 +222,7 @@ public sealed class TicketTypeTests
         var price = Money.Create(50.00m, "VND");
         var capacity = Capacity.Create(100);
 
-        var ticketType = draftEvent.AddTicketType(name, price, capacity, CreatedAt);
+        var ticketType = draftEvent.AddTicketType(name, price, capacity, null, CreatedAt);
 
         draftEvent.TicketTypes.Should().ContainSingle()
             .Which.Should().Be(ticketType);
@@ -235,7 +236,7 @@ public sealed class TicketTypeTests
         var price = Money.Create(50.00m, "VND");
         var capacity = Capacity.Create(100);
 
-        draftEvent.AddTicketType(name, price, capacity, CreatedAt);
+        draftEvent.AddTicketType(name, price, capacity, null, CreatedAt);
 
         draftEvent.DomainEvents.Should().ContainSingle()
             .Which.Should().BeOfType<TicketTypeAddedEvent>();
@@ -249,7 +250,7 @@ public sealed class TicketTypeTests
         var price = Money.Create(50.00m, "VND");
         var capacity = Capacity.Create(100);
 
-        draftEvent.AddTicketType(name, price, capacity, CreatedAt);
+        draftEvent.AddTicketType(name, price, capacity, null, CreatedAt);
 
         draftEvent.UpdatedAt.Should().Be(CreatedAt);
     }
@@ -262,7 +263,7 @@ public sealed class TicketTypeTests
         var price = Money.Create(0, "VND");
         var capacity = Capacity.Create(100);
 
-        var ticketType = draftEvent.AddTicketType(name, price, capacity, CreatedAt);
+        var ticketType = draftEvent.AddTicketType(name, price, capacity, null, CreatedAt);
 
         ticketType.Price.Amount.Should().Be(0);
         draftEvent.TicketTypes.Should().ContainSingle();
@@ -276,7 +277,7 @@ public sealed class TicketTypeTests
         var price = Money.Create(100m, "VND");
         var capacity = Capacity.Create(50);
 
-        var act = () => publishedEvent.AddTicketType(name, price, capacity, CreatedAt);
+        var act = () => publishedEvent.AddTicketType(name, price, capacity, null, CreatedAt);
 
         act.Should().Throw<BusinessRuleValidationException>()
             .Which.Code.Should().Be("INVALID_EVENT_STATUS");
@@ -290,7 +291,7 @@ public sealed class TicketTypeTests
         var price = Money.Create(100m, "VND");
         var capacity = Capacity.Create(50);
 
-        var act = () => closedEvent.AddTicketType(name, price, capacity, CreatedAt);
+        var act = () => closedEvent.AddTicketType(name, price, capacity, null, CreatedAt);
 
         act.Should().Throw<BusinessRuleValidationException>()
             .Which.Code.Should().Be("INVALID_EVENT_STATUS");
@@ -304,7 +305,7 @@ public sealed class TicketTypeTests
         var price = Money.Create(100m, "VND");
         var capacity = Capacity.Create(50);
 
-        var act = () => cancelledEvent.AddTicketType(name, price, capacity, CreatedAt);
+        var act = () => cancelledEvent.AddTicketType(name, price, capacity, null, CreatedAt);
 
         act.Should().Throw<BusinessRuleValidationException>()
             .Which.Code.Should().Be("INVALID_EVENT_STATUS");
@@ -332,6 +333,7 @@ public sealed class TicketTypeTests
             TicketName.Create("General Admission"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             CreatedAt);
 
         var slug = Slug.Create("tech-conference-2026");
@@ -348,11 +350,13 @@ public sealed class TicketTypeTests
             TicketName.Create("General Admission"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             CreatedAt);
         draftEvent.AddTicketType(
             TicketName.Create("VIP"),
             Money.Create(200m, "VND"),
             Capacity.Create(20),
+            null,
             CreatedAt);
 
         var slug = Slug.Create("tech-conference-2026");
@@ -374,12 +378,14 @@ public sealed class TicketTypeTests
                 TicketName.Create("General"),
                 Money.Create(50m, "VND"),
                 Capacity.Create(100),
+                null,
                 0, 0, CreatedAt, CreatedAt),
             TicketType.FromPersistence(
                 TicketTypeId.From(2),
                 TicketName.Create("VIP"),
                 Money.Create(200m, "VND"),
                 Capacity.Create(20),
+                null,
                 0, 0, CreatedAt, CreatedAt),
         };
 
@@ -396,6 +402,7 @@ public sealed class TicketTypeTests
             TicketName.Create("Old"),
             Money.Create(10m, "VND"),
             Capacity.Create(10),
+            null,
             CreatedAt);
 
         var newTicketTypes = new List<TicketType>
@@ -405,6 +412,7 @@ public sealed class TicketTypeTests
                 TicketName.Create("New"),
                 Money.Create(50m, "VND"),
                 Capacity.Create(100),
+                null,
                 0, 0, CreatedAt, CreatedAt),
         };
 
@@ -462,6 +470,7 @@ public sealed class TicketTypeTests
             TicketName.Create("General"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             CreatedAt);
 
         var updatedAt = CreatedAt.AddMinutes(5);
@@ -470,6 +479,7 @@ public sealed class TicketTypeTests
             TicketName.Create("General Updated"),
             Money.Create(75m, "VND"),
             Capacity.Create(150),
+            null,
             updatedAt);
 
         var updated = draftEvent.TicketTypes.First(t => t.Id == ticketType.Id);
@@ -487,6 +497,7 @@ public sealed class TicketTypeTests
             TicketName.Create("General"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             CreatedAt);
 
         draftEvent.ClearDomainEvents();
@@ -496,6 +507,7 @@ public sealed class TicketTypeTests
             TicketName.Create("General Updated"),
             Money.Create(75m, "VND"),
             Capacity.Create(150),
+            null,
             CreatedAt);
 
         draftEvent.DomainEvents.Should().ContainSingle()
@@ -510,11 +522,13 @@ public sealed class TicketTypeTests
             TicketName.Create("General"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             CreatedAt);
         var vip = draftEvent.AddTicketType(
             TicketName.Create("VIP"),
             Money.Create(200m, "VND"),
             Capacity.Create(20),
+            null,
             CreatedAt);
 
         var act = () => draftEvent.EditTicketType(
@@ -522,6 +536,7 @@ public sealed class TicketTypeTests
             TicketName.Create("General"),
             Money.Create(200m, "VND"),
             Capacity.Create(20),
+            null,
             CreatedAt);
 
         act.Should().Throw<BusinessRuleValidationException>()
@@ -537,6 +552,7 @@ public sealed class TicketTypeTests
             TicketName.Create("General"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             30,
             20,
             CreatedAt,
@@ -548,6 +564,7 @@ public sealed class TicketTypeTests
             TicketName.Create("General"),
             Money.Create(50m, "VND"),
             Capacity.Create(40),
+            null,
             CreatedAt);
 
         act.Should().Throw<BusinessRuleValidationException>()
@@ -564,6 +581,7 @@ public sealed class TicketTypeTests
             TicketName.Create("General"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             CreatedAt);
 
         act.Should().Throw<BusinessRuleValidationException>()
@@ -581,6 +599,7 @@ public sealed class TicketTypeTests
             TicketName.Create("Updated"),
             Money.Create(75m, "VND"),
             Capacity.Create(100),
+            null,
             CreatedAt);
 
         act.Should().Throw<BusinessRuleValidationException>()
@@ -596,6 +615,7 @@ public sealed class TicketTypeTests
             TicketName.Create("General"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             30,
             20,
             CreatedAt,
@@ -607,6 +627,7 @@ public sealed class TicketTypeTests
             TicketName.Create("General"),
             Money.Create(50m, "VND"),
             Capacity.Create(50),
+            null,
             CreatedAt);
 
         draftEvent.TicketTypes.First().Capacity.Value.Should().Be(50);
@@ -622,6 +643,7 @@ public sealed class TicketTypeTests
             TicketName.Create("General"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             CreatedAt);
 
         draftEvent.RemoveTicketType(ticketType.Id, CreatedAt);
@@ -637,6 +659,7 @@ public sealed class TicketTypeTests
             TicketName.Create("General"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             CreatedAt);
 
         draftEvent.ClearDomainEvents();
@@ -656,6 +679,7 @@ public sealed class TicketTypeTests
             TicketName.Create("General"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             5,
             0,
             CreatedAt,
@@ -677,6 +701,7 @@ public sealed class TicketTypeTests
             TicketName.Create("General"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             0,
             3,
             CreatedAt,
@@ -720,11 +745,13 @@ public sealed class TicketTypeTests
             TicketName.Create("General"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             CreatedAt);
         var vip = draftEvent.AddTicketType(
             TicketName.Create("VIP"),
             Money.Create(200m, "VND"),
             Capacity.Create(20),
+            null,
             CreatedAt);
         draftEvent.Publish(Slug.Create("test-event"), CreatedAt);
 
@@ -746,6 +773,7 @@ public sealed class TicketTypeTests
                 TicketName.Create($"Type {i}"),
                 Money.Create(50m, "VND"),
                 Capacity.Create(100),
+                null,
                 CreatedAt);
         }
 
@@ -753,6 +781,7 @@ public sealed class TicketTypeTests
             TicketName.Create("Type 11"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             CreatedAt);
 
         act.Should().Throw<BusinessRuleValidationException>()
@@ -767,16 +796,232 @@ public sealed class TicketTypeTests
             TicketName.Create("General"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             CreatedAt);
 
         var act = () => draftEvent.AddTicketType(
             TicketName.Create("General"),
             Money.Create(75m, "VND"),
             Capacity.Create(50),
+            null,
             CreatedAt);
 
         act.Should().Throw<BusinessRuleValidationException>()
             .Which.Code.Should().Be("TICKET_TYPE_NAME_DUPLICATE");
+    }
+
+    // --- MaxPerOrder ---
+
+    [Fact]
+    public void TicketType_Create_WithMaxPerOrder_SetsProperty()
+    {
+        var ticketType = TicketType.Create(
+            TicketTypeId.From(1),
+            TicketName.Create("VIP"),
+            Money.Create(100m, "VND"),
+            Capacity.Create(50),
+            4,
+            CreatedAt);
+
+        ticketType.MaxPerOrder.Should().Be(4);
+    }
+
+    [Fact]
+    public void TicketType_Create_WithNullMaxPerOrder_SetsNull()
+    {
+        var ticketType = TicketType.Create(
+            TicketTypeId.From(1),
+            TicketName.Create("General"),
+            Money.Create(50m, "VND"),
+            Capacity.Create(100),
+            null,
+            CreatedAt);
+
+        ticketType.MaxPerOrder.Should().BeNull();
+    }
+
+    [Fact]
+    public void TicketType_Create_WithZeroMaxPerOrder_ThrowsBusinessRuleValidationException()
+    {
+        var act = () => TicketType.Create(
+            TicketTypeId.From(1),
+            TicketName.Create("VIP"),
+            Money.Create(100m, "VND"),
+            Capacity.Create(50),
+            0,
+            CreatedAt);
+
+        act.Should().Throw<BusinessRuleValidationException>()
+            .Which.Code.Should().Be("MAX_PER_ORDER_INVALID");
+    }
+
+    [Fact]
+    public void TicketType_Create_WithNegativeMaxPerOrder_ThrowsBusinessRuleValidationException()
+    {
+        var act = () => TicketType.Create(
+            TicketTypeId.From(1),
+            TicketName.Create("VIP"),
+            Money.Create(100m, "VND"),
+            Capacity.Create(50),
+            -1,
+            CreatedAt);
+
+        act.Should().Throw<BusinessRuleValidationException>()
+            .Which.Code.Should().Be("MAX_PER_ORDER_INVALID");
+    }
+
+    [Fact]
+    public void TicketType_Update_WithMaxPerOrder_SetsProperty()
+    {
+        var ticketType = TicketType.Create(
+            TicketTypeId.From(1),
+            TicketName.Create("General"),
+            Money.Create(50m, "VND"),
+            Capacity.Create(100),
+            null,
+            CreatedAt);
+
+        ticketType.Update(
+            TicketName.Create("General"),
+            Money.Create(50m, "VND"),
+            Capacity.Create(100),
+            4,
+            CreatedAt);
+
+        ticketType.MaxPerOrder.Should().Be(4);
+    }
+
+    [Fact]
+    public void TicketType_Update_ClearMaxPerOrder_SetsNull()
+    {
+        var ticketType = TicketType.Create(
+            TicketTypeId.From(1),
+            TicketName.Create("General"),
+            Money.Create(50m, "VND"),
+            Capacity.Create(100),
+            4,
+            CreatedAt);
+
+        ticketType.Update(
+            TicketName.Create("General"),
+            Money.Create(50m, "VND"),
+            Capacity.Create(100),
+            null,
+            CreatedAt);
+
+        ticketType.MaxPerOrder.Should().BeNull();
+    }
+
+    [Fact]
+    public void TicketType_Update_WithZeroMaxPerOrder_ThrowsBusinessRuleValidationException()
+    {
+        var ticketType = TicketType.Create(
+            TicketTypeId.From(1),
+            TicketName.Create("General"),
+            Money.Create(50m, "VND"),
+            Capacity.Create(100),
+            null,
+            CreatedAt);
+
+        var act = () => ticketType.Update(
+            TicketName.Create("General"),
+            Money.Create(50m, "VND"),
+            Capacity.Create(100),
+            0,
+            CreatedAt);
+
+        act.Should().Throw<BusinessRuleValidationException>()
+            .Which.Code.Should().Be("MAX_PER_ORDER_INVALID");
+    }
+
+    [Fact]
+    public void TicketType_FromPersistence_WithMaxPerOrder_SetsProperty()
+    {
+        var ticketType = TicketType.FromPersistence(
+            TicketTypeId.From(1),
+            TicketName.Create("VIP"),
+            Money.Create(100m, "VND"),
+            Capacity.Create(50),
+            4,
+            0,
+            0,
+            CreatedAt,
+            CreatedAt);
+
+        ticketType.MaxPerOrder.Should().Be(4);
+    }
+
+    [Fact]
+    public void AddTicketType_WithMaxPerOrder_SetsProperty()
+    {
+        var draftEvent = CreateValidDraftEvent();
+
+        var ticketType = draftEvent.AddTicketType(
+            TicketName.Create("VIP"),
+            Money.Create(100m, "VND"),
+            Capacity.Create(50),
+            4,
+            CreatedAt);
+
+        ticketType.MaxPerOrder.Should().Be(4);
+        draftEvent.TicketTypes.First().MaxPerOrder.Should().Be(4);
+    }
+
+    [Fact]
+    public void EditTicketType_WithMaxPerOrder_SetsProperty()
+    {
+        var draftEvent = CreateValidDraftEvent();
+        var ticketType = draftEvent.AddTicketType(
+            TicketName.Create("General"),
+            Money.Create(50m, "VND"),
+            Capacity.Create(100),
+            null,
+            CreatedAt);
+
+        draftEvent.EditTicketType(
+            ticketType.Id,
+            TicketName.Create("General"),
+            Money.Create(50m, "VND"),
+            Capacity.Create(100),
+            4,
+            CreatedAt);
+
+        draftEvent.TicketTypes.First().MaxPerOrder.Should().Be(4);
+    }
+
+    [Fact]
+    public void EditTicketType_PublishedEvent_MaxPerOrderOnly_Succeeds()
+    {
+        var publishedEvent = CreatePublishedEvent();
+        var ticketType = publishedEvent.TicketTypes.First();
+
+        publishedEvent.EditTicketType(
+            ticketType.Id,
+            ticketType.Name,
+            ticketType.Price,
+            ticketType.Capacity,
+            4,
+            CreatedAt);
+
+        publishedEvent.TicketTypes.First().MaxPerOrder.Should().Be(4);
+    }
+
+    [Fact]
+    public void EditTicketType_PublishedEvent_NameAndMaxPerOrder_ThrowsBusinessRuleValidationException()
+    {
+        var publishedEvent = CreatePublishedEvent();
+        var ticketType = publishedEvent.TicketTypes.First();
+
+        var act = () => publishedEvent.EditTicketType(
+            ticketType.Id,
+            TicketName.Create("Updated Name"),
+            ticketType.Price,
+            ticketType.Capacity,
+            4,
+            CreatedAt);
+
+        act.Should().Throw<BusinessRuleValidationException>()
+            .Which.Code.Should().Be("INVALID_EVENT_STATUS");
     }
 
     // --- Helper methods ---
@@ -796,6 +1041,7 @@ public sealed class TicketTypeTests
             TicketName.Create("General"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             CreatedAt);
         draftEvent.Publish(Slug.Create("tech-conference-2026"), CreatedAt);
         return draftEvent;

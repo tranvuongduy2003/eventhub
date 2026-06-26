@@ -139,6 +139,7 @@ export type PublicTicketTypeResponse = {
   priceAmount: number
   priceCurrency: string
   capacity: number
+  maxPerOrder: number | null
   sold: number
   reserved: number
   available: number
@@ -163,6 +164,7 @@ export type TicketTypeResponse = {
   priceAmount: number
   priceCurrency: string
   capacity: number
+  maxPerOrder: number | null
   sold: number
   reserved: number
   createdAt: string
@@ -180,6 +182,7 @@ export type EditTicketTypeRequest = {
   priceAmount: number
   priceCurrency: string
   capacity: number
+  maxPerOrder: number | null
 }
 
 export type EditTicketTypeResponse = {
@@ -188,6 +191,7 @@ export type EditTicketTypeResponse = {
   priceAmount: number
   priceCurrency: string
   capacity: number
+  maxPerOrder: number | null
   sold: number
   reserved: number
   createdAt: string

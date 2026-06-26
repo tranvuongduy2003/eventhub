@@ -16,16 +16,18 @@ namespace EventHub.Api.IntegrationTests.Events;
 [Collection(IntegrationTestCollection.Name)]
 public sealed class UploadCoverImageTests(IntegrationTestFixture fixture)
 {
+    private sealed record EventSetup(Guid UserId, int EventId);
+
     private readonly HttpClient _client = fixture.Factory.CreateClient(
         new WebApplicationFactoryClientOptions { HandleCookies = true });
 
     [Fact]
     public async Task UploadCoverImage_WithValidJpeg_Returns200()
     {
-        var (userId, eventId) = await SetupEventWithOwnerAsync();
+        var setup = await SetupEventWithOwnerAsync();
 
         using var content = CreateMultipartContent("cover.jpg", "image/jpeg");
-        using var response = await _client.PutAsync($"/api/events/{eventId}/cover-image", content);
+        using var response = await _client.PutAsync($"/api/events/{setup.EventId}/cover-image", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<CoverImageResponse>();
@@ -37,10 +39,10 @@ public sealed class UploadCoverImageTests(IntegrationTestFixture fixture)
     [Fact]
     public async Task UploadCoverImage_WithValidPng_Returns200()
     {
-        var (userId, eventId) = await SetupEventWithOwnerAsync();
+        var setup = await SetupEventWithOwnerAsync();
 
         using var content = CreateMultipartContent("cover.png", "image/png");
-        using var response = await _client.PutAsync($"/api/events/{eventId}/cover-image", content);
+        using var response = await _client.PutAsync($"/api/events/{setup.EventId}/cover-image", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -48,10 +50,10 @@ public sealed class UploadCoverImageTests(IntegrationTestFixture fixture)
     [Fact]
     public async Task UploadCoverImage_WithValidWebP_Returns200()
     {
-        var (userId, eventId) = await SetupEventWithOwnerAsync();
+        var setup = await SetupEventWithOwnerAsync();
 
         using var content = CreateMultipartContent("cover.webp", "image/webp");
-        using var response = await _client.PutAsync($"/api/events/{eventId}/cover-image", content);
+        using var response = await _client.PutAsync($"/api/events/{setup.EventId}/cover-image", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -59,10 +61,10 @@ public sealed class UploadCoverImageTests(IntegrationTestFixture fixture)
     [Fact]
     public async Task UploadCoverImage_WithInvalidContentType_Returns422()
     {
-        var (userId, eventId) = await SetupEventWithOwnerAsync();
+        var setup = await SetupEventWithOwnerAsync();
 
         using var content = CreateMultipartContent("document.pdf", "application/pdf");
-        using var response = await _client.PutAsync($"/api/events/{eventId}/cover-image", content);
+        using var response = await _client.PutAsync($"/api/events/{setup.EventId}/cover-image", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
@@ -91,15 +93,15 @@ public sealed class UploadCoverImageTests(IntegrationTestFixture fixture)
     [Fact]
     public async Task UploadCoverImage_CanReplaceExistingCoverImage()
     {
-        var (userId, eventId) = await SetupEventWithOwnerAsync();
+        var setup = await SetupEventWithOwnerAsync();
 
         using var content1 = CreateMultipartContent("cover1.jpg", "image/jpeg");
-        using var response1 = await _client.PutAsync($"/api/events/{eventId}/cover-image", content1);
+        using var response1 = await _client.PutAsync($"/api/events/{setup.EventId}/cover-image", content1);
         response1.StatusCode.Should().Be(HttpStatusCode.OK);
         var result1 = await response1.Content.ReadFromJsonAsync<CoverImageResponse>();
 
         using var content2 = CreateMultipartContent("cover2.jpg", "image/jpeg");
-        using var response2 = await _client.PutAsync($"/api/events/{eventId}/cover-image", content2);
+        using var response2 = await _client.PutAsync($"/api/events/{setup.EventId}/cover-image", content2);
         response2.StatusCode.Should().Be(HttpStatusCode.OK);
         var result2 = await response2.Content.ReadFromJsonAsync<CoverImageResponse>();
 
@@ -135,7 +137,7 @@ public sealed class UploadCoverImageTests(IntegrationTestFixture fixture)
         return registration!.UserId;
     }
 
-    private async Task<(Guid UserId, int EventId)> SetupEventWithOwnerAsync()
+    private async Task<EventSetup> SetupEventWithOwnerAsync()
     {
         var userId = await RegisterOrganizerAsync();
 
@@ -169,6 +171,6 @@ public sealed class UploadCoverImageTests(IntegrationTestFixture fixture)
 
         await databaseContext.SaveChangesAsync();
 
-        return (userId, eventId);
+        return new EventSetup(userId, eventId);
     }
 }

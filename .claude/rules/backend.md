@@ -21,6 +21,10 @@ Architecture, CQRS, DDD, and layer rules live in **`architecture.md`** — do no
 
 - No `@` prefix on variable names for C# keywords — use descriptive names instead (e.g. `draftEvent` not `@event`, `domain` not `@event` for parameters)
 
+## Types
+
+- No **ValueTuples** `(T1, T2, …)` for method returns or parameters — define a `record` (or `sealed record`). Tuples lack named semantics at call sites, are not CLS-compliant for public API surfaces, and degrade readability. Use `PaginatedResult<T>` for paged queries; nest private helper records inside the class for internal use.
+
 ## DON'TS
 
 - No **Aspire client/component packages** (`Aspire.*`, `CommunityToolkit.Aspire.*`) in `Api`, `Application`, `Infrastructure`, or `ServiceDefaults` — use native SDKs (EF Core/Npgsql, StackExchange.Redis, RabbitMQ.Client, Minio SDK, OpenTelemetry OTLP). Aspire hosting packages are **AppHost-only** (orchestration).
@@ -29,3 +33,4 @@ Architecture, CQRS, DDD, and layer rules live in **`architecture.md`** — do no
 - No raw SQL strings — EF LINQ or parameterized APIs
 - No reading `Environment.GetEnvironmentVariable` in handlers — `IOptions<T>` at startup
 - No catching `Exception` without log + appropriate rethrow/result
+- No **ValueTuples** `(T1, T2)` in method signatures — use `record` types (see **Types** section)

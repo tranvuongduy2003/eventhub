@@ -191,6 +191,7 @@ public sealed class EventDuplicateTests
             TicketName.Create("General Admission"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             CreatedAt);
         draftEvent.Publish(Slug.Create("tech-conference-2026-a1b2c3d4"), PublishedAt);
         draftEvent.ClearDomainEvents();

@@ -58,7 +58,8 @@ internal sealed class TicketTypesEndpoint : IEndpoint
             request.Name,
             request.PriceAmount,
             request.PriceCurrency,
-            request.Capacity);
+            request.Capacity,
+            request.MaxPerOrder);
 
         var result = await sender.Send(command);
 
@@ -76,6 +77,7 @@ internal sealed class TicketTypesEndpoint : IEndpoint
                 ticketType.PriceAmount,
                 ticketType.PriceCurrency,
                 ticketType.Capacity,
+                ticketType.MaxPerOrder,
                 ticketType.Sold,
                 ticketType.Reserved,
                 ticketType.CreatedAt),
@@ -94,7 +96,8 @@ internal sealed class TicketTypesEndpoint : IEndpoint
             request.Name,
             request.PriceAmount,
             request.PriceCurrency,
-            request.Capacity);
+            request.Capacity,
+            request.MaxPerOrder);
 
         var result = await sender.Send(command);
 
@@ -112,6 +115,7 @@ internal sealed class TicketTypesEndpoint : IEndpoint
                 ticketType.PriceAmount,
                 ticketType.PriceCurrency,
                 ticketType.Capacity,
+                ticketType.MaxPerOrder,
                 ticketType.Sold,
                 ticketType.Reserved,
                 ticketType.CreatedAt,

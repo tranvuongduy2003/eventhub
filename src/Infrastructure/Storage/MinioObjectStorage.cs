@@ -61,7 +61,9 @@ public sealed class MinioObjectStorage : IObjectStorage, IDisposable
 
     public void Dispose() => _client.Dispose();
 
-    private static (string Endpoint, string AccessKey, string SecretKey, bool UseSsl) ParseConnectionString(
+    private sealed record ConnectionParameters(string Endpoint, string AccessKey, string SecretKey, bool UseSsl);
+
+    private static ConnectionParameters ParseConnectionString(
         string connectionString)
     {
         var parts = connectionString.Split(';', StringSplitOptions.RemoveEmptyEntries);
@@ -104,7 +106,7 @@ public sealed class MinioObjectStorage : IObjectStorage, IDisposable
             endpoint = endpoint.Split("://", 2)[1];
         }
 
-        return (endpoint, accessKey, secretKey, useSsl);
+        return new ConnectionParameters(endpoint, accessKey, secretKey, useSsl);
     }
 
     private async Task EnsureBucketAsync(string bucket, CancellationToken cancellationToken)

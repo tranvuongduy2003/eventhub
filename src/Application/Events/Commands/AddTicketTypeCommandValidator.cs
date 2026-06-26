@@ -25,5 +25,10 @@ public sealed class AddTicketTypeCommandValidator : AbstractValidator<AddTicketT
         RuleFor(c => c.Capacity)
             .GreaterThan(0)
             .WithMessage("Capacity must be a positive integer.");
+
+        RuleFor(c => c.MaxPerOrder)
+            .GreaterThan(0)
+            .When(c => c.MaxPerOrder.HasValue)
+            .WithMessage("Max per order must be at least 1 when set.");
     }
 }

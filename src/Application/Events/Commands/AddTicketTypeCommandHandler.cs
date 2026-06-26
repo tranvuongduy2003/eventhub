@@ -35,6 +35,7 @@ public sealed class AddTicketTypeCommandHandler(
                 name,
                 price,
                 capacity,
+                command.MaxPerOrder,
                 clock.UtcNow);
 
             await eventRepository.Update(eventAggregate, cancellationToken);
@@ -48,6 +49,7 @@ public sealed class AddTicketTypeCommandHandler(
                 ticketType.Price.Amount,
                 ticketType.Price.Currency,
                 ticketType.Capacity.Value,
+                ticketType.MaxPerOrder,
                 ticketType.Sold,
                 ticketType.Reserved,
                 ticketType.CreatedAt);

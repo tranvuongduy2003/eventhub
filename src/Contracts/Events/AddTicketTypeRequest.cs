@@ -4,4 +4,5 @@ public sealed record AddTicketTypeRequest(
     string Name,
     decimal PriceAmount,
     string PriceCurrency,
-    int Capacity);
+    int Capacity,
+    int? MaxPerOrder);

@@ -233,6 +233,7 @@ Use `Application/Common/Error.cs` — stable `code` strings consumed by Api as R
 - No `/// <summary>` XML doc comments.
 - No abbreviations in type, method, property, file, or parameter names (except framework terms like `DbContext`, `Guid`).
 - Namespace prefix: **`EventHub.*`**.
+- No **ValueTuples** `(T1, T2, …)` for method returns or parameters — define a `record` or `sealed record` instead. Use `PaginatedResult<T>` (in `Application/Common/`) for paged repository results; nest private helper records inside the class for internal use.
 
 ---
 

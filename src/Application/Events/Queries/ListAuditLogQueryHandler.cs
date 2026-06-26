@@ -17,7 +17,7 @@ public sealed class ListAuditLogQueryHandler(
     {
         var eventId = EventId.From(query.EventId);
 
-        var (entries, totalCount) = await auditEntryRepository.GetByEventAsync(
+        var result = await auditEntryRepository.GetByEventAsync(
             eventId,
             query.Page,
             query.PageSize,
@@ -26,9 +26,9 @@ public sealed class ListAuditLogQueryHandler(
             query.Action,
             cancellationToken);
 
-        var items = new List<AuditLogEntryResponse>(entries.Count);
+        var items = new List<AuditLogEntryResponse>(result.Items.Count);
 
-        foreach (var entry in entries)
+        foreach (var entry in result.Items)
         {
             var actor = await userRepository.GetByIdAsync(entry.ActorId, cancellationToken);
             var target = await userRepository.GetByIdAsync(entry.TargetId, cancellationToken);
@@ -43,6 +43,6 @@ public sealed class ListAuditLogQueryHandler(
                 entry.OccurredAt));
         }
 
-        return new AuditLogResponse(items, totalCount, query.Page, query.PageSize);
+        return new AuditLogResponse(items, result.TotalCount, query.Page, query.PageSize);
     }
 }

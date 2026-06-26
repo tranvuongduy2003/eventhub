@@ -52,6 +52,10 @@ order.DomainEvents.Should().ContainSingle();
 // no DI container, no EF, no mocks of domain types
 ```
 
+## Helper methods
+
+- No **ValueTuples** for test helper returns — define a `private sealed record` inside the test class (e.g. `EventSetup`, `EventData`).
+
 ## DON'TS
 
 - No `Thread.Sleep` — use polling with timeout helpers

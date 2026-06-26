@@ -1,4 +1,5 @@
 using EventHub.Application.Abstractions.Persistence;
+using EventHub.Application.Common;
 using EventHub.Domain.Events;
 using EventHub.Infrastructure.Persistence.Mapping;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ internal sealed class PermissionAuditEntryRepository(ApplicationDatabaseContext 
         await databaseContext.PermissionAuditEntries.AddAsync(
             PermissionAuditEntryPersistenceMapper.ToRecord(entry), cancellationToken);
 
-    public async Task<(IReadOnlyList<PermissionAuditEntry> Items, int TotalCount)> GetByEventAsync(
+    public async Task<PaginatedResult<PermissionAuditEntry>> GetByEventAsync(
         EventId eventId,
         int page,
         int pageSize,
@@ -50,6 +51,6 @@ internal sealed class PermissionAuditEntryRepository(ApplicationDatabaseContext 
 
         var items = records.Select(PermissionAuditEntryPersistenceMapper.ToDomain).ToList();
 
-        return (items, totalCount);
+        return new PaginatedResult<PermissionAuditEntry>(items, totalCount);
     }
 }

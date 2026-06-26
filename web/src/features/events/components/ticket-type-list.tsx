@@ -33,6 +33,9 @@ export function TicketTypeList({ ticketTypes }: TicketTypeListProps) {
                 ) : (
                   <span>{ticketType.available} remaining</span>
                 )}
+                {ticketType.maxPerOrder != null && (
+                  <span> · Max {ticketType.maxPerOrder} per order</span>
+                )}
               </span>
             </div>
             <span className="text-lg font-semibold">

@@ -27,4 +27,8 @@ public static class TicketTypeErrors
     public static readonly Error TicketTypeLastOnPublishedEvent = Error.Validation(
         "TICKET_TYPE_LAST_ON_PUBLISHED_EVENT",
         "Cannot remove the last ticket type from a published event. Unpublish or cancel the event first.");
+
+    public static readonly Error MaxPerOrderInvalid = Error.Validation(
+        "MAX_PER_ORDER_INVALID",
+        "Max per order must be at least 1 when set.");
 }
