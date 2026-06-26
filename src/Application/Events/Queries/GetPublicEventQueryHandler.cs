@@ -29,6 +29,7 @@ public sealed class GetPublicEventQueryHandler(
                 tt.Price.Amount,
                 tt.Price.Currency,
                 tt.Capacity.Value,
+                tt.MaxPerOrder,
                 tt.Sold,
                 tt.Reserved,
                 tt.Available,

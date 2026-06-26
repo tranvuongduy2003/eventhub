@@ -293,6 +293,7 @@ public sealed class Event : AggregateRoot<EventId>
         TicketName name,
         Money price,
         Capacity capacity,
+        int? maxPerOrder,
         DateTimeOffset createdAt)
     {
         if (Status is not EventStatus.Draft)
@@ -331,7 +332,7 @@ public sealed class Event : AggregateRoot<EventId>
             : 0;
         var nextId = minId < 0 ? TicketTypeId.From(minId - 1) : TicketTypeId.From(-1);
 
-        var ticketType = TicketType.Create(nextId, name, price, capacity, createdAt);
+        var ticketType = TicketType.Create(nextId, name, price, capacity, maxPerOrder, createdAt);
 
         _ticketTypes.Add(ticketType);
 
@@ -347,25 +348,42 @@ public sealed class Event : AggregateRoot<EventId>
         TicketName name,
         Money price,
         Capacity capacity,
+        int? maxPerOrder,
         DateTimeOffset updatedAt)
     {
-        if (Status is not EventStatus.Draft)
+        var ticketType = _ticketTypes.FirstOrDefault(t => t.Id == ticketTypeId)
+            ?? throw new BusinessRuleValidationException(
+                "TICKET_TYPE_NOT_FOUND",
+                "The ticket type was not found on this event.");
+
+        if (Status is EventStatus.Closed or EventStatus.Cancelled)
         {
             throw new BusinessRuleValidationException(
                 "INVALID_EVENT_STATUS",
                 Status switch
                 {
-                    EventStatus.Published => "Cannot edit ticket types on a published event.",
                     EventStatus.Closed => "Cannot edit ticket types on a closed event.",
                     EventStatus.Cancelled => "Cannot edit ticket types on a cancelled event.",
                     _ => "Cannot edit ticket types on an event in its current status.",
                 });
         }
 
-        var ticketType = _ticketTypes.FirstOrDefault(t => t.Id == ticketTypeId)
-            ?? throw new BusinessRuleValidationException(
-                "TICKET_TYPE_NOT_FOUND",
-                "The ticket type was not found on this event.");
+        // Published events: only allow MaxPerOrder changes
+        if (Status is EventStatus.Published)
+        {
+            var onlyMaxPerOrderChanged =
+                ticketType.Name.Value == name.Value &&
+                ticketType.Price.Amount == price.Amount &&
+                ticketType.Price.Currency == price.Currency &&
+                ticketType.Capacity.Value == capacity.Value;
+
+            if (!onlyMaxPerOrderChanged)
+            {
+                throw new BusinessRuleValidationException(
+                    "INVALID_EVENT_STATUS",
+                    "Cannot edit ticket type details on a published event. Only the per-order limit can be changed.");
+            }
+        }
 
         // EC-01: duplicate name check (exclude current type)
         if (_ticketTypes.Any(t => t.Id != ticketTypeId && t.Name.Value == name.Value))
@@ -383,7 +401,7 @@ public sealed class Event : AggregateRoot<EventId>
                 $"Cannot reduce capacity below {ticketType.Reserved + ticketType.Sold} (reserved + sold).");
         }
 
-        ticketType.Update(name, price, capacity, updatedAt);
+        ticketType.Update(name, price, capacity, maxPerOrder, updatedAt);
 
         UpdatedAt = updatedAt;
 

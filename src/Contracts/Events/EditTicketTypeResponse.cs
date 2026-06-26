@@ -6,6 +6,7 @@ public sealed record EditTicketTypeResponse(
     decimal PriceAmount,
     string PriceCurrency,
     int Capacity,
+    int? MaxPerOrder,
     int Sold,
     int Reserved,
     DateTimeOffset CreatedAt,

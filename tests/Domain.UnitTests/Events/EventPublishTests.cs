@@ -138,6 +138,7 @@ public sealed class EventPublishTests
             TicketName.Create("General Admission"),
             Money.Create(50m, "VND"),
             Capacity.Create(100),
+            null,
             CreatedAt);
 
         draftEvent.ClearDomainEvents();

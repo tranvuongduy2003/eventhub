@@ -40,6 +40,7 @@ const ticketTypeFormSchema = z.object({
     .number()
     .int('Capacity must be a whole number.')
     .min(1, 'Capacity must be at least 1.'),
+  maxPerOrder: z.number().int().min(1, 'Must be at least 1.').nullable(),
 })
 
 type TicketTypeFormValues = z.infer<typeof ticketTypeFormSchema>
@@ -236,6 +237,7 @@ function TicketTypeCard({
           priceAmount: ticketType.priceAmount,
           priceCurrency: ticketType.priceCurrency,
           capacity: ticketType.capacity,
+          maxPerOrder: ticketType.maxPerOrder,
         }}
         onSubmit={onSave}
         onCancel={onCancelEdit}
@@ -256,6 +258,7 @@ function TicketTypeCard({
           </div>
           <span className="text-muted-foreground text-sm">
             {ticketType.capacity} capacity · {ticketType.sold} sold · {ticketType.reserved} reserved
+            {ticketType.maxPerOrder != null && ` · Max ${ticketType.maxPerOrder} per order`}
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -317,6 +320,7 @@ function TicketTypeForm({ defaultValues, onSubmit, onCancel, isSaving }: TicketT
       priceAmount: 0,
       priceCurrency: 'VND',
       capacity: 100,
+      maxPerOrder: null,
     },
   })
 
@@ -381,6 +385,22 @@ function TicketTypeForm({ defaultValues, onSubmit, onCancel, isSaving }: TicketT
                 <FieldError errors={[form.formState.errors.capacity]} />
               </Field>
             </div>
+
+            <Field data-invalid={!!form.formState.errors.maxPerOrder}>
+              <FieldLabel htmlFor="ticket-type-max-per-order">Max per order</FieldLabel>
+              <Input
+                id="ticket-type-max-per-order"
+                type="number"
+                min={1}
+                step={1}
+                disabled={isSaving}
+                placeholder="No limit"
+                {...form.register('maxPerOrder', {
+                  setValueAs: (v: string) => (v === '' ? null : Number(v)),
+                })}
+              />
+              <FieldError errors={[form.formState.errors.maxPerOrder]} />
+            </Field>
           </FieldGroup>
 
           <div className="flex gap-2">

@@ -6,6 +6,7 @@ public sealed record PublicTicketTypeResponse(
     decimal PriceAmount,
     string PriceCurrency,
     int Capacity,
+    int? MaxPerOrder,
     int Sold,
     int Reserved,
     int Available,

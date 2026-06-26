@@ -18,6 +18,7 @@ internal sealed class TicketTypeConfiguration : IEntityTypeConfiguration<TicketT
         builder.Property(t => t.PriceAmount).HasColumnName("price_amount").HasColumnType("numeric(12,2)").IsRequired();
         builder.Property(t => t.PriceCurrency).HasColumnName("price_currency").HasMaxLength(3).IsRequired();
         builder.Property(t => t.Capacity).HasColumnName("capacity").IsRequired();
+        builder.Property(t => t.MaxPerOrder).HasColumnName("max_per_order");
         builder.Property(t => t.Sold).HasColumnName("sold").HasDefaultValue(0).IsRequired();
         builder.Property(t => t.Reserved).HasColumnName("reserved").HasDefaultValue(0).IsRequired();
         builder.Property(t => t.CreatedAt).HasColumnName("created_at").IsRequired();

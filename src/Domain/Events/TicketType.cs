@@ -15,6 +15,8 @@ public sealed class TicketType : Entity<TicketTypeId>
 
     public Capacity Capacity { get; private set; } = null!;
 
+    public int? MaxPerOrder { get; private set; }
+
     public int Sold { get; private set; }
 
     public int Reserved { get; private set; }
@@ -30,24 +32,36 @@ public sealed class TicketType : Entity<TicketTypeId>
         TicketName name,
         Money price,
         Capacity capacity,
-        DateTimeOffset createdAt) =>
-        new()
+        int? maxPerOrder,
+        DateTimeOffset createdAt)
+    {
+        if (maxPerOrder is < 1)
+        {
+            throw new BusinessRuleValidationException(
+                "MAX_PER_ORDER_INVALID",
+                "Max per order must be at least 1 when set.");
+        }
+
+        return new()
         {
             Id = id,
             Name = name,
             Price = price,
             Capacity = capacity,
+            MaxPerOrder = maxPerOrder,
             Sold = 0,
             Reserved = 0,
             CreatedAt = createdAt,
             UpdatedAt = createdAt,
         };
+    }
 
     public static TicketType FromPersistence(
         TicketTypeId id,
         TicketName name,
         Money price,
         Capacity capacity,
+        int? maxPerOrder,
         int sold,
         int reserved,
         DateTimeOffset createdAt,
@@ -58,6 +72,7 @@ public sealed class TicketType : Entity<TicketTypeId>
             Name = name,
             Price = price,
             Capacity = capacity,
+            MaxPerOrder = maxPerOrder,
             Sold = sold,
             Reserved = reserved,
             CreatedAt = createdAt,
@@ -152,11 +167,19 @@ public sealed class TicketType : Entity<TicketTypeId>
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    public void Update(TicketName newName, Money newPrice, Capacity newCapacity, DateTimeOffset updatedAt)
+    public void Update(TicketName newName, Money newPrice, Capacity newCapacity, int? newMaxPerOrder, DateTimeOffset updatedAt)
     {
+        if (newMaxPerOrder is < 1)
+        {
+            throw new BusinessRuleValidationException(
+                "MAX_PER_ORDER_INVALID",
+                "Max per order must be at least 1 when set.");
+        }
+
         Name = newName;
         Price = newPrice;
         Capacity = newCapacity;
+        MaxPerOrder = newMaxPerOrder;
         UpdatedAt = updatedAt;
     }
 }

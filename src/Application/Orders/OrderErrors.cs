@@ -35,4 +35,9 @@ public static class OrderErrors
     public static readonly Error ConcurrencyConflict = Error.Conflict(
         "ORDER_CONCURRENCY_CONFLICT",
         "A concurrency conflict occurred. Please try again.");
+
+    public static Error MaxPerOrderExceeded(string ticketTypeName, int maxPerOrder) =>
+        Error.Validation(
+            "ORDER_MAX_PER_ORDER_EXCEEDED",
+            $"Quantity for '{ticketTypeName}' exceeds the maximum of {maxPerOrder} per order.");
 }

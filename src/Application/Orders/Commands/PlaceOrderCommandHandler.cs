@@ -61,6 +61,18 @@ public sealed class PlaceOrderCommandHandler(
             }
         }
 
+        // INV-24: per-order purchase limit
+        foreach (var line in command.Lines)
+        {
+            var ticketType = ticketTypeLookup[TicketTypeId.From(line.TicketTypeId)];
+            if (ticketType.MaxPerOrder.HasValue && line.Quantity > ticketType.MaxPerOrder.Value)
+            {
+                return OrderErrors.MaxPerOrderExceeded(
+                    ticketType.Name.Value,
+                    ticketType.MaxPerOrder.Value);
+            }
+        }
+
         try
         {
             var contact = Contact.Create(command.ContactName, command.ContactEmail);

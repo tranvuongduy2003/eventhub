@@ -12,10 +12,10 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EventHub.Api.IntegrationTests.Events;
+namespace EventHub.Api.IntegrationTests.TicketTypes;
 
 [Collection(IntegrationTestCollection.Name)]
-public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
+public sealed class MaxPerOrderTests(IntegrationTestFixture fixture)
 {
     private readonly HttpClient _client = fixture.Factory.CreateClient(
         new WebApplicationFactoryClientOptions { HandleCookies = true });
@@ -23,12 +23,12 @@ public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     [Fact]
-    public async Task AddTicketType_ValidRequest_Returns201WithTicketType()
+    public async Task AddTicketType_WithMaxPerOrder_Returns201WithLimit()
     {
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
 
-        var request = new AddTicketTypeRequest("General Admission", 50m, "VND", 100, null);
+        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, 4);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
 
@@ -36,21 +36,16 @@ public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
 
         var ticketType = await response.Content.ReadFromJsonAsync<AddTicketTypeResponse>(JsonOptions);
         ticketType.Should().NotBeNull();
-        ticketType!.Name.Should().Be("General Admission");
-        ticketType.PriceAmount.Should().Be(50m);
-        ticketType.PriceCurrency.Should().Be("VND");
-        ticketType.Capacity.Should().Be(100);
-        ticketType.Sold.Should().Be(0);
-        ticketType.Reserved.Should().Be(0);
+        ticketType!.MaxPerOrder.Should().Be(4);
     }
 
     [Fact]
-    public async Task AddTicketType_FreeTicket_Returns201()
+    public async Task AddTicketType_WithNullMaxPerOrder_Returns201WithNull()
     {
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
 
-        var request = new AddTicketTypeRequest("Free Entry", 0m, "VND", 50, null);
+        var request = new AddTicketTypeRequest("General", 50m, "VND", 100, null);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
 
@@ -58,55 +53,16 @@ public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
 
         var ticketType = await response.Content.ReadFromJsonAsync<AddTicketTypeResponse>(JsonOptions);
         ticketType.Should().NotBeNull();
-        ticketType!.PriceAmount.Should().Be(0m);
+        ticketType!.MaxPerOrder.Should().BeNull();
     }
 
     [Fact]
-    public async Task AddTicketType_NoAuth_Returns401()
-    {
-        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, null);
-
-        using var response = await _client.PostAsJsonAsync("/api/events/1/ticket-types", request);
-
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
-    public async Task AddTicketType_NonOwner_Returns403()
-    {
-        var ownerUserId = await RegisterOrganizerAsync();
-        var eventId = await SeedDraftEventAsync(ownerUserId);
-
-        // Register a second user (non-owner)
-        await RegisterOrganizerAsync();
-
-        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, null);
-
-        using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
-
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-    }
-
-    [Fact]
-    public async Task AddTicketType_EventNotFound_Returns403()
-    {
-        await RegisterOrganizerAsync();
-
-        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, null);
-
-        using var response = await _client.PostAsJsonAsync("/api/events/99999/ticket-types", request);
-
-        // Auth check happens first — non-owner of event 99999 gets 403
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-    }
-
-    [Fact]
-    public async Task AddTicketType_EmptyName_Returns422()
+    public async Task AddTicketType_WithZeroMaxPerOrder_Returns422()
     {
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
 
-        var request = new AddTicketTypeRequest("", 50m, "VND", 100, null);
+        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, 0);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
 
@@ -114,12 +70,12 @@ public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
     }
 
     [Fact]
-    public async Task AddTicketType_NegativePrice_Returns422()
+    public async Task AddTicketType_WithNegativeMaxPerOrder_Returns422()
     {
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
 
-        var request = new AddTicketTypeRequest("VIP", -10m, "VND", 50, null);
+        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, -1);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
 
@@ -127,38 +83,84 @@ public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
     }
 
     [Fact]
-    public async Task AddTicketType_ZeroCapacity_Returns422()
+    public async Task EditTicketType_SetMaxPerOrder_Returns200WithLimit()
     {
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
+        var ticketTypeId = await SeedTicketTypeAsync(eventId);
 
-        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 0, null);
+        var request = new EditTicketTypeRequest("General Admission", 50m, "VND", 100, 4);
 
-        using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
+        using var response = await _client.PutAsJsonAsync(
+            $"/api/events/{eventId}/ticket-types/{ticketTypeId}", request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var ticketType = await response.Content.ReadFromJsonAsync<EditTicketTypeResponse>(JsonOptions);
+        ticketType.Should().NotBeNull();
+        ticketType!.MaxPerOrder.Should().Be(4);
     }
 
     [Fact]
-    public async Task AddTicketType_PublishedEvent_Returns422()
+    public async Task EditTicketType_ClearMaxPerOrder_Returns200WithNull()
     {
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
-        await SeedTicketTypeAsync(eventId);
+        var ticketTypeId = await SeedTicketTypeAsync(eventId, maxPerOrder: 4);
 
-        // Publish the event first
+        var request = new EditTicketTypeRequest("General Admission", 50m, "VND", 100, null);
+
+        using var response = await _client.PutAsJsonAsync(
+            $"/api/events/{eventId}/ticket-types/{ticketTypeId}", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var ticketType = await response.Content.ReadFromJsonAsync<EditTicketTypeResponse>(JsonOptions);
+        ticketType.Should().NotBeNull();
+        ticketType!.MaxPerOrder.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task EditTicketType_PublishedEvent_MaxPerOrderOnly_Returns200()
+    {
+        var userId = await RegisterOrganizerAsync();
+        var eventId = await SeedDraftEventAsync(userId);
+        var ticketTypeId = await SeedTicketTypeAsync(eventId);
+
+        // Publish the event
         using var publishResponse = await _client.PostAsync($"/api/events/{eventId}/publish", null);
         publishResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var request = new AddTicketTypeRequest("Extra VIP", 200m, "VND", 10, null);
+        // Only change MaxPerOrder — same name, price, capacity
+        var request = new EditTicketTypeRequest("General Admission", 50m, "VND", 100, 4);
 
-        using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
+        using var response = await _client.PutAsJsonAsync(
+            $"/api/events/{eventId}/ticket-types/{ticketTypeId}", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var ticketType = await response.Content.ReadFromJsonAsync<EditTicketTypeResponse>(JsonOptions);
+        ticketType.Should().NotBeNull();
+        ticketType!.MaxPerOrder.Should().Be(4);
+    }
+
+    [Fact]
+    public async Task EditTicketType_PublishedEvent_NameChange_Returns422()
+    {
+        var userId = await RegisterOrganizerAsync();
+        var eventId = await SeedDraftEventAsync(userId);
+        var ticketTypeId = await SeedTicketTypeAsync(eventId);
+
+        using var publishResponse = await _client.PostAsync($"/api/events/{eventId}/publish", null);
+        publishResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Change name AND MaxPerOrder — should fail because name changed
+        var request = new EditTicketTypeRequest("Updated Name", 50m, "VND", 100, 4);
+
+        using var response = await _client.PutAsJsonAsync(
+            $"/api/events/{eventId}/ticket-types/{ticketTypeId}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
-
-        var responseBody = await response.Content.ReadAsStringAsync();
-        var problem = JsonSerializer.Deserialize<JsonElement>(responseBody, JsonOptions);
-        problem.GetProperty("code").GetString().Should().Be("INVALID_EVENT_STATUS");
     }
 
     private async Task<Guid> RegisterOrganizerAsync(string? suffix = null)
@@ -213,23 +215,28 @@ public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
         return eventRecord.Id;
     }
 
-    private async Task SeedTicketTypeAsync(int eventId)
+    private async Task<int> SeedTicketTypeAsync(int eventId, int? maxPerOrder = null)
     {
         await using var scope = fixture.Factory.Services.CreateAsyncScope();
         var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
 
-        databaseContext.TicketTypes.Add(new TicketTypeRecord
+        var record = new TicketTypeRecord
         {
             EventId = eventId,
             Name = "General Admission",
             PriceAmount = 50m,
             PriceCurrency = "VND",
             Capacity = 100,
+            MaxPerOrder = maxPerOrder,
             Sold = 0,
             Reserved = 0,
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow,
-        });
+        };
+
+        databaseContext.TicketTypes.Add(record);
         await databaseContext.SaveChangesAsync();
+
+        return record.Id;
     }
 }

@@ -14,6 +14,8 @@ public sealed class TicketTypeRecord
 
     public int Capacity { get; set; }
 
+    public int? MaxPerOrder { get; set; }
+
     public int Sold { get; set; }
 
     public int Reserved { get; set; }
