@@ -2,7 +2,7 @@
   "version": 1,
   "description": "Lightweight path→verification map for agent harness. Extend with full dependency graph later.",
   "skipPatterns": [
-    ".claude/**",
+    ".codex/**",
     "docs/**",
     ".github/**",
     "**/*.md",

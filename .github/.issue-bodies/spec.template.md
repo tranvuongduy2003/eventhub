@@ -30,7 +30,7 @@
 ## Tracking
 
 - [ ] Plan: `/plan docs/specs/<file>.md`
-- [ ] Build: `/build docs/specs/<file>.md`
+- [ ] Cook: `/cook docs/specs/<file>.md`
 
 ---
 

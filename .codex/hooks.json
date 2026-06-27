@@ -1,0 +1,53 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|Bash|Agent|Delete",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/pre-tool-guard.ps1\"",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/pre-tool-guard.ps1\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/before-shell-guard.ps1\"",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/before-shell-guard.ps1\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/post-edit-verify.ps1\"",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/post-edit-verify.ps1\"",
+            "timeout": 180
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/stop-gate.ps1\"",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/stop-gate.ps1\"",
+            "timeout": 300
+          }
+        ]
+      }
+    ]
+  }
+}

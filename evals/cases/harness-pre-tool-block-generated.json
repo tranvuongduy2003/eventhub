@@ -4,7 +4,7 @@
   "description": "preToolUse denies edits under web/src/generated/",
   "run": {
     "type": "hook",
-    "script": ".claude/hooks/pre-tool-guard.ps1",
+    "script": ".codex/hooks/pre-tool-guard.ps1",
     "stdinFixture": "evals/fixtures/pre-tool-write-generated.json"
   },
   "assert": {
