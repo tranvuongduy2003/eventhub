@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useEffect } from 'react'
+import { HelmetProvider } from 'react-helmet-async'
 import { RouterProvider } from 'react-router-dom'
 
 import { paths } from '@/app/paths'
@@ -42,10 +43,12 @@ function UnauthorizedListener() {
 
 export function AppProviders() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <UnauthorizedListener />
-      <RouterProvider router={router} />
-      <Toaster richColors closeButton />
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <UnauthorizedListener />
+        <RouterProvider router={router} />
+        <Toaster richColors closeButton />
+      </QueryClientProvider>
+    </HelmetProvider>
   )
 }

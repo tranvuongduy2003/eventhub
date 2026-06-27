@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import * as eventsApi from '../api'
 import { CoverImageDisplay } from '../cover-image-display'
 import { CollapsibleDescription } from '../components/collapsible-description'
+import { EventMetaTags } from '../components/event-meta-tags'
 import { StickyCtaBar } from '../components/sticky-cta-bar'
 import { TicketTypeList } from '../components/ticket-type-list'
 
@@ -61,6 +62,18 @@ export function PublicEventPage() {
 
   return (
     <>
+      <EventMetaTags
+        event={{
+          title: event.title,
+          description: event.description,
+          startsAt: event.startsAt,
+          endsAt: event.endsAt,
+          physicalAddress: event.physicalAddress,
+          isOnline: event.isOnline,
+          coverImageUrl: event.coverImageUrl,
+          slug: event.slug,
+        }}
+      />
       <div className="w-full px-4 py-8 pb-24 md:mx-auto md:max-w-2xl md:pb-8">
         <CoverImageDisplay imageUrl={event.coverImageUrl} alt={event.title} className="mb-6" />
 
