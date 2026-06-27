@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 
 const navItems = [
   { path: paths.home, label: 'Dashboard', end: true },
-  { path: paths.events, label: 'Events', end: false },
+  { path: paths.organizerEvents, label: 'Events', end: false },
   { path: paths.tickets, label: 'Tickets', end: false },
   { path: paths.checkout, label: 'Checkout', end: false },
   { path: paths.checkIn, label: 'Check-in', end: false },

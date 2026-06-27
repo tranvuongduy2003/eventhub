@@ -1,5 +1,35 @@
 import { apiClient } from '@/lib/api'
 
+export type PublicEventListItemResponse = {
+  slug: string
+  title: string
+  startsAt: string | null
+  timeZoneId: string | null
+  physicalAddress: string | null
+  isOnline: boolean
+  coverImageUrl: string | null
+  lowestPriceAmount: number | null
+  lowestPriceCurrency: string | null
+  isSoldOut: boolean
+}
+
+export type PublicEventListingResponse = {
+  items: PublicEventListItemResponse[]
+  totalCount: number
+  page: number
+  pageSize: number
+}
+
+export function getPublicEvents(page: number, pageSize: number, signal?: AbortSignal) {
+  return apiClient.get<PublicEventListingResponse>(
+    `/api/events?page=${page}&pageSize=${pageSize}`,
+    {
+      signal,
+      suppressErrorToast: true,
+    },
+  )
+}
+
 export type CreateDraftEventRequest = {
   title: string
   startsAt: string
