@@ -29,7 +29,7 @@ public sealed class EditTicketTypeTests(IntegrationTestFixture fixture)
         var eventId = await SeedDraftEventAsync(userId);
         var ticketTypeId = await SeedTicketTypeAsync(eventId, "General Admission", 50m, 100);
 
-        var request = new EditTicketTypeRequest("VIP", 200m, "VND", 50, null);
+        var request = new EditTicketTypeRequest("VIP", 200m, "VND", 50, null, null, null);
 
         using var response = await _client.PutAsJsonAsync(
             $"/api/events/{eventId}/ticket-types/{ticketTypeId}", request);
@@ -47,7 +47,7 @@ public sealed class EditTicketTypeTests(IntegrationTestFixture fixture)
     [Fact]
     public async Task EditTicketType_NoAuth_Returns401()
     {
-        var request = new EditTicketTypeRequest("VIP", 200m, "VND", 50, null);
+        var request = new EditTicketTypeRequest("VIP", 200m, "VND", 50, null, null, null);
 
         using var response = await _client.PutAsJsonAsync(
             "/api/events/1/ticket-types/1", request);
@@ -64,7 +64,7 @@ public sealed class EditTicketTypeTests(IntegrationTestFixture fixture)
 
         await RegisterOrganizerAsync();
 
-        var request = new EditTicketTypeRequest("VIP", 200m, "VND", 50, null);
+        var request = new EditTicketTypeRequest("VIP", 200m, "VND", 50, null, null, null);
 
         using var response = await _client.PutAsJsonAsync(
             $"/api/events/{eventId}/ticket-types/{ticketTypeId}", request);
@@ -79,7 +79,7 @@ public sealed class EditTicketTypeTests(IntegrationTestFixture fixture)
         var eventId = await SeedDraftEventAsync(userId);
         var ticketTypeId = await SeedTicketTypeAsync(eventId, "General", 50m, 100);
 
-        var request = new EditTicketTypeRequest("", 200m, "VND", 50, null);
+        var request = new EditTicketTypeRequest("", 200m, "VND", 50, null, null, null);
 
         using var response = await _client.PutAsJsonAsync(
             $"/api/events/{eventId}/ticket-types/{ticketTypeId}", request);
@@ -94,7 +94,7 @@ public sealed class EditTicketTypeTests(IntegrationTestFixture fixture)
         var eventId = await SeedDraftEventAsync(userId);
         var ticketTypeId = await SeedTicketTypeAsync(eventId, "General", 50m, 100);
 
-        var request = new EditTicketTypeRequest("VIP", -10m, "VND", 50, null);
+        var request = new EditTicketTypeRequest("VIP", -10m, "VND", 50, null, null, null);
 
         using var response = await _client.PutAsJsonAsync(
             $"/api/events/{eventId}/ticket-types/{ticketTypeId}", request);
@@ -109,7 +109,7 @@ public sealed class EditTicketTypeTests(IntegrationTestFixture fixture)
         var eventId = await SeedDraftEventAsync(userId);
         var ticketTypeId = await SeedTicketTypeAsync(eventId, "General", 50m, 100, sold: 30, reserved: 20);
 
-        var request = new EditTicketTypeRequest("General", 50m, "VND", 40, null);
+        var request = new EditTicketTypeRequest("General", 50m, "VND", 40, null, null, null);
 
         using var response = await _client.PutAsJsonAsync(
             $"/api/events/{eventId}/ticket-types/{ticketTypeId}", request);
@@ -131,7 +131,7 @@ public sealed class EditTicketTypeTests(IntegrationTestFixture fixture)
         using var publishResponse = await _client.PostAsync($"/api/events/{eventId}/publish", null);
         publishResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var request = new EditTicketTypeRequest("VIP", 200m, "VND", 50, null);
+        var request = new EditTicketTypeRequest("VIP", 200m, "VND", 50, null, null, null);
 
         using var response = await _client.PutAsJsonAsync(
             $"/api/events/{eventId}/ticket-types/{ticketTypeId}", request);
@@ -151,7 +151,7 @@ public sealed class EditTicketTypeTests(IntegrationTestFixture fixture)
         await SeedTicketTypeAsync(eventId, "General", 50m, 100);
         var vipId = await SeedTicketTypeAsync(eventId, "VIP", 200m, 20);
 
-        var request = new EditTicketTypeRequest("General", 200m, "VND", 20, null);
+        var request = new EditTicketTypeRequest("General", 200m, "VND", 20, null, null, null);
 
         using var response = await _client.PutAsJsonAsync(
             $"/api/events/{eventId}/ticket-types/{vipId}", request);

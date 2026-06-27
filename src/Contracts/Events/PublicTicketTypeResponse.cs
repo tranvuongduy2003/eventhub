@@ -10,4 +10,7 @@ public sealed record PublicTicketTypeResponse(
     int Sold,
     int Reserved,
     int Available,
-    bool IsSoldOut);
+    bool IsSoldOut,
+    DateTimeOffset? SalesWindowStart,
+    DateTimeOffset? SalesWindowEnd,
+    string? SalesWindowStatus);

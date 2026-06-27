@@ -31,4 +31,12 @@ public static class TicketTypeErrors
     public static readonly Error MaxPerOrderInvalid = Error.Validation(
         "MAX_PER_ORDER_INVALID",
         "Max per order must be at least 1 when set.");
+
+    public static readonly Error SalesWindowInvalid = Error.Validation(
+        "SALES_WINDOW_INVALID",
+        "Sales window end must be after start.");
+
+    public static readonly Error SalesWindowPartial = Error.Validation(
+        "SALES_WINDOW_PARTIAL",
+        "Both start and end must be provided, or neither.");
 }

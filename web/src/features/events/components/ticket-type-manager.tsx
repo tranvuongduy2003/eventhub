@@ -41,6 +41,8 @@ const ticketTypeFormSchema = z.object({
     .int('Capacity must be a whole number.')
     .min(1, 'Capacity must be at least 1.'),
   maxPerOrder: z.number().int().min(1, 'Must be at least 1.').nullable(),
+  salesWindowStart: z.string().nullable(),
+  salesWindowEnd: z.string().nullable(),
 })
 
 type TicketTypeFormValues = z.infer<typeof ticketTypeFormSchema>
@@ -238,10 +240,13 @@ function TicketTypeCard({
           priceCurrency: ticketType.priceCurrency,
           capacity: ticketType.capacity,
           maxPerOrder: ticketType.maxPerOrder,
+          salesWindowStart: ticketType.salesWindowStart,
+          salesWindowEnd: ticketType.salesWindowEnd,
         }}
         onSubmit={onSave}
         onCancel={onCancelEdit}
         isSaving={isSaving}
+        isPublishedEdit={!isDraft}
       />
     )
   }
@@ -260,45 +265,56 @@ function TicketTypeCard({
             {ticketType.capacity} capacity · {ticketType.sold} sold · {ticketType.reserved} reserved
             {ticketType.maxPerOrder != null && ` · Max ${ticketType.maxPerOrder} per order`}
           </span>
+          {ticketType.salesWindowStart != null && ticketType.salesWindowEnd != null && (
+            <span className="text-muted-foreground text-xs">
+              Sales: {new Date(ticketType.salesWindowStart).toLocaleString()} –{' '}
+              {new Date(ticketType.salesWindowEnd).toLocaleString()}
+            </span>
+          )}
+          {ticketType.salesWindowStart == null && ticketType.salesWindowEnd == null && (
+            <span className="text-muted-foreground text-xs">Always on sale</span>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <span className="text-lg font-semibold">
             {formatPrice(ticketType.priceAmount, ticketType.priceCurrency)}
           </span>
-          {isDraft && (
+          {
             <div className="flex gap-1">
               <Button type="button" variant="outline" size="sm" onClick={onEdit}>
                 Edit
               </Button>
-              <AlertDialog>
-                <AlertDialogTrigger
-                  render={
-                    <Button type="button" variant="destructive" size="sm" disabled={isRemoving}>
-                      Remove
-                    </Button>
-                  }
-                />
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Remove ticket type?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {hasSales
-                        ? 'This ticket type has reserved or sold tickets and cannot be removed.'
-                        : `This will remove "${ticketType.name}" from the event. This action cannot be undone.`}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    {!hasSales && (
-                      <AlertDialogAction variant="destructive" onClick={onRemove}>
+              {isDraft && (
+                <AlertDialog>
+                  <AlertDialogTrigger
+                    render={
+                      <Button type="button" variant="destructive" size="sm" disabled={isRemoving}>
                         Remove
-                      </AlertDialogAction>
-                    )}
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                      </Button>
+                    }
+                  />
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Remove ticket type?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {hasSales
+                          ? 'This ticket type has reserved or sold tickets and cannot be removed.'
+                          : `This will remove "${ticketType.name}" from the event. This action cannot be undone.`}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      {!hasSales && (
+                        <AlertDialogAction variant="destructive" onClick={onRemove}>
+                          Remove
+                        </AlertDialogAction>
+                      )}
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </div>
-          )}
+          }
         </div>
       </CardContent>
     </Card>
@@ -310,9 +326,16 @@ interface TicketTypeFormProps {
   onSubmit: (values: TicketTypeFormValues) => void
   onCancel: () => void
   isSaving: boolean
+  isPublishedEdit?: boolean
 }
 
-function TicketTypeForm({ defaultValues, onSubmit, onCancel, isSaving }: TicketTypeFormProps) {
+function TicketTypeForm({
+  defaultValues,
+  onSubmit,
+  onCancel,
+  isSaving,
+  isPublishedEdit,
+}: TicketTypeFormProps) {
   const form = useForm<TicketTypeFormValues>({
     resolver: zodResolver(ticketTypeFormSchema),
     defaultValues: defaultValues ?? {
@@ -321,6 +344,8 @@ function TicketTypeForm({ defaultValues, onSubmit, onCancel, isSaving }: TicketT
       priceCurrency: 'VND',
       capacity: 100,
       maxPerOrder: null,
+      salesWindowStart: null,
+      salesWindowEnd: null,
     },
   })
 
@@ -341,7 +366,7 @@ function TicketTypeForm({ defaultValues, onSubmit, onCancel, isSaving }: TicketT
               <Input
                 id="ticket-type-name"
                 autoComplete="off"
-                disabled={isSaving}
+                disabled={isSaving || isPublishedEdit}
                 placeholder="e.g. General Admission"
                 {...form.register('name')}
               />
@@ -356,7 +381,7 @@ function TicketTypeForm({ defaultValues, onSubmit, onCancel, isSaving }: TicketT
                   type="number"
                   min={0}
                   step={1000}
-                  disabled={isSaving}
+                  disabled={isSaving || isPublishedEdit}
                   {...form.register('priceAmount')}
                 />
                 <FieldError errors={[form.formState.errors.priceAmount]} />
@@ -367,7 +392,7 @@ function TicketTypeForm({ defaultValues, onSubmit, onCancel, isSaving }: TicketT
                 <Input
                   id="ticket-type-currency"
                   autoComplete="off"
-                  disabled={isSaving}
+                  disabled={isSaving || isPublishedEdit}
                   {...form.register('priceCurrency')}
                 />
                 <FieldError errors={[form.formState.errors.priceCurrency]} />
@@ -379,7 +404,7 @@ function TicketTypeForm({ defaultValues, onSubmit, onCancel, isSaving }: TicketT
                   id="ticket-type-capacity"
                   type="number"
                   min={1}
-                  disabled={isSaving}
+                  disabled={isSaving || isPublishedEdit}
                   {...form.register('capacity')}
                 />
                 <FieldError errors={[form.formState.errors.capacity]} />
@@ -401,6 +426,36 @@ function TicketTypeForm({ defaultValues, onSubmit, onCancel, isSaving }: TicketT
               />
               <FieldError errors={[form.formState.errors.maxPerOrder]} />
             </Field>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field data-invalid={!!form.formState.errors.salesWindowStart}>
+                <FieldLabel htmlFor="ticket-type-sales-start">Sales window start</FieldLabel>
+                <Input
+                  id="ticket-type-sales-start"
+                  type="datetime-local"
+                  disabled={isSaving}
+                  placeholder="Always on sale"
+                  {...form.register('salesWindowStart', {
+                    setValueAs: (v: string) => (v === '' ? null : v),
+                  })}
+                />
+                <FieldError errors={[form.formState.errors.salesWindowStart]} />
+              </Field>
+
+              <Field data-invalid={!!form.formState.errors.salesWindowEnd}>
+                <FieldLabel htmlFor="ticket-type-sales-end">Sales window end</FieldLabel>
+                <Input
+                  id="ticket-type-sales-end"
+                  type="datetime-local"
+                  disabled={isSaving}
+                  placeholder="Always on sale"
+                  {...form.register('salesWindowEnd', {
+                    setValueAs: (v: string) => (v === '' ? null : v),
+                  })}
+                />
+                <FieldError errors={[form.formState.errors.salesWindowEnd]} />
+              </Field>
+            </div>
           </FieldGroup>
 
           <div className="flex gap-2">

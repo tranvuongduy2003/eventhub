@@ -28,7 +28,7 @@ public sealed class MaxPerOrderTests(IntegrationTestFixture fixture)
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
 
-        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, 4);
+        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, 4, null, null);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
 
@@ -45,7 +45,7 @@ public sealed class MaxPerOrderTests(IntegrationTestFixture fixture)
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
 
-        var request = new AddTicketTypeRequest("General", 50m, "VND", 100, null);
+        var request = new AddTicketTypeRequest("General", 50m, "VND", 100, null, null, null);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
 
@@ -62,7 +62,7 @@ public sealed class MaxPerOrderTests(IntegrationTestFixture fixture)
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
 
-        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, 0);
+        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, 0, null, null);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
 
@@ -75,7 +75,7 @@ public sealed class MaxPerOrderTests(IntegrationTestFixture fixture)
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
 
-        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, -1);
+        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, -1, null, null);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
 
@@ -89,7 +89,7 @@ public sealed class MaxPerOrderTests(IntegrationTestFixture fixture)
         var eventId = await SeedDraftEventAsync(userId);
         var ticketTypeId = await SeedTicketTypeAsync(eventId);
 
-        var request = new EditTicketTypeRequest("General Admission", 50m, "VND", 100, 4);
+        var request = new EditTicketTypeRequest("General Admission", 50m, "VND", 100, 4, null, null);
 
         using var response = await _client.PutAsJsonAsync(
             $"/api/events/{eventId}/ticket-types/{ticketTypeId}", request);
@@ -108,7 +108,7 @@ public sealed class MaxPerOrderTests(IntegrationTestFixture fixture)
         var eventId = await SeedDraftEventAsync(userId);
         var ticketTypeId = await SeedTicketTypeAsync(eventId, maxPerOrder: 4);
 
-        var request = new EditTicketTypeRequest("General Admission", 50m, "VND", 100, null);
+        var request = new EditTicketTypeRequest("General Admission", 50m, "VND", 100, null, null, null);
 
         using var response = await _client.PutAsJsonAsync(
             $"/api/events/{eventId}/ticket-types/{ticketTypeId}", request);
@@ -132,7 +132,7 @@ public sealed class MaxPerOrderTests(IntegrationTestFixture fixture)
         publishResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Only change MaxPerOrder — same name, price, capacity
-        var request = new EditTicketTypeRequest("General Admission", 50m, "VND", 100, 4);
+        var request = new EditTicketTypeRequest("General Admission", 50m, "VND", 100, 4, null, null);
 
         using var response = await _client.PutAsJsonAsync(
             $"/api/events/{eventId}/ticket-types/{ticketTypeId}", request);
@@ -155,7 +155,7 @@ public sealed class MaxPerOrderTests(IntegrationTestFixture fixture)
         publishResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Change name AND MaxPerOrder — should fail because name changed
-        var request = new EditTicketTypeRequest("Updated Name", 50m, "VND", 100, 4);
+        var request = new EditTicketTypeRequest("Updated Name", 50m, "VND", 100, 4, null, null);
 
         using var response = await _client.PutAsJsonAsync(
             $"/api/events/{eventId}/ticket-types/{ticketTypeId}", request);

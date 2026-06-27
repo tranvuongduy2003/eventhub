@@ -28,7 +28,16 @@ export function TicketTypeList({ ticketTypes }: TicketTypeListProps) {
             <div className="flex flex-col gap-1">
               <span className="font-medium">{ticketType.name}</span>
               <span className="text-muted-foreground text-sm">
-                {ticketType.isSoldOut ? (
+                {ticketType.salesWindowStatus === 'not_yet_on_sale' ? (
+                  <span className="text-muted-foreground">
+                    Not yet on sale
+                    {ticketType.salesWindowStart && (
+                      <> — sales begin {new Date(ticketType.salesWindowStart).toLocaleString()}</>
+                    )}
+                  </span>
+                ) : ticketType.salesWindowStatus === 'sales_ended' ? (
+                  <span className="text-muted-foreground">Sales ended</span>
+                ) : ticketType.isSoldOut ? (
                   <Badge variant="destructive">Sold out</Badge>
                 ) : (
                   <span>{ticketType.available} remaining</span>

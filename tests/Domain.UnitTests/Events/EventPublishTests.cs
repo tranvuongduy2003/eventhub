@@ -139,6 +139,7 @@ public sealed class EventPublishTests
             Money.Create(50m, "VND"),
             Capacity.Create(100),
             null,
+            null,
             CreatedAt);
 
         draftEvent.ClearDomainEvents();

@@ -16,6 +16,10 @@ public sealed class TicketTypeRecord
 
     public int? MaxPerOrder { get; set; }
 
+    public DateTimeOffset? SalesWindowStart { get; set; }
+
+    public DateTimeOffset? SalesWindowEnd { get; set; }
+
     public int Sold { get; set; }
 
     public int Reserved { get; set; }

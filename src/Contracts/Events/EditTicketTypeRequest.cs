@@ -5,4 +5,6 @@ public sealed record EditTicketTypeRequest(
     decimal PriceAmount,
     string PriceCurrency,
     int Capacity,
-    int? MaxPerOrder);
+    int? MaxPerOrder,
+    DateTimeOffset? SalesWindowStart,
+    DateTimeOffset? SalesWindowEnd);

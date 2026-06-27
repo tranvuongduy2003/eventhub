@@ -28,7 +28,7 @@ public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
 
-        var request = new AddTicketTypeRequest("General Admission", 50m, "VND", 100, null);
+        var request = new AddTicketTypeRequest("General Admission", 50m, "VND", 100, null, null, null);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
 
@@ -50,7 +50,7 @@ public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
 
-        var request = new AddTicketTypeRequest("Free Entry", 0m, "VND", 50, null);
+        var request = new AddTicketTypeRequest("Free Entry", 0m, "VND", 50, null, null, null);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
 
@@ -64,7 +64,7 @@ public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
     [Fact]
     public async Task AddTicketType_NoAuth_Returns401()
     {
-        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, null);
+        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, null, null, null);
 
         using var response = await _client.PostAsJsonAsync("/api/events/1/ticket-types", request);
 
@@ -80,7 +80,7 @@ public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
         // Register a second user (non-owner)
         await RegisterOrganizerAsync();
 
-        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, null);
+        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, null, null, null);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
 
@@ -92,7 +92,7 @@ public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
     {
         await RegisterOrganizerAsync();
 
-        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, null);
+        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 50, null, null, null);
 
         using var response = await _client.PostAsJsonAsync("/api/events/99999/ticket-types", request);
 
@@ -106,7 +106,7 @@ public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
 
-        var request = new AddTicketTypeRequest("", 50m, "VND", 100, null);
+        var request = new AddTicketTypeRequest("", 50m, "VND", 100, null, null, null);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
 
@@ -119,7 +119,7 @@ public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
 
-        var request = new AddTicketTypeRequest("VIP", -10m, "VND", 50, null);
+        var request = new AddTicketTypeRequest("VIP", -10m, "VND", 50, null, null, null);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
 
@@ -132,7 +132,7 @@ public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
 
-        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 0, null);
+        var request = new AddTicketTypeRequest("VIP", 100m, "VND", 0, null, null, null);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
 
@@ -150,7 +150,7 @@ public sealed class AddTicketTypeTests(IntegrationTestFixture fixture)
         using var publishResponse = await _client.PostAsync($"/api/events/{eventId}/publish", null);
         publishResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var request = new AddTicketTypeRequest("Extra VIP", 200m, "VND", 10, null);
+        var request = new AddTicketTypeRequest("Extra VIP", 200m, "VND", 10, null, null, null);
 
         using var response = await _client.PostAsJsonAsync($"/api/events/{eventId}/ticket-types", request);
 

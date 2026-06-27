@@ -17,6 +17,8 @@ public sealed class TicketType : Entity<TicketTypeId>
 
     public int? MaxPerOrder { get; private set; }
 
+    public SalesWindow? SalesWindow { get; private set; }
+
     public int Sold { get; private set; }
 
     public int Reserved { get; private set; }
@@ -33,6 +35,7 @@ public sealed class TicketType : Entity<TicketTypeId>
         Money price,
         Capacity capacity,
         int? maxPerOrder,
+        SalesWindow? salesWindow,
         DateTimeOffset createdAt)
     {
         if (maxPerOrder is < 1)
@@ -49,6 +52,7 @@ public sealed class TicketType : Entity<TicketTypeId>
             Price = price,
             Capacity = capacity,
             MaxPerOrder = maxPerOrder,
+            SalesWindow = salesWindow,
             Sold = 0,
             Reserved = 0,
             CreatedAt = createdAt,
@@ -62,6 +66,7 @@ public sealed class TicketType : Entity<TicketTypeId>
         Money price,
         Capacity capacity,
         int? maxPerOrder,
+        SalesWindow? salesWindow,
         int sold,
         int reserved,
         DateTimeOffset createdAt,
@@ -73,6 +78,7 @@ public sealed class TicketType : Entity<TicketTypeId>
             Price = price,
             Capacity = capacity,
             MaxPerOrder = maxPerOrder,
+            SalesWindow = salesWindow,
             Sold = sold,
             Reserved = reserved,
             CreatedAt = createdAt,
@@ -167,7 +173,7 @@ public sealed class TicketType : Entity<TicketTypeId>
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    public void Update(TicketName newName, Money newPrice, Capacity newCapacity, int? newMaxPerOrder, DateTimeOffset updatedAt)
+    public void Update(TicketName newName, Money newPrice, Capacity newCapacity, int? newMaxPerOrder, SalesWindow? newSalesWindow, DateTimeOffset updatedAt)
     {
         if (newMaxPerOrder is < 1)
         {
@@ -180,6 +186,7 @@ public sealed class TicketType : Entity<TicketTypeId>
         Price = newPrice;
         Capacity = newCapacity;
         MaxPerOrder = newMaxPerOrder;
+        SalesWindow = newSalesWindow;
         UpdatedAt = updatedAt;
     }
 }

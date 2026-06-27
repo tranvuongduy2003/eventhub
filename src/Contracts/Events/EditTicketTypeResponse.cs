@@ -7,6 +7,8 @@ public sealed record EditTicketTypeResponse(
     string PriceCurrency,
     int Capacity,
     int? MaxPerOrder,
+    DateTimeOffset? SalesWindowStart,
+    DateTimeOffset? SalesWindowEnd,
     int Sold,
     int Reserved,
     DateTimeOffset CreatedAt,

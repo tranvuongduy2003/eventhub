@@ -32,12 +32,19 @@ public sealed class EditTicketTypeCommandHandler(
             var price = Money.Create(command.PriceAmount, command.PriceCurrency);
             var capacity = Capacity.Create(command.Capacity);
 
+            SalesWindow? salesWindow = null;
+            if (command.SalesWindowStart.HasValue && command.SalesWindowEnd.HasValue)
+            {
+                salesWindow = SalesWindow.Create(command.SalesWindowStart.Value, command.SalesWindowEnd.Value);
+            }
+
             eventAggregate.EditTicketType(
                 ticketTypeId,
                 name,
                 price,
                 capacity,
                 command.MaxPerOrder,
+                salesWindow,
                 clock.UtcNow);
 
             await eventRepository.Update(eventAggregate, cancellationToken);
@@ -54,6 +61,8 @@ public sealed class EditTicketTypeCommandHandler(
                 ticketType.Price.Currency,
                 ticketType.Capacity.Value,
                 ticketType.MaxPerOrder,
+                ticketType.SalesWindow?.Start,
+                ticketType.SalesWindow?.End,
                 ticketType.Sold,
                 ticketType.Reserved,
                 ticketType.CreatedAt,

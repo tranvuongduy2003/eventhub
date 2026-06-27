@@ -144,6 +144,9 @@ export type PublicTicketTypeResponse = {
   reserved: number
   available: number
   isSoldOut: boolean
+  salesWindowStart: string | null
+  salesWindowEnd: string | null
+  salesWindowStatus: string | null
 }
 
 export type PublicEventResponse = {
@@ -165,6 +168,8 @@ export type TicketTypeResponse = {
   priceCurrency: string
   capacity: number
   maxPerOrder: number | null
+  salesWindowStart: string | null
+  salesWindowEnd: string | null
   sold: number
   reserved: number
   createdAt: string
@@ -183,6 +188,8 @@ export type EditTicketTypeRequest = {
   priceCurrency: string
   capacity: number
   maxPerOrder: number | null
+  salesWindowStart: string | null
+  salesWindowEnd: string | null
 }
 
 export type EditTicketTypeResponse = {
@@ -192,6 +199,8 @@ export type EditTicketTypeResponse = {
   priceCurrency: string
   capacity: number
   maxPerOrder: number | null
+  salesWindowStart: string | null
+  salesWindowEnd: string | null
   sold: number
   reserved: number
   createdAt: string

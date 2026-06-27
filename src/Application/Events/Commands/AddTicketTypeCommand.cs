@@ -10,7 +10,9 @@ public sealed record AddTicketTypeCommand(
     decimal PriceAmount,
     string PriceCurrency,
     int Capacity,
-    int? MaxPerOrder)
+    int? MaxPerOrder,
+    DateTimeOffset? SalesWindowStart,
+    DateTimeOffset? SalesWindowEnd)
     : ICommand<AddTicketTypeResult>, IAuthorizeEventOperation
 {
     EventId IAuthorizeEventOperation.EventId => Domain.Events.EventId.From(EventId);
@@ -25,6 +27,8 @@ public sealed record AddTicketTypeResult(
     string PriceCurrency,
     int Capacity,
     int? MaxPerOrder,
+    DateTimeOffset? SalesWindowStart,
+    DateTimeOffset? SalesWindowEnd,
     int Sold,
     int Reserved,
     DateTimeOffset CreatedAt);

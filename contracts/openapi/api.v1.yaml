@@ -34,12 +34,24 @@ components:
             - string
         priceCurrency:
           type: string
+        salesWindowEnd:
+          format: date-time
+          type:
+            - "null"
+            - string
+        salesWindowStart:
+          format: date-time
+          type:
+            - "null"
+            - string
       required:
         - name
         - priceAmount
         - priceCurrency
         - capacity
         - maxPerOrder
+        - salesWindowStart
+        - salesWindowEnd
       type: object
     AddTicketTypeResponse:
       properties:
@@ -75,6 +87,16 @@ components:
           type:
             - integer
             - string
+        salesWindowEnd:
+          format: date-time
+          type:
+            - "null"
+            - string
+        salesWindowStart:
+          format: date-time
+          type:
+            - "null"
+            - string
         sold:
           format: int32
           pattern: ^-?(?:0|[1-9]\d*)$
@@ -94,6 +116,8 @@ components:
         - priceCurrency
         - capacity
         - maxPerOrder
+        - salesWindowStart
+        - salesWindowEnd
         - sold
         - reserved
         - createdAt
@@ -459,12 +483,24 @@ components:
             - string
         priceCurrency:
           type: string
+        salesWindowEnd:
+          format: date-time
+          type:
+            - "null"
+            - string
+        salesWindowStart:
+          format: date-time
+          type:
+            - "null"
+            - string
       required:
         - name
         - priceAmount
         - priceCurrency
         - capacity
         - maxPerOrder
+        - salesWindowStart
+        - salesWindowEnd
       type: object
     EditTicketTypeResponse:
       properties:
@@ -500,6 +536,16 @@ components:
           type:
             - integer
             - string
+        salesWindowEnd:
+          format: date-time
+          type:
+            - "null"
+            - string
+        salesWindowStart:
+          format: date-time
+          type:
+            - "null"
+            - string
         sold:
           format: int32
           pattern: ^-?(?:0|[1-9]\d*)$
@@ -522,6 +568,8 @@ components:
         - priceCurrency
         - capacity
         - maxPerOrder
+        - salesWindowStart
+        - salesWindowEnd
         - sold
         - reserved
         - createdAt
@@ -1019,6 +1067,20 @@ components:
           type:
             - integer
             - string
+        salesWindowEnd:
+          format: date-time
+          type:
+            - "null"
+            - string
+        salesWindowStart:
+          format: date-time
+          type:
+            - "null"
+            - string
+        salesWindowStatus:
+          type:
+            - "null"
+            - string
         sold:
           format: int32
           pattern: ^-?(?:0|[1-9]\d*)$
@@ -1042,6 +1104,9 @@ components:
         - reserved
         - available
         - isSoldOut
+        - salesWindowStart
+        - salesWindowEnd
+        - salesWindowStatus
       type: object
     PublishEventResponse:
       properties:

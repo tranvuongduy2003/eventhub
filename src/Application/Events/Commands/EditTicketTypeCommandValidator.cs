@@ -34,5 +34,15 @@ public sealed class EditTicketTypeCommandValidator : AbstractValidator<EditTicke
             .GreaterThan(0)
             .When(c => c.MaxPerOrder.HasValue)
             .WithMessage("Max per order must be at least 1 when set.");
+
+        RuleFor(c => c)
+            .Must(c => c.SalesWindowStart.HasValue == c.SalesWindowEnd.HasValue)
+            .WithMessage("Both start and end must be provided, or neither.")
+            .WithName("SalesWindow");
+
+        RuleFor(c => c.SalesWindowEnd)
+            .GreaterThan(c => c.SalesWindowStart)
+            .When(c => c.SalesWindowStart.HasValue && c.SalesWindowEnd.HasValue)
+            .WithMessage("Sales window end must be after start.");
     }
 }

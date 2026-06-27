@@ -294,6 +294,7 @@ public sealed class Event : AggregateRoot<EventId>
         Money price,
         Capacity capacity,
         int? maxPerOrder,
+        SalesWindow? salesWindow,
         DateTimeOffset createdAt)
     {
         if (Status is not EventStatus.Draft)
@@ -332,7 +333,7 @@ public sealed class Event : AggregateRoot<EventId>
             : 0;
         var nextId = minId < 0 ? TicketTypeId.From(minId - 1) : TicketTypeId.From(-1);
 
-        var ticketType = TicketType.Create(nextId, name, price, capacity, maxPerOrder, createdAt);
+        var ticketType = TicketType.Create(nextId, name, price, capacity, maxPerOrder, salesWindow, createdAt);
 
         _ticketTypes.Add(ticketType);
 
@@ -349,6 +350,7 @@ public sealed class Event : AggregateRoot<EventId>
         Money price,
         Capacity capacity,
         int? maxPerOrder,
+        SalesWindow? salesWindow,
         DateTimeOffset updatedAt)
     {
         var ticketType = _ticketTypes.FirstOrDefault(t => t.Id == ticketTypeId)
@@ -368,20 +370,20 @@ public sealed class Event : AggregateRoot<EventId>
                 });
         }
 
-        // Published events: only allow MaxPerOrder changes
+        // Published events: only allow MaxPerOrder and SalesWindow changes
         if (Status is EventStatus.Published)
         {
-            var onlyMaxPerOrderChanged =
+            var onlyPerOrderOrSalesWindowChanged =
                 ticketType.Name.Value == name.Value &&
                 ticketType.Price.Amount == price.Amount &&
                 ticketType.Price.Currency == price.Currency &&
                 ticketType.Capacity.Value == capacity.Value;
 
-            if (!onlyMaxPerOrderChanged)
+            if (!onlyPerOrderOrSalesWindowChanged)
             {
                 throw new BusinessRuleValidationException(
                     "INVALID_EVENT_STATUS",
-                    "Cannot edit ticket type details on a published event. Only the per-order limit can be changed.");
+                    "Cannot edit ticket type details on a published event. Only the per-order limit and sales window can be changed.");
             }
         }
 
@@ -401,7 +403,7 @@ public sealed class Event : AggregateRoot<EventId>
                 $"Cannot reduce capacity below {ticketType.Reserved + ticketType.Sold} (reserved + sold).");
         }
 
-        ticketType.Update(name, price, capacity, maxPerOrder, updatedAt);
+        ticketType.Update(name, price, capacity, maxPerOrder, salesWindow, updatedAt);
 
         UpdatedAt = updatedAt;
 
@@ -470,6 +472,16 @@ public sealed class Event : AggregateRoot<EventId>
             ?? throw new BusinessRuleValidationException(
                 "TICKET_TYPE_NOT_FOUND",
                 "The ticket type was not found on this event.");
+
+        // INV-14: sales window must be open (or absent)
+        if (ticketType.SalesWindow is not null && !ticketType.SalesWindow.IsOpen(now))
+        {
+            throw new BusinessRuleValidationException(
+                "SALES_WINDOW_NOT_OPEN",
+                now < ticketType.SalesWindow.Start
+                    ? $"Sales for this ticket type have not started yet. Sales begin {ticketType.SalesWindow.Start:O}."
+                    : $"Sales for this ticket type have ended.");
+        }
 
         ticketType.Reserve(quantity);
 
