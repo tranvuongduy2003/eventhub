@@ -20,14 +20,42 @@ export type PublicEventListingResponse = {
   pageSize: number
 }
 
-export function getPublicEvents(page: number, pageSize: number, signal?: AbortSignal) {
-  return apiClient.get<PublicEventListingResponse>(
-    `/api/events?page=${page}&pageSize=${pageSize}`,
-    {
-      signal,
-      suppressErrorToast: true,
-    },
-  )
+export type EventFilters = {
+  q?: string
+  date?: string
+  dateFrom?: string
+  dateTo?: string
+  location?: string
+}
+
+export function getPublicEvents(
+  page: number,
+  pageSize: number,
+  filters?: EventFilters,
+  signal?: AbortSignal,
+) {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  })
+
+  if (filters?.q) params.set('q', filters.q)
+  if (filters?.date) params.set('date', filters.date)
+  if (filters?.dateFrom) params.set('dateFrom', filters.dateFrom)
+  if (filters?.dateTo) params.set('dateTo', filters.dateTo)
+  if (filters?.location) params.set('location', filters.location)
+
+  return apiClient.get<PublicEventListingResponse>(`/api/events?${params.toString()}`, {
+    signal,
+    suppressErrorToast: true,
+  })
+}
+
+export function getEventLocations(signal?: AbortSignal) {
+  return apiClient.get<string[]>('/api/events/locations', {
+    signal,
+    suppressErrorToast: true,
+  })
 }
 
 export type CreateDraftEventRequest = {

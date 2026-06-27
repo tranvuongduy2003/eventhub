@@ -1,9 +1,12 @@
 using EventHub.Api.Http;
 using EventHub.Api.Mapping;
+using EventHub.Application.Abstractions.Services;
 using EventHub.Application.Events.Commands;
 using EventHub.Application.Events.Queries;
 using EventHub.Contracts.Events;
 using MediatR;
+using DatePreset = EventHub.Application.Common.DatePreset;
+using EventFilter = EventHub.Application.Common.EventFilter;
 
 namespace EventHub.Api.Endpoints;
 
@@ -87,6 +90,12 @@ internal sealed class EventsEndpoint : IEndpoint
             .AllowAnonymous()
             .Produces<PublicEventListingResponse>(StatusCodes.Status200OK);
 
+        endpoints.MapGet("/api/events/locations", ListEventLocations)
+            .WithName("ListEventLocations")
+            .WithTags("Events")
+            .AllowAnonymous()
+            .Produces<List<string>>(StatusCodes.Status200OK);
+
         endpoints.MapGet("/api/events/{slug}", GetPublicEvent)
             .WithName("GetPublicEvent")
             .WithTags("Events")
@@ -158,11 +167,85 @@ internal sealed class EventsEndpoint : IEndpoint
     private static async Task<IResult> ListPublicEvents(
         int? page,
         int? pageSize,
+        string? q,
+        string? date,
+        string? dateFrom,
+        string? dateTo,
+        string? location,
+        IClock clock,
         ISender sender)
     {
+        DatePreset? datePreset = date?.ToLowerInvariant() switch
+        {
+            "today" => DatePreset.Today,
+            "tomorrow" => DatePreset.Tomorrow,
+            "this-week" => DatePreset.ThisWeek,
+            "this-month" => DatePreset.ThisMonth,
+            _ => null,
+        };
+
+        DateTimeOffset? parsedDateFrom = null;
+        DateTimeOffset? parsedDateTo = null;
+
+        if (DateOnly.TryParse(dateFrom, out var df))
+        {
+            parsedDateFrom = new DateTimeOffset(df.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        }
+
+        if (DateOnly.TryParse(dateTo, out var dt))
+        {
+            parsedDateTo = new DateTimeOffset(dt.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        }
+
+        // Resolve date preset to concrete date range at the API layer
+        if (datePreset.HasValue)
+        {
+            var (presetFrom, presetTo) = ComputeDateRangeFromPreset(datePreset.Value, clock.UtcNow);
+            parsedDateFrom ??= presetFrom;
+            parsedDateTo ??= presetTo;
+        }
+
+        var filter = new EventFilter(
+            Search: q,
+            DateFrom: parsedDateFrom,
+            DateTo: parsedDateTo,
+            Location: location);
+
         var query = new ListPublicEventsQuery(
             page is > 0 ? page.Value : 1,
-            pageSize is > 0 ? pageSize.Value : 24);
+            pageSize is > 0 ? pageSize.Value : 24,
+            filter);
+
+        var result = await sender.Send(query);
+
+        return result.ToHttpResult();
+    }
+
+    private static (DateTimeOffset From, DateTimeOffset To) ComputeDateRangeFromPreset(
+        DatePreset preset,
+        DateTimeOffset now)
+    {
+        var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, TimeSpan.Zero);
+        return preset switch
+        {
+            DatePreset.Today => (today, today.AddDays(1).AddTicks(-1)),
+            DatePreset.Tomorrow => (today.AddDays(1), today.AddDays(2).AddTicks(-1)),
+            DatePreset.ThisWeek =>
+                // ISO 8601: Monday = start of week (inclusive) to Sunday end of day
+                // DayOfWeek: Sunday=0, Monday=1, ..., Saturday=6
+                // Shift so Monday=0: (dayOfWeek + 6) % 7
+                (today.AddDays(-(((int)today.DayOfWeek + 6) % 7)),
+                 today.AddDays(-(((int)today.DayOfWeek + 6) % 7) + 7).AddTicks(-1)),
+            DatePreset.ThisMonth => (new DateTimeOffset(now.Year, now.Month, 1, 0, 0, 0, TimeSpan.Zero),
+                                     new DateTimeOffset(now.Year, now.Month, DateTime.DaysInMonth(now.Year, now.Month), 23, 59, 59, TimeSpan.Zero).AddTicks(9999999)),
+            _ => (today, today.AddDays(1).AddTicks(-1)),
+        };
+    }
+
+    private static async Task<IResult> ListEventLocations(
+        ISender sender)
+    {
+        var query = new ListEventLocationsQuery();
 
         var result = await sender.Send(query);
 

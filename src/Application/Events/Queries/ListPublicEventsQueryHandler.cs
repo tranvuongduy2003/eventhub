@@ -26,6 +26,7 @@ public sealed class ListPublicEventsQueryHandler(
             query.Page,
             query.PageSize,
             now,
+            query.Filter,
             cancellationToken);
 
         var items = result.Items.Select(eventAggregate =>

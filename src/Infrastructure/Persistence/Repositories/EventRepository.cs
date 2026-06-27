@@ -47,6 +47,7 @@ internal sealed class EventRepository(ApplicationDatabaseContext databaseContext
         int page,
         int pageSize,
         DateTimeOffset now,
+        EventFilter? filter = null,
         CancellationToken cancellationToken = default)
     {
         var query = databaseContext.Events
@@ -54,6 +55,8 @@ internal sealed class EventRepository(ApplicationDatabaseContext databaseContext
             .Where(e => e.Status == EventStatus.Published
                 && e.ScheduleStartsAt != null
                 && e.ScheduleStartsAt >= now);
+
+        query = ApplyFilters(query, filter, now);
 
         var totalCount = await query.CountAsync(cancellationToken);
 
@@ -70,6 +73,70 @@ internal sealed class EventRepository(ApplicationDatabaseContext databaseContext
         }
 
         return new PaginatedResult<Event>(events, totalCount);
+    }
+
+    public async Task<List<string>> GetDistinctLocationsAsync(
+        DateTimeOffset now,
+        CancellationToken cancellationToken = default)
+    {
+        var locations = await databaseContext.Events
+            .AsNoTracking()
+            .Where(e => e.Status == EventStatus.Published
+                && e.ScheduleStartsAt != null
+                && e.ScheduleStartsAt >= now)
+            .Select(e => e.LocationIsOnline
+                ? "Online"
+                : e.LocationPhysicalAddress!)
+            .Where(loc => loc != null)
+            .Distinct()
+            .OrderBy(loc => loc)
+            .ToListAsync(cancellationToken);
+
+        return locations!;
+    }
+
+    private static IQueryable<EventRecord> ApplyFilters(
+        IQueryable<EventRecord> query,
+        EventFilter? filter,
+        DateTimeOffset now)
+    {
+        if (filter is null)
+        {
+            return query;
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+        {
+            var searchTerm = $"%{filter.Search.Trim()}%";
+            query = query.Where(e =>
+                EF.Functions.ILike(e.Title, searchTerm)
+                || (e.Description != null && EF.Functions.ILike(e.Description, searchTerm)));
+        }
+
+        if (filter.DateFrom.HasValue)
+        {
+            query = query.Where(e => e.ScheduleStartsAt >= filter.DateFrom.Value);
+        }
+
+        if (filter.DateTo.HasValue)
+        {
+            query = query.Where(e => e.ScheduleStartsAt <= filter.DateTo.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Location))
+        {
+            var location = filter.Location.Trim();
+            if (location == "Online")
+            {
+                query = query.Where(e => e.LocationIsOnline);
+            }
+            else
+            {
+                query = query.Where(e => !e.LocationIsOnline && e.LocationPhysicalAddress == location);
+            }
+        }
+
+        return query;
     }
 
     private async Task<Event> LoadAggregateAsync(EventRecord record, CancellationToken cancellationToken)

@@ -15,6 +15,11 @@ public interface IEventRepository
         int page,
         int pageSize,
         DateTimeOffset now,
+        EventFilter? filter = null,
+        CancellationToken cancellationToken = default);
+
+    Task<List<string>> GetDistinctLocationsAsync(
+        DateTimeOffset now,
         CancellationToken cancellationToken = default);
 
     Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken = default);

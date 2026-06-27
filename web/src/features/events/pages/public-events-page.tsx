@@ -1,19 +1,41 @@
+import { useCallback, useMemo } from 'react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { TicketIcon } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { paths } from '@/app/paths'
 import { EventCardGrid } from '@/features/events/components/event-card-grid'
 import { EmptyEventsState } from '@/features/events/components/empty-events-state'
-import { getPublicEvents } from '@/features/events/api'
+import { EventSearchFilters } from '@/features/events/components/event-search-filters'
+import { getPublicEvents, type EventFilters } from '@/features/events/api'
+import { useDebouncedValue } from '@/hooks/use-debounced-value'
 
 const PAGE_SIZE = 24
 
 export function PublicEventsPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const searchValue = searchParams.get('q') ?? ''
+  const dateValue = searchParams.get('date') ?? ''
+  const locationValue = searchParams.get('location') ?? ''
+
+  const debouncedSearch = useDebouncedValue(searchValue, 300)
+
+  const filters: EventFilters = useMemo(
+    () => ({
+      q: debouncedSearch || undefined,
+      date: dateValue || undefined,
+      location: locationValue || undefined,
+    }),
+    [debouncedSearch, dateValue, locationValue],
+  )
+
+  const hasActiveFilters = !!(filters.q || filters.date || filters.location)
+
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isLoading, isError } =
     useInfiniteQuery({
-      queryKey: ['events', 'public'],
-      queryFn: ({ pageParam, signal }) => getPublicEvents(pageParam, PAGE_SIZE, signal),
+      queryKey: ['events', 'public', filters],
+      queryFn: ({ pageParam, signal }) => getPublicEvents(pageParam, PAGE_SIZE, filters, signal),
       initialPageParam: 1,
       getNextPageParam: (lastPage) => {
         const totalPages = Math.ceil(lastPage.totalCount / PAGE_SIZE)
@@ -22,6 +44,28 @@ export function PublicEventsPage() {
     })
 
   const events = data?.pages.flatMap((page) => page.items) ?? []
+
+  const updateParam = useCallback(
+    (key: string, value: string) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          if (value) {
+            next.set(key, value)
+          } else {
+            next.delete(key)
+          }
+          return next
+        },
+        { replace: true },
+      )
+    },
+    [setSearchParams],
+  )
+
+  const handleClear = useCallback(() => {
+    setSearchParams({}, { replace: true })
+  }, [setSearchParams])
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -57,6 +101,17 @@ export function PublicEventsPage() {
             </p>
           </div>
 
+          <EventSearchFilters
+            searchValue={searchValue}
+            onSearchChange={(value) => updateParam('q', value)}
+            dateValue={dateValue}
+            onDateChange={(value) => updateParam('date', value)}
+            locationValue={locationValue}
+            onLocationChange={(value) => updateParam('location', value)}
+            onClear={handleClear}
+            hasActiveFilters={hasActiveFilters}
+          />
+
           {isLoading && (
             <div className="flex justify-center py-16">
               <div className="text-muted-foreground text-sm">Loading events...</div>
@@ -71,7 +126,9 @@ export function PublicEventsPage() {
             </div>
           )}
 
-          {!isLoading && !isError && events.length === 0 && <EmptyEventsState />}
+          {!isLoading && !isError && events.length === 0 && (
+            <EmptyEventsState isFiltered={hasActiveFilters} onClearFilters={handleClear} />
+          )}
 
           {events.length > 0 && (
             <EventCardGrid
