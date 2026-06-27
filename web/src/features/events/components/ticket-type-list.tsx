@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatPrice } from '@/lib/utils/format-price'
 
@@ -6,11 +7,12 @@ import type { PublicTicketTypeResponse } from '../api'
 
 interface TicketTypeListProps {
   ticketTypes: PublicTicketTypeResponse[]
+  purchasable: boolean
 }
 
-export function TicketTypeList({ ticketTypes }: TicketTypeListProps) {
+export function TicketTypeList({ ticketTypes, purchasable }: TicketTypeListProps) {
   if (ticketTypes.length === 0) {
-    return null
+    return <p className="text-muted-foreground text-sm">No tickets available.</p>
   }
 
   return (
@@ -53,6 +55,12 @@ export function TicketTypeList({ ticketTypes }: TicketTypeListProps) {
           </CardContent>
         </Card>
       ))}
+
+      {purchasable && (
+        <Button className="w-full" size="lg">
+          Get tickets
+        </Button>
+      )}
     </div>
   )
 }

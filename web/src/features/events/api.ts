@@ -71,8 +71,8 @@ export function createDraftEvent(request: CreateDraftEventRequest, signal?: Abor
   })
 }
 
-export function getPublicEventDetails(eventId: number, signal?: AbortSignal) {
-  return apiClient.get<PublicEventResponse>(`/api/events/${eventId}/public`, {
+export function getPublicEventBySlug(slug: string, signal?: AbortSignal) {
+  return apiClient.get<PublicEventResponse>(`/api/events/${slug}`, {
     signal,
     suppressErrorToast: true,
   })
@@ -150,7 +150,7 @@ export type PublicTicketTypeResponse = {
 }
 
 export type PublicEventResponse = {
-  eventId: number
+  slug: string
   title: string
   description: string | null
   startsAt: string | null
@@ -158,6 +158,9 @@ export type PublicEventResponse = {
   timeZoneId: string | null
   physicalAddress: string | null
   isOnline: boolean
+  coverImageUrl: string | null
+  status: string
+  purchasable: boolean
   ticketTypes: PublicTicketTypeResponse[]
 }
 

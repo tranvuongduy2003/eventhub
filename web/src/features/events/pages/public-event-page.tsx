@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -9,12 +10,12 @@ import * as eventsApi from '../api'
 import { TicketTypeList } from '../components/ticket-type-list'
 
 export function PublicEventPage() {
-  const { eventId } = useParams<{ eventId: string }>()
+  const { slug } = useParams<{ slug: string }>()
 
   const eventQuery = useQuery({
-    queryKey: ['public-event', eventId],
-    queryFn: ({ signal }) => eventsApi.getPublicEventDetails(Number(eventId), signal),
-    enabled: !!eventId,
+    queryKey: ['public-event', slug],
+    queryFn: ({ signal }) => eventsApi.getPublicEventBySlug(slug!, signal),
+    enabled: !!slug,
   })
 
   if (eventQuery.isPending) {
@@ -32,7 +33,7 @@ export function PublicEventPage() {
     return (
       <div className="mx-auto max-w-2xl px-4 py-8">
         <Alert variant="destructive">
-          <AlertDescription>Event not found or an error occurred.</AlertDescription>
+          <AlertDescription>Event not found.</AlertDescription>
         </Alert>
       </div>
     )
@@ -42,9 +43,21 @@ export function PublicEventPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
+      {event.coverImageUrl && (
+        <img
+          src={event.coverImageUrl}
+          alt={event.title}
+          className="mb-6 w-full rounded-lg object-cover"
+        />
+      )}
+
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">{event.title}</CardTitle>
+          <div className="flex items-start justify-between gap-2">
+            <CardTitle className="text-2xl">{event.title}</CardTitle>
+            {event.status === 'Cancelled' && <Badge variant="destructive">Cancelled</Badge>}
+            {event.status === 'Closed' && <Badge variant="secondary">Sales closed</Badge>}
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {event.description && <p className="text-muted-foreground">{event.description}</p>}
@@ -77,7 +90,17 @@ export function PublicEventPage() {
             {event.isOnline && <p>Online event</p>}
           </div>
 
-          <TicketTypeList ticketTypes={event.ticketTypes} />
+          {event.status === 'Cancelled' ? (
+            <Alert>
+              <AlertDescription>This event has been cancelled.</AlertDescription>
+            </Alert>
+          ) : event.status === 'Closed' ? (
+            <Alert>
+              <AlertDescription>Sales for this event are closed.</AlertDescription>
+            </Alert>
+          ) : (
+            <TicketTypeList ticketTypes={event.ticketTypes} purchasable={event.purchasable} />
+          )}
         </CardContent>
       </Card>
     </div>

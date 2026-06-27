@@ -34,6 +34,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  { path: '/e/:eventId', element: <PublicEventPage /> },
+  { path: '/events/:slug', element: <PublicEventPage /> },
   { path: '*', element: <Navigate to={paths.home} replace /> },
 ])

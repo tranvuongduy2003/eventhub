@@ -1,7 +1,7 @@
 namespace EventHub.Contracts.Events;
 
 public sealed record PublicEventResponse(
-    int EventId,
+    string Slug,
     string Title,
     string? Description,
     DateTimeOffset? StartsAt,
@@ -9,4 +9,7 @@ public sealed record PublicEventResponse(
     string? TimeZoneId,
     string? PhysicalAddress,
     bool IsOnline,
+    string? CoverImageUrl,
+    string Status,
+    bool Purchasable,
     List<PublicTicketTypeResponse> TicketTypes);

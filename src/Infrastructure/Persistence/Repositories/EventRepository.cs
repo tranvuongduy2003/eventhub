@@ -1,5 +1,6 @@
 using EventHub.Application.Abstractions.Persistence;
 using EventHub.Domain.Events;
+using EventHub.Infrastructure.Persistence.Entities;
 using EventHub.Infrastructure.Persistence.Mapping;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +24,27 @@ internal sealed class EventRepository(ApplicationDatabaseContext databaseContext
         {
             return null;
         }
+
+        return await LoadAggregateAsync(record, cancellationToken);
+    }
+
+    public async Task<Event?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
+    {
+        var record = await databaseContext.Events
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Slug == slug, cancellationToken);
+
+        if (record is null)
+        {
+            return null;
+        }
+
+        return await LoadAggregateAsync(record, cancellationToken);
+    }
+
+    private async Task<Event> LoadAggregateAsync(EventRecord record, CancellationToken cancellationToken)
+    {
+        var eventId = EventId.From(record.Id);
 
         var occurrenceRecords = await databaseContext.Occurrences
             .AsNoTracking()

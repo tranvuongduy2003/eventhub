@@ -1,6 +1,7 @@
 using EventHub.Application.Abstractions.Messaging;
 using EventHub.Application.Abstractions.Persistence;
 using EventHub.Application.Abstractions.Services;
+using EventHub.Application.Abstractions.Storage;
 using EventHub.Application.Common;
 using EventHub.Contracts.Events;
 using EventHub.Domain.Events;
@@ -9,22 +10,27 @@ namespace EventHub.Application.Events.Queries;
 
 public sealed class GetPublicEventQueryHandler(
     IEventRepository eventRepository,
+    IObjectStorage objectStorage,
     IClock clock)
     : QueryHandler<GetPublicEventQuery, PublicEventResponse>
 {
+    private const string Bucket = "eventhub";
+
     public override async Task<Result<PublicEventResponse>> Handle(
         GetPublicEventQuery query,
         CancellationToken cancellationToken)
     {
-        var eventId = EventId.From(query.EventId);
-
-        var eventAggregate = await eventRepository.GetByIdAsync(eventId, cancellationToken);
-        if (eventAggregate is null || eventAggregate.Status != EventStatus.Published)
+        var eventAggregate = await eventRepository.GetBySlugAsync(query.Slug, cancellationToken);
+        if (eventAggregate is null || eventAggregate.Status == EventStatus.Draft)
         {
             return Error.NotFound("EVENT_NOT_FOUND", "The event was not found.");
         }
 
         var now = clock.UtcNow;
+
+        string? coverImageUrl = eventAggregate.CoverImageRef is not null
+            ? objectStorage.GetPublicUri(Bucket, eventAggregate.CoverImageRef.Value).ToString()
+            : null;
 
         var ticketTypes = eventAggregate.TicketTypes
             .Select(tt =>
@@ -56,8 +62,13 @@ public sealed class GetPublicEventQueryHandler(
             })
             .ToList();
 
+        var status = eventAggregate.Status.ToString();
+        var purchasable = eventAggregate.Status == EventStatus.Published
+            && ticketTypes.Any(tt => !tt.IsSoldOut
+                && tt.SalesWindowStatus is null or "on_sale");
+
         return new PublicEventResponse(
-            eventAggregate.Id.Value,
+            eventAggregate.Slug!.Value,
             eventAggregate.Title.Value,
             eventAggregate.Description,
             eventAggregate.Schedule?.StartsAt,
@@ -65,6 +76,9 @@ public sealed class GetPublicEventQueryHandler(
             eventAggregate.Schedule?.TimeZoneId,
             eventAggregate.Location.PhysicalAddress,
             eventAggregate.Location.IsOnline,
+            coverImageUrl,
+            status,
+            purchasable,
             ticketTypes);
     }
 }

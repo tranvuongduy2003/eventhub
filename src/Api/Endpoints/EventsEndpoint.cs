@@ -23,7 +23,7 @@ internal sealed class EventsEndpoint : IEndpoint
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
-        endpoints.MapGet("/api/events/{eventId}", GetEventDetails)
+        endpoints.MapGet("/api/events/{eventId:int}", GetEventDetails)
             .WithName("GetEventDetails")
             .WithTags("Events")
             .RequireAuthorization()
@@ -81,7 +81,7 @@ internal sealed class EventsEndpoint : IEndpoint
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
-        endpoints.MapGet("/api/events/{eventId}/public", GetPublicEvent)
+        endpoints.MapGet("/api/events/{slug}", GetPublicEvent)
             .WithName("GetPublicEvent")
             .WithTags("Events")
             .AllowAnonymous()
@@ -139,10 +139,10 @@ internal sealed class EventsEndpoint : IEndpoint
     }
 
     private static async Task<IResult> GetPublicEvent(
-        int eventId,
+        string slug,
         ISender sender)
     {
-        var query = new GetPublicEventQuery(eventId);
+        var query = new GetPublicEventQuery(slug);
 
         var result = await sender.Send(query);
 
