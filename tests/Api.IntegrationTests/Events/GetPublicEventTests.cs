@@ -29,16 +29,18 @@ public sealed class GetPublicEventTests(IntegrationTestFixture fixture)
         var eventId = await SeedDraftEventAsync(userId);
         await SeedTicketTypeAsync(eventId, "General Admission", 50m, 100);
         await SeedTicketTypeAsync(eventId, "VIP", 150m, 50);
-        await PublishEventAsync(eventId);
+        var slug = await PublishEventAsync(eventId);
 
-        using var response = await _client.GetAsync($"/api/events/{eventId}/public");
+        using var response = await _client.GetAsync($"/api/events/{slug}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content.ReadFromJsonAsync<PublicEventResponse>(JsonOptions);
         result.Should().NotBeNull();
-        result!.EventId.Should().Be(eventId);
+        result!.Slug.Should().Be(slug);
         result.Title.Should().StartWith("Tech Conference");
+        result.Status.Should().Be("Published");
+        result.Purchasable.Should().BeTrue();
         result.TicketTypes.Should().HaveCount(2);
         result.TicketTypes.Should().Contain(tt => tt.Name == "General Admission" && tt.PriceAmount == 50m);
         result.TicketTypes.Should().Contain(tt => tt.Name == "VIP" && tt.PriceAmount == 150m);
@@ -50,9 +52,9 @@ public sealed class GetPublicEventTests(IntegrationTestFixture fixture)
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
         await SeedTicketTypeAsync(eventId, "General Admission", 50m, 100, sold: 30, reserved: 5);
-        await PublishEventAsync(eventId);
+        var slug = await PublishEventAsync(eventId);
 
-        using var response = await _client.GetAsync($"/api/events/{eventId}/public");
+        using var response = await _client.GetAsync($"/api/events/{slug}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -72,9 +74,9 @@ public sealed class GetPublicEventTests(IntegrationTestFixture fixture)
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
         await SeedTicketTypeAsync(eventId, "General Admission", 50m, 100, sold: 100, reserved: 0);
-        await PublishEventAsync(eventId);
+        var slug = await PublishEventAsync(eventId);
 
-        using var response = await _client.GetAsync($"/api/events/{eventId}/public");
+        using var response = await _client.GetAsync($"/api/events/{slug}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -91,9 +93,9 @@ public sealed class GetPublicEventTests(IntegrationTestFixture fixture)
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
         await SeedTicketTypeAsync(eventId, "Free Entry", 0m, 200);
-        await PublishEventAsync(eventId);
+        var slug = await PublishEventAsync(eventId);
 
-        using var response = await _client.GetAsync($"/api/events/{eventId}/public");
+        using var response = await _client.GetAsync($"/api/events/{slug}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -106,32 +108,47 @@ public sealed class GetPublicEventTests(IntegrationTestFixture fixture)
     }
 
     [Fact]
-    public async Task GetPublicEvent_DraftEvent_Returns404()
+    public async Task GetPublicEvent_ClosedEvent_Returns200WithClosedStatus()
     {
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
         await SeedTicketTypeAsync(eventId, "General Admission", 50m, 100);
+        var slug = await PublishEventAsync(eventId);
 
-        using var response = await _client.GetAsync($"/api/events/{eventId}/public");
+        // Close via API
+        using var closeResponse = await _client.PostAsync($"/api/events/{eventId}/close", null);
+        closeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var response = await _client.GetAsync($"/api/events/{slug}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var result = await response.Content.ReadFromJsonAsync<PublicEventResponse>(JsonOptions);
+        result.Should().NotBeNull();
+        result!.Status.Should().Be("Closed");
+        result.Purchasable.Should().BeFalse();
     }
 
     [Fact]
-    public async Task GetPublicEvent_CancelledEvent_Returns404()
+    public async Task GetPublicEvent_CancelledEvent_Returns200WithCancelledStatus()
     {
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
         await SeedTicketTypeAsync(eventId, "General Admission", 50m, 100);
-        await PublishEventAsync(eventId);
+        var slug = await PublishEventAsync(eventId);
 
         // Cancel via API
         using var cancelResponse = await _client.PostAsync($"/api/events/{eventId}/cancel", null);
         cancelResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        using var response = await _client.GetAsync($"/api/events/{eventId}/public");
+        using var response = await _client.GetAsync($"/api/events/{slug}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var result = await response.Content.ReadFromJsonAsync<PublicEventResponse>(JsonOptions);
+        result.Should().NotBeNull();
+        result!.Status.Should().Be("Cancelled");
+        result.Purchasable.Should().BeFalse();
     }
 
     [Fact]
@@ -143,21 +160,21 @@ public sealed class GetPublicEventTests(IntegrationTestFixture fixture)
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
         await SeedTicketTypeAsync(eventId, "General Admission", 50m, 100);
-        await PublishEventAsync(eventId);
+        var slug = await PublishEventAsync(eventId);
 
-        using var response = await unauthenticatedClient.GetAsync($"/api/events/{eventId}/public");
+        using var response = await unauthenticatedClient.GetAsync($"/api/events/{slug}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content.ReadFromJsonAsync<PublicEventResponse>(JsonOptions);
         result.Should().NotBeNull();
-        result!.EventId.Should().Be(eventId);
+        result!.Slug.Should().Be(slug);
     }
 
     [Fact]
     public async Task GetPublicEvent_NonExistentEvent_Returns404()
     {
-        using var response = await _client.GetAsync("/api/events/99999/public");
+        using var response = await _client.GetAsync("/api/events/non-existent-slug-123");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -240,9 +257,12 @@ public sealed class GetPublicEventTests(IntegrationTestFixture fixture)
         await databaseContext.SaveChangesAsync();
     }
 
-    private async Task PublishEventAsync(int eventId)
+    private async Task<string> PublishEventAsync(int eventId)
     {
         using var response = await _client.PostAsync($"/api/events/{eventId}/publish", null);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var result = await response.Content.ReadFromJsonAsync<PublishEventResponse>(JsonOptions);
+        return result!.Slug;
     }
 }

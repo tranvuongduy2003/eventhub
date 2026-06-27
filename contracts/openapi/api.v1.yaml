@@ -981,6 +981,10 @@ components:
       type: object
     PublicEventResponse:
       properties:
+        coverImageUrl:
+          type:
+            - "null"
+            - string
         description:
           type:
             - "null"
@@ -990,23 +994,23 @@ components:
           type:
             - "null"
             - string
-        eventId:
-          format: int32
-          pattern: ^-?(?:0|[1-9]\d*)$
-          type:
-            - integer
-            - string
         isOnline:
           type: boolean
         physicalAddress:
           type:
             - "null"
             - string
+        purchasable:
+          type: boolean
+        slug:
+          type: string
         startsAt:
           format: date-time
           type:
             - "null"
             - string
+        status:
+          type: string
         ticketTypes:
           items:
             $ref: "#/components/schemas/PublicTicketTypeResponse"
@@ -1018,7 +1022,7 @@ components:
         title:
           type: string
       required:
-        - eventId
+        - slug
         - title
         - description
         - startsAt
@@ -1026,6 +1030,9 @@ components:
         - timeZoneId
         - physicalAddress
         - isOnline
+        - coverImageUrl
+        - status
+        - purchasable
         - ticketTypes
       type: object
     PublicTicketTypeResponse:
@@ -1530,9 +1537,7 @@ paths:
           schema:
             format: int32
             pattern: ^-?(?:0|[1-9]\d*)$
-            type:
-              - integer
-              - string
+            type: integer
       responses:
         "200":
           content:
@@ -2608,34 +2613,6 @@ paths:
           description: Internal Server Error
       tags:
         - Orders
-  /api/events/{eventId}/public:
-    get:
-      operationId: GetPublicEvent
-      parameters:
-        - in: path
-          name: eventId
-          required: true
-          schema:
-            format: int32
-            pattern: ^-?(?:0|[1-9]\d*)$
-            type:
-              - integer
-              - string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PublicEventResponse"
-          description: OK
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetails"
-          description: Not Found
-      tags:
-        - Events
   /api/events/{eventId}/publish:
     post:
       operationId: PublishEvent
@@ -3040,6 +3017,30 @@ paths:
           description: Internal Server Error
       tags:
         - TicketTypes
+  /api/events/{slug}:
+    get:
+      operationId: GetPublicEvent
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicEventResponse"
+          description: OK
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+      tags:
+        - Events
   /api/health:
     get:
       operationId: GetApiHealth
