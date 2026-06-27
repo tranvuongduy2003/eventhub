@@ -17,7 +17,7 @@ export function TicketTypeList({ ticketTypes, purchasable }: TicketTypeListProps
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-muted-foreground text-sm font-medium">Ticket types</h3>
         <Badge variant="secondary" className="text-xs">
           All-inclusive — no hidden fees
@@ -26,9 +26,9 @@ export function TicketTypeList({ ticketTypes, purchasable }: TicketTypeListProps
       <p className="text-muted-foreground text-xs">Price includes applicable taxes</p>
       {ticketTypes.map((ticketType) => (
         <Card key={ticketType.ticketTypeId}>
-          <CardContent className="flex items-center justify-between py-3">
-            <div className="flex flex-col gap-1">
-              <span className="font-medium">{ticketType.name}</span>
+          <CardContent className="flex min-h-[44px] items-center justify-between py-3">
+            <div className="flex min-w-0 flex-col gap-1">
+              <span className="truncate font-medium">{ticketType.name}</span>
               <span className="text-muted-foreground text-sm">
                 {ticketType.salesWindowStatus === 'not_yet_on_sale' ? (
                   <span className="text-muted-foreground">
@@ -49,7 +49,7 @@ export function TicketTypeList({ ticketTypes, purchasable }: TicketTypeListProps
                 )}
               </span>
             </div>
-            <span className="text-lg font-semibold">
+            <span className="shrink-0 text-lg font-semibold">
               {formatPrice(ticketType.priceAmount, ticketType.priceCurrency)}
             </span>
           </CardContent>
@@ -57,7 +57,7 @@ export function TicketTypeList({ ticketTypes, purchasable }: TicketTypeListProps
       ))}
 
       {purchasable && (
-        <Button className="w-full" size="lg">
+        <Button className="h-11 w-full md:h-9" size="lg">
           Get tickets
         </Button>
       )}
