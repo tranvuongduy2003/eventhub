@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/auth-store'
 
 const featureLinks = [
   {
-    path: paths.events,
+    path: paths.organizerEvents,
     label: 'Events',
     description: 'Create and manage your events, ticket types, and pricing.',
     icon: CalendarDays,

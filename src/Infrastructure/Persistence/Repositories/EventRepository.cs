@@ -1,4 +1,5 @@
 using EventHub.Application.Abstractions.Persistence;
+using EventHub.Application.Common;
 using EventHub.Domain.Events;
 using EventHub.Infrastructure.Persistence.Entities;
 using EventHub.Infrastructure.Persistence.Mapping;
@@ -40,6 +41,35 @@ internal sealed class EventRepository(ApplicationDatabaseContext databaseContext
         }
 
         return await LoadAggregateAsync(record, cancellationToken);
+    }
+
+    public async Task<PaginatedResult<Event>> GetPublishedUpcomingAsync(
+        int page,
+        int pageSize,
+        DateTimeOffset now,
+        CancellationToken cancellationToken = default)
+    {
+        var query = databaseContext.Events
+            .AsNoTracking()
+            .Where(e => e.Status == EventStatus.Published
+                && e.ScheduleStartsAt != null
+                && e.ScheduleStartsAt >= now);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var records = await query
+            .OrderBy(e => e.ScheduleStartsAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        var events = new List<Event>();
+        foreach (var record in records)
+        {
+            events.Add(await LoadAggregateAsync(record, cancellationToken));
+        }
+
+        return new PaginatedResult<Event>(events, totalCount);
     }
 
     private async Task<Event> LoadAggregateAsync(EventRecord record, CancellationToken cancellationToken)

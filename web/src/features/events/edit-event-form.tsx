@@ -128,7 +128,7 @@ export function EditEventForm({ event }: EditEventFormProps) {
         description: values.description?.trim() || null,
       }),
     onSuccess: () => {
-      navigate(paths.events, { replace: true })
+      navigate(paths.organizerEvents, { replace: true })
     },
     onError: (error) => {
       if (error instanceof ApiError && error.status === 422 && error.problem.errors) {
@@ -208,7 +208,7 @@ export function EditEventForm({ event }: EditEventFormProps) {
     mutationFn: () => eventsApi.duplicateEvent(event.eventId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['events'] })
-      navigate(paths.events)
+      navigate(paths.organizerEvents)
     },
     onError: () => {
       form.setError('root', { message: 'Something went wrong. Please try again.' })
@@ -429,7 +429,7 @@ export function EditEventForm({ event }: EditEventFormProps) {
           type="button"
           variant="outline"
           disabled={isAnyPending}
-          onClick={() => navigate(paths.events)}
+          onClick={() => navigate(paths.organizerEvents)}
         >
           Cancel
         </Button>

@@ -92,7 +92,7 @@ export function CreateEventForm() {
         isOnline: values.isOnline,
       }),
     onSuccess: () => {
-      navigate(paths.events, { replace: true })
+      navigate(paths.organizerEvents, { replace: true })
     },
     onError: (error) => {
       if (error instanceof ApiError && error.status === 422 && error.problem.errors) {
@@ -274,7 +274,7 @@ export function CreateEventForm() {
           type="button"
           variant="outline"
           disabled={createMutation.isPending}
-          onClick={() => navigate(paths.events)}
+          onClick={() => navigate(paths.organizerEvents)}
         >
           Cancel
         </Button>

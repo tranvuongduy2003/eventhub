@@ -6,7 +6,7 @@ import { EditEventPage } from '@/features/events/pages/edit-event-page'
 import { EventsPlaceholderPage } from '@/features/events/pages/events-placeholder-page'
 
 export const eventsRoutes: RouteObject[] = [
-  { path: paths.events, element: <EventsPlaceholderPage /> },
+  { path: paths.organizerEvents, element: <EventsPlaceholderPage /> },
   { path: paths.createEvent, element: <CreateEventPage /> },
   { path: paths.editEvent, element: <EditEventPage /> },
 ]

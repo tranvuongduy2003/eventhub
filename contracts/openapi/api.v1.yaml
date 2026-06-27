@@ -979,6 +979,86 @@ components:
             - "null"
             - string
       type: object
+    PublicEventListItemResponse:
+      properties:
+        coverImageUrl:
+          type:
+            - "null"
+            - string
+        isOnline:
+          type: boolean
+        isSoldOut:
+          type: boolean
+        lowestPriceAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - "null"
+            - number
+            - string
+        lowestPriceCurrency:
+          type:
+            - "null"
+            - string
+        physicalAddress:
+          type:
+            - "null"
+            - string
+        slug:
+          type: string
+        startsAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        timeZoneId:
+          type:
+            - "null"
+            - string
+        title:
+          type: string
+      required:
+        - slug
+        - title
+        - startsAt
+        - timeZoneId
+        - physicalAddress
+        - isOnline
+        - coverImageUrl
+        - lowestPriceAmount
+        - lowestPriceCurrency
+        - isSoldOut
+      type: object
+    PublicEventListingResponse:
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/PublicEventListItemResponse"
+          type: array
+        page:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        pageSize:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        totalCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+      required:
+        - items
+        - totalCount
+        - page
+        - pageSize
+      type: object
     PublicEventResponse:
       properties:
         coverImageUrl:
@@ -1486,6 +1566,34 @@ paths:
       tags:
         - Auth
   /api/events:
+    get:
+      operationId: ListPublicEvents
+      parameters:
+        - in: query
+          name: page
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+        - in: query
+          name: pageSize
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicEventListingResponse"
+          description: OK
+      tags:
+        - Events
     post:
       operationId: CreateDraftEvent
       requestBody:
