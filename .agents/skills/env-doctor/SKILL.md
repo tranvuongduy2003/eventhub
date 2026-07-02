@@ -18,7 +18,7 @@ Systematically verify and repair the local dev environment for this repository. 
 ## When not to use
 
 - Application logic bugs with a healthy environment (use debugging skills instead)
-- Production or cloud deployment (MVP is local-only per `docs/technical.md`)
+- Production or cloud deployment (MVP is local-only per `docs/_memory/source/technical-design.md`)
 
 ## Workflow
 
@@ -45,7 +45,7 @@ Record:
 
 ### 2. Prerequisite checks
 
-Run version and availability commands. Expected baseline from `docs/technical.md` Â§10 and README prerequisites:
+Run version and availability commands. Expected baseline from `docs/_memory/source/technical-design.md` Â§10 and README prerequisites:
 
 | Tool | Expected |
 |------|----------|
@@ -144,12 +144,12 @@ Use this template:
 ## Project-specific notes
 
 - **Orchestration**: .NET Aspire AppHost is the single local entry point; Docker Compose is not used.
-- **Configuration**: Layered `appsettings` + Aspire-injected env vars + user secrets; see `docs/technical.md` Â§8.
+- **Configuration**: Layered `appsettings` + Aspire-injected env vars + user secrets; see `docs/_memory/source/technical-design.md` Â§8.
 - **Database**: EF migrations apply on dev startup; migration CLI issues are separate from env prerequisites.
 - **CI vs local**: GitHub Actions may use different agents; compare versions if "CI passes, local fails."
 
 ## Additional resources
 
 - Detailed per-OS and tooling checks: [resources/checklist.md](resources/checklist.md)
-- Architecture and prerequisites: `docs/technical.md` Â§10, README
+- Architecture and prerequisites: `docs/_memory/source/technical-design.md` Â§10, README
 

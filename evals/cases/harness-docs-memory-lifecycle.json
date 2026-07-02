@@ -1,0 +1,16 @@
+{
+  "id": "harness-docs-memory-lifecycle",
+  "layer": "harness",
+  "description": "docs/ operates as the long-term knowledge memory vault and stays linked to harness verification",
+  "run": {
+    "type": "command",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1 -Json"
+  },
+  "assert": {
+    "exitCode": 0,
+    "jsonStdout": {
+      "status": "passed"
+    }
+  }
+}
+

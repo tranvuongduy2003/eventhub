@@ -70,4 +70,4 @@ Manual **agent** cases (`mode: manual`) define prompts + post-conditions for Cod
 | **graph** | `affected-tests.mjs` + `.graph/index.json` mapping |
 | **agent** | End-to-end agent behavior (manual or future SDK runner) |
 
-See also: [`harness.mdc`](../rules/harness.mdc) · [`core.mdc`](../rules/core.mdc)
+See also: [`docs/_memory/source/harness-architecture.md`](../docs/_memory/source/harness-architecture.md) and [`docs/_memory/source/harness-operational-policies.md`](../docs/_memory/source/harness-operational-policies.md).

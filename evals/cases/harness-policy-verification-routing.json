@@ -1,0 +1,15 @@
+{
+  "id": "harness-policy-verification-routing",
+  "layer": "harness",
+  "description": "Harness policy verifies memory, skill, graph, eval, and agent script paths while skipping generated outputs",
+  "run": {
+    "type": "command",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-HarnessPolicy.ps1 -Json"
+  },
+  "assert": {
+    "exitCode": 0,
+    "jsonStdout": {
+      "status": "passed"
+    }
+  }
+}

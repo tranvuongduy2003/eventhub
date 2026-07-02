@@ -5,7 +5,7 @@ description: Query Neo4j via GraphRAG MCP â€” Cypher, vector search, fullte
 
 # Neo4j GraphRAG MCP
 
-Inspect and query **Neo4j** through the **mcp-neo4j-graphrag** MCP server configured in `.mcp.json`.
+Inspect and query **Neo4j** through the **mcp-neo4j-graphrag** MCP server configured in `.codex/config.toml`.
 
 ## When to use
 
@@ -17,15 +17,14 @@ Inspect and query **Neo4j** through the **mcp-neo4j-graphrag** MCP server config
 ## When not to use
 
 - **PostgreSQL application state** â€” use `postgres-mcp` instead
-- **Production secrets** â€” never commit credentials; use `.env` + `.mcp.json` (gitignored)
+- **Production secrets** â€” never commit credentials; use local environment variables or a local-only `.mcp.json` override outside the repo standard
 
 ## Prerequisites
 
-1. Copy [`.mcp.json.example`](../../../.mcp.json.example) â†’ `.mcp.json` at repo root
-2. Copy [`.env.example`](../../../.env.example) â†’ `.env` and set:
+1. Copy [`.env.example`](../../../.env.example) â†’ `.env` and set:
    - `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`, `NEO4J_DATABASE`
    - `OPENAI_API_KEY` (or another provider per server docs) for embeddings
-3. **Install the server:**
+2. **Install the server:**
 
 ```powershell
 pip install mcp-neo4j-graphrag
@@ -33,9 +32,9 @@ pip install mcp-neo4j-graphrag
 
 Alternative (if [uv](https://docs.astral.sh/uv/) is installed): `uvx mcp-neo4j-graphrag`
 
-The example `.mcp.json` invokes the package via `python -c "from mcp_neo4j_graphrag import main; main()"`.
+The shared Codex config invokes the package via `python -c "from mcp_neo4j_graphrag import main; main()"`.
 
-4. **Neo4j running** â€” Docker example:
+3. **Neo4j running** â€” Docker example:
 
 ```powershell
 docker run -d --name neo4j `
@@ -44,23 +43,22 @@ docker run -d --name neo4j `
   neo4j:5
 ```
 
-5. Reload Codex window after editing `.mcp.json`.
+4. Reload Codex after changing `.codex/config.toml` or local environment values.
 
-## MCP config (`.mcp.json`)
+## MCP config (`.codex/config.toml`)
 
-```json
-"neo4j-graphrag": {
-  "command": "python",
-  "args": ["-c", "from mcp_neo4j_graphrag import main; main()"],
-  "env": {
-    "NEO4J_URI": "bolt://localhost:7687",
-    "NEO4J_USERNAME": "neo4j",
-    "NEO4J_PASSWORD": "<from .env>",
-    "NEO4J_DATABASE": "neo4j",
-    "OPENAI_API_KEY": "<from .env>",
-    "EMBEDDING_MODEL": "text-embedding-3-small"
-  }
-}
+```toml
+[mcp_servers.neo4j-graphrag]
+command = "python"
+args = ["-c", "from mcp_neo4j_graphrag import main; main()"]
+
+[mcp_servers.neo4j-graphrag.env]
+NEO4J_URI = "bolt://localhost:7687"
+NEO4J_USERNAME = "neo4j"
+NEO4J_PASSWORD = "neo4j"
+NEO4J_DATABASE = "neo4j"
+OPENAI_API_KEY = ""
+EMBEDDING_MODEL = "text-embedding-3-small"
 ```
 
 Use values from `.env`; do not commit real keys.
@@ -85,7 +83,7 @@ Useful node types to ingest from docs (optional project setup):
 - `Feature` (`F-*`), `Epic` (`EP-*`), `Aggregate` (`AGG-*`), `BoundedContext` (`BC-*`)
 - Relationships: `DEPENDS_ON`, `REALIZES`, `OWNS`, `REFERENCES`
 
-Source documents: [`docs/features.md`](../../../docs/features.md), [`docs/ddd.md`](../../../docs/ddd.md).
+Source documents: [`docs/_memory/source/feature-specification.md`](../../../docs/_memory/source/feature-specification.md), [`docs/_memory/source/domain-model-specification.md`](../../../docs/_memory/source/domain-model-specification.md).
 
 ## Safety
 
@@ -97,8 +95,8 @@ Source documents: [`docs/features.md`](../../../docs/features.md), [`docs/ddd.md
 
 | Symptom | Fix |
 |---------|-----|
-| MCP server not listed | Reload Codex; verify `.mcp.json` path at repo root |
-| `uvx` not found | Use `pip install mcp-neo4j-graphrag` and the `python -c` command in `.mcp.json.example` |
+| MCP server not listed | Reload Codex; verify `.codex/config.toml` contains `[mcp_servers.neo4j-graphrag]` |
+| `uvx` not found | Use `pip install mcp-neo4j-graphrag` and the `python -c` command in `.codex/config.toml` |
 | Connection refused | Start Neo4j; check `NEO4J_URI` port 7687 |
 | Embedding errors | Set `OPENAI_API_KEY` or switch `EMBEDDING_MODEL` to local Ollama per upstream docs |
 
@@ -107,4 +105,3 @@ Source documents: [`docs/features.md`](../../../docs/features.md), [`docs/ddd.md
 - Upstream: [neo4j-field/mcp-neo4j-graphrag](https://github.com/neo4j-field/mcp-neo4j-graphrag)
 - Aspire MCP: `aspire.md`
 - Postgres MCP: `postgres-mcp` skill
-

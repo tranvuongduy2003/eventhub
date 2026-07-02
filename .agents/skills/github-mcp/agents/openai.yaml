@@ -1,0 +1,15 @@
+interface:
+  display_name: "GitHub MCP"
+  short_description: "Use GitHub through the remote MCP server"
+  default_prompt: "Use $github-mcp to inspect this repository's open pull requests."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "github"
+      description: "GitHub remote MCP server"
+      transport: "streamable_http"
+      url: "https://api.githubcopilot.com/mcp/"
+
+policy:
+  allow_implicit_invocation: true

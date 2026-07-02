@@ -33,4 +33,7 @@ if ($errors.Count -gt 0) {
     Send-StopBlock "Stop gate: objective checks failed - not done yet. Fix the issues below, then continue.`n`n- $detail`n`nRun locally: .\evals\run.ps1 -Layer harness; dotnet test; yarn --cwd web exec tsc -b --noEmit"
 }
 
+Write-HookJson @{
+    decision = "allow"
+}
 exit 0

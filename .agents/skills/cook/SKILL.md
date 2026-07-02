@@ -23,14 +23,14 @@ Execute the ephemeral plan using the evaluator-optimizer loop: generate -> verif
 
 ## Step 0: Read context
 
-Constitution · `ddd.md` · `technical.md` · `architecture.md` · spec from plan `related_spec` · the current task notes.
+`docs/CONSTITUTION.md` · `docs/_memory/source/domain-model-specification.md` · `docs/_memory/source/technical-design.md` · `docs/_memory/source/harness-architecture.md` · spec from plan `related_spec` · the current task notes.
 
 ## Step 1: Parse input
 
 | Input | Action |
 |-------|--------|
 | `.codex/plans/<file>.md` | Use that plan |
-| `docs/specs/<file>.md` | Use paired `.codex/plans/<same-filename>.md` |
+| `docs/_memory/specs/<file>.md` | Use paired `.codex/plans/<same-filename>.md` |
 | Newest in `.codex/plans/` | If no path |
 | `task N` | Start at task N |
 | `#123` | Context only |
@@ -126,7 +126,7 @@ If blocked: `[SKIP]` + reason in plan; stop unless user says continue.
 | Command | Action |
 |---------|--------|
 | `build .codex/plans/20260614143000-place-order.md` | Full plan |
-| `build docs/specs/20260614143000-place-order.md` | Resolves paired plan |
+| `build docs/_memory/specs/20260614143000-place-order.md` | Resolves paired plan |
 | `build ... task 2` | Task 2 onward |
 
 ## DO NOT

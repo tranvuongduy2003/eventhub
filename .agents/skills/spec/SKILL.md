@@ -1,11 +1,11 @@
 ---
 name: spec
-description: Write an implementation-ready product spec in docs/specs/ from a feature id or user description. Use when a feature needs product-level acceptance criteria before engineering planning.
+description: Write an implementation-ready product spec in docs/_memory/specs/ from a feature id or user description. Use when a feature needs product-level acceptance criteria before engineering planning.
 ---
 
 # Spec
 
-You are a Senior Product Manager writing one detailed, implementation-ready spec for EventHub. The output is a single markdown file in `docs/specs/` that `plan` can turn into an engineering plan.
+You are a Senior Product Manager writing one detailed, implementation-ready spec for EventHub. The output is a single markdown file in `docs/_memory/specs/` that `plan` can turn into an engineering plan.
 
 Specs are product-driven — user value, behavior, domain rules, edge cases. They do not contain file paths, framework calls, or class names — that belongs in `plan` and `build`.
 
@@ -17,7 +17,7 @@ Feature description after the command, plus optional arguments (for example `F-5
 
 Use the following contract for specs:
 
-- **Directory:** `docs/specs/`
+- **Directory:** `docs/_memory/specs/`
 - **Filename:** `<YYYYMMDDHHmmss>-<feature-kebab>.md`
 - **One spec file per feature slice** — comprehensive, not split across multiple files or user-story issues
 
@@ -25,11 +25,11 @@ Use the following contract for specs:
 
 When sources conflict, higher wins:
 
-1. `docs/constitution.md`
-2. `docs/prd.md` — `DEC-*`, `QG-*`
-3. `docs/features.md` — `EP-*`, `F-*`, acceptance criteria
-4. `docs/ddd.md` — aggregates, `INV-*`, events
-5. `docs/technical.md`
+1. `docs/CONSTITUTION.md`
+2. `docs/_memory/source/product-requirements.md` — `DEC-*`, `QG-*`
+3. `docs/_memory/source/feature-specification.md` — `EP-*`, `F-*`, acceptance criteria
+4. `docs/_memory/source/domain-model-specification.md` — aggregates, `INV-*`, events
+5. `docs/_memory/source/technical-design.md`
 6. `AGENTS.md`
 
 ## STEP 0 — CLARIFY
@@ -38,7 +38,7 @@ Ask for clarification only if you would otherwise make more than 3 major assumpt
 
 ## STEP 1 — WRITE ONE DETAILED SPEC
 
-Save to `docs/specs/<timestamp>-<feature-kebab>.md`.
+Save to `docs/_memory/specs/<timestamp>-<feature-kebab>.md`.
 
 Do not structure the spec as many separate user stories with individual GitHub issues. Use one cohesive document with a unified acceptance-criteria list.
 
@@ -63,7 +63,7 @@ db_refs: [<Tech §6 or None>]
 github_issue: null
 search_index:
   keywords: [<5-12 terms>]
-  bounded_contexts: [<from ddd.md>]
+  bounded_contexts: [<from docs/_memory/source/domain-model-specification.md>]
   user_personas: [<PER-*>]
 ---
 
@@ -86,19 +86,19 @@ Numbered, observable, testable — happy and failure paths in one list:
 **AC-01:** GIVEN ... WHEN ... THEN ...
 **AC-02:** ...
 
-Cover all relevant criteria from `features.md` for the scoped `F-*` ids. Every AC must be verifiable without reading code.
+Cover all relevant criteria from `docs/_memory/source/feature-specification.md` for the scoped `F-*` ids. Every AC must be verifiable without reading code.
 
 ## 3. Domain & Business Rules
 
-Reference `ddd.md` (`INV-*`, lifecycles, events). No class or file names.
+Reference `docs/_memory/source/domain-model-specification.md` (`INV-*`, lifecycles, events). No class or file names.
 
 ## 4. UI Behavior or API Contract
 
-Product-level only (screens, flows, endpoints at contract level). See `design-system.md` for UI patterns.
+Product-level only (screens, flows, endpoints at contract level). Use existing `web/` patterns and `docs/_memory/source/technical-design.md` for implementation constraints; do not invent UI system rules inside specs.
 
 ## 5. Data & Storage Impact
 
-PostgreSQL / Redis / MinIO / RabbitMQ — align with `technical.md` §5–6.
+PostgreSQL / Redis / MinIO / RabbitMQ — align with `docs/_memory/source/technical-design.md` §5–6.
 
 ## 6. Real-Time & Consistency
 
@@ -114,7 +114,7 @@ EC-01: ...
 
 ## 9. Dependencies & Risks
 
-Upstream `F-*` dependencies from `features.md`; key delivery risks.
+Upstream `F-*` dependencies from `docs/_memory/source/feature-specification.md`; key delivery risks.
 
 ## 10. Assumptions
 
@@ -129,7 +129,7 @@ Upstream `F-*` dependencies from `features.md`; key delivery risks.
 
 ## STEP 2 — SAVE
 
-Spec file is saved to `docs/specs/<timestamp>-<feature-kebab>.md`.
+Spec file is saved to `docs/_memory/specs/<timestamp>-<feature-kebab>.md`.
 
 ## STEP 3 — ONE GITHUB ISSUE (when `gh` works)
 
@@ -145,8 +145,8 @@ Skip only if `gh auth status` fails, no `origin` remote, or user explicitly says
 ## QUALITY CHECKLIST
 
 - [ ] Single cohesive spec — not fragmented user stories
-- [ ] All scoped `F-*` ACs from `features.md` covered
-- [ ] Domain rules align with `ddd.md`
+- [ ] All scoped `F-*` ACs from `docs/_memory/source/feature-specification.md` covered
+- [ ] Domain rules align with `docs/_memory/source/domain-model-specification.md`
 - [ ] No file paths, class names, or framework APIs
 - [ ] `plan` could consume this without clarifying questions
 - [ ] One GitHub issue created (or skip reason documented)

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "stateDirectory": ".codex/state",
+  "protectedEditPaths": [
+    {
+      "pattern": "(^|/)web/src/generated(/|$)",
+      "reason": "web/src/generated/ is codegen output - run yarn api:codegen instead of editing by hand."
+    },
+    {
+      "pattern": "(^|/)contracts/openapi/\\.build(/|$)",
+      "reason": "contracts/openapi/.build/ is build output - edit contracts/openapi/api.v1.yaml or run api:export."
+    },
+    {
+      "pattern": "(^|/)node_modules(/|$)",
+      "reason": "node_modules is dependency output and must not be edited by the agent."
+    },
+    {
+      "pattern": "(^|/)(bin|obj)(/|$)",
+      "reason": "bin/ and obj/ are build outputs and must not be edited by the agent."
+    },
+    {
+      "pattern": "(^|/)\\.env(\\..*)?$",
+      "reason": "Secrets and local environment files must not be edited by the agent."
+    },
+    {
+      "pattern": "(^|/)\\.mcp\\.json$",
+      "reason": "Local MCP config can contain secrets and machine paths; use .mcp.json.example for shared guidance."
+    }
+  ],
+  "blockedShellCommands": [
+    {
+      "pattern": "\\brm\\s+-rf\\b|\\bRemove-Item\\b.*(?:^|\\s)-Recurse\\b.*(?:^|\\s)-Force\\b",
+      "reason": "Destructive delete blocked by harness - use targeted file edits."
+    },
+    {
+      "pattern": "\\bgit\\s+push\\b.*--force\\b|\\bgit\\s+push\\s+-f\\b|\\bgit\\s+reset\\s+--hard\\b|\\bgit\\s+clean\\s+-fd\\b",
+      "reason": "Destructive git operation blocked - see user git safety rules."
+    },
+    {
+      "pattern": "\\bgit\\s+config\\b",
+      "reason": "git config changes are blocked."
+    },
+    {
+      "pattern": "\\bnpm\\s+(install|i)\\b",
+      "reason": "web/ uses Yarn only - use yarn --cwd web install."
+    }
+  ],
+  "verify": {
+    "allowedToolsWhenGated": ["Read", "Write", "Edit", "Grep", "Glob"],
+    "skipPatterns": [
+      "^\\.github/",
+      "\\.ya?ml$",
+      "/Migrations/",
+      "^web/src/generated/"
+    ],
+    "verifiablePattern": "\\.(cs|tsx?|jsx?|css|ps1|mjs|toml|json|md)$|^tests/|^e2e/"
+  }
+}

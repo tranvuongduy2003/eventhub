@@ -11,7 +11,7 @@ You are the orchestrator (Tech Lead). Workers research in parallel; you synthesi
 
 ## Input
 
-- Spec: `docs/specs/<YYYYMMDDHHmmss>-<name>.md`, or newest spec
+- Spec: `docs/_memory/specs/<YYYYMMDDHHmmss>-<name>.md`, or newest spec
 - `--dry-run` -> validate only, do not write plan
 
 ## Step 1: Orchestrator reads (sequential — prompt chaining)
@@ -19,8 +19,8 @@ You are the orchestrator (Tech Lead). Workers research in parallel; you synthesi
 Read in order before delegating:
 
 1. Spec (ACs, scope, edge cases)
-2. `docs/constitution.md` · `docs/ddd.md` · `docs/technical.md`
-3. `architecture.md` · applicable scoped rules
+2. `docs/CONSTITUTION.md` · `docs/_memory/source/domain-model-specification.md` · `docs/_memory/source/technical-design.md`
+3. `docs/_memory/source/harness-architecture.md` when the plan changes agent workflow or verification
 4. the current task notes if present
 
 Split ACs into research workstreams (skip empty streams):
@@ -55,9 +55,9 @@ Workers: readonly only · parallel OK · no product code · no plan file.
 | AC -> files mapping | Task list with concrete paths |
 | Cross-cutting concern | Dedicated task or Notes |
 | Unknown / conflict | Blockers section + ask user if blocking |
-| Out of scope | Omit (see `prd.md` §6.2) |
+| Out of scope | Omit (see `docs/_memory/source/product-requirements.md` §6.2) |
 
-De-duplicate overlapping worker results. Prefer Constitution -> spec -> ddd on conflicts.
+De-duplicate overlapping worker results. Prefer Constitution -> spec -> domain model source memory on conflicts.
 
 ## Step 4: Write plan file
 
@@ -65,7 +65,7 @@ De-duplicate overlapping worker results. Prefer Constitution -> spec -> ddd on c
 
 ```yaml
 ---
-related_spec: docs/specs/<timestamp>-<feature-kebab>.md
+related_spec: docs/_memory/specs/<timestamp>-<feature-kebab>.md
 branch: feature/<slug>
 created_at: <ISO-8601>
 ---

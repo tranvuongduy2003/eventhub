@@ -1,0 +1,18 @@
+{
+  "id": "graph-affected-obsidian-config",
+  "layer": "graph",
+  "description": "Obsidian vault config changes map to the docs memory lifecycle validator",
+  "run": {
+    "type": "command",
+    "command": "node scripts/affected-tests.mjs docs/.obsidian/app.json"
+  },
+  "assert": {
+    "exitCode": 0,
+    "jsonStdout": {
+      "skip": "False",
+      "steps.0.kind": "shell-test",
+      "steps.0.command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1"
+    }
+  }
+}
+

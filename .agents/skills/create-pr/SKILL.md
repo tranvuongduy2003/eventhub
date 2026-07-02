@@ -253,5 +253,4 @@ Mention deferred manual checks (Aspire smoke test, screenshots) in the PR Testin
 | Commit message | `git-commit-writer` |
 | PR body | `pr-description-writer` |
 | `gh` commands | `github-cli` |
-| Implement before PR | `cook` skill in [`.agents/skills/cook/SKILL.md`](../../cook/SKILL.md) |
-
+| Implement before PR | `cook` skill in [`.agents/skills/cook/SKILL.md`](../cook/SKILL.md) |

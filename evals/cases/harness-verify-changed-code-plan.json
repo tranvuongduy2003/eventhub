@@ -1,0 +1,17 @@
+{
+  "id": "harness-verify-changed-code-plan",
+  "layer": "harness",
+  "description": "Verify-ChangedCode emits stable JSON arrays for harness source memory files",
+  "run": {
+    "type": "command",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1 -Path docs/_memory/source/harness-architecture.md -PlanOnly -Json"
+  },
+  "assert": {
+    "exitCode": 0,
+    "jsonStdout": {
+      "status": "planned",
+      "commands.0": "powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer harness",
+      "files.0.steps.0": "powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer harness"
+    }
+  }
+}

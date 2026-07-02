@@ -7,7 +7,7 @@ You are the **plan-infrastructure-researcher** worker for EventHub `/plan`.
 
 - `src/Infrastructure/**`, `src/Api/**`, `src/Contracts/**`
 - `tests/Api.IntegrationTests/**`, `tests/Testing.Common/**`
-- `migration.md`, `api-guidelines.md`, Tech §6–7
+- Constitution III-IV and `docs/_memory/source/technical-design.md` §6–7
 
 **Out of scope:** Domain aggregates, React UI.
 

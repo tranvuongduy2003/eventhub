@@ -5,7 +5,7 @@
 
 .DESCRIPTION
   Verifies prerequisites, restores .NET dependencies, seeds optional
-  .env and .mcp.json files, creates and trusts the ASP.NET Core HTTPS development certificate.
+  .env files, creates and trusts the ASP.NET Core HTTPS development certificate.
 
   Run from any directory:
     .\scripts\Setup-Environments.ps1
@@ -20,11 +20,14 @@
 .PARAMETER SkipTrustCert
   Skip HTTPS dev certificate create/trust (useful in CI or locked-down shells).
 
+.PARAMETER SkipRestore
+  Skip .NET package restore (useful when packages are already restored or network is unavailable).
+
 .PARAMETER SkipBuild
   Skip the final solution build smoke test.
 
 .PARAMETER ForceEnvCopy
-  Overwrite existing .env and .mcp.json from their *.example templates.
+  Overwrite existing .env files from their *.example templates.
 
 .EXAMPLE
   .\scripts\Setup-Environments.ps1
@@ -33,6 +36,7 @@
 param(
     [switch] $SkipDockerCheck,
     [switch] $SkipTrustCert,
+    [switch] $SkipRestore,
     [switch] $SkipBuild,
     [switch] $ForceEnvCopy
 )
@@ -52,6 +56,7 @@ $WebHttpsPort = 5000
 $ApiHttpsUrl = "https://localhost:$ApiHttpsPort"
 $ApiHttpUrl = "http://localhost:$ApiHttpPort"
 $WebHttpsUrl = "https://localhost:$WebHttpsPort"
+$YarnAvailable = $false
 
 function Write-Step([string] $Message) {
     Write-Host "`n==> $Message" -ForegroundColor Cyan
@@ -140,7 +145,7 @@ function Invoke-YarnInstall([string] $WorkingDirectory) {
 
     Push-Location $WorkingDirectory
     try {
-        # Yarn writes progress/warnings to stderr — redirect to stdout to avoid
+        # Yarn writes progress/warnings to stderr; redirect to stdout to avoid
         # PowerShell 5.1 wrapping them as NativeCommandError ErrorRecords.
         $stderr = (& $yarn install --frozen-lockfile 2>&1)
         $stderr | ForEach-Object { if ($_ -is [System.Management.Automation.ErrorRecord]) { $_.ToString() } else { $_ } } | Out-Host
@@ -251,51 +256,6 @@ function Initialize-WebEnvFile {
     Write-Ok "Created $TargetPath from web/.env.example (VITE_API_URL=$ApiHttpsUrl)"
 }
 
-function Get-PostgresPasswordFromEnv([string] $EnvFilePath) {
-    if (-not (Test-Path $EnvFilePath)) {
-        return 'postgres'
-    }
-
-    foreach ($line in Get-Content $EnvFilePath) {
-        if ($line -match '^\s*POSTGRES_PASSWORD\s*=\s*(.+)\s*$') {
-            return $Matches[1].Trim().Trim('"').Trim("'")
-        }
-    }
-
-    return 'postgres'
-}
-
-function Initialize-McpConfig {
-    param(
-        [string] $RepoRoot,
-        [string] $EnvFilePath
-    )
-
-    $examplePath = Join-Path $RepoRoot '.mcp.json.example'
-    $targetPath = Join-Path $RepoRoot '.mcp.json'
-
-    if (-not (Test-Path $examplePath)) {
-        Write-Warn "Missing template: $examplePath"
-        return
-    }
-
-    if ((Test-Path $targetPath) -and -not $ForceEnvCopy) {
-        Write-Ok "Already exists (use -ForceEnvCopy to overwrite): $targetPath"
-        return
-    }
-
-    Copy-Item -Path $examplePath -Destination $targetPath -Force
-    Write-Ok "Created $targetPath from .mcp.json.example"
-
-    $postgresPassword = Get-PostgresPasswordFromEnv -EnvFilePath $EnvFilePath
-    $content = Get-Content -Path $targetPath -Raw
-    $content = $content.Replace('YOUR_PASSWORD', $postgresPassword)
-
-    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
-    [System.IO.File]::WriteAllText($targetPath, $content, $utf8NoBom)
-    Write-Ok 'Personalized MCP Postgres password (from .env)'
-}
-
 Push-Location $RepoRoot
 try {
     Write-Host @"
@@ -329,9 +289,20 @@ Repository: $RepoRoot
             throw 'Docker CLI not found. Install Docker Desktop: https://www.docker.com/products/docker-desktop/'
         }
         Invoke-Checked 'Docker engine reachable' {
-            docker info 2>&1 | Out-Null
-            if ($LASTEXITCODE -ne 0) {
-                throw 'Start Docker Desktop, wait until it is running, then re-run this script.'
+            $prevEap = $ErrorActionPreference
+            $ErrorActionPreference = 'Continue'
+            try {
+                $dockerOutput = docker info 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                    $message = ($dockerOutput | ForEach-Object { if ($_ -is [System.Management.Automation.ErrorRecord]) { $_.ToString() } else { $_ } }) -join "`n"
+                    if ([string]::IsNullOrWhiteSpace($message)) {
+                        $message = 'Start Docker Desktop, wait until it is running, then re-run this script.'
+                    }
+                    throw $message
+                }
+            }
+            finally {
+                $ErrorActionPreference = $prevEap
             }
         }
     }
@@ -349,8 +320,37 @@ Repository: $RepoRoot
         throw 'Yarn not found. Install: https://yarnpkg.com/getting-started/install'
     }
     $yarnExe = Get-YarnExecutable
-    $yarnVersion = (& $yarnExe --version 2>&1 | Out-String).Trim()
-    Write-Ok "Yarn $yarnVersion"
+    $prevEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $yarnVersionOutput = & $yarnExe --version 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            $yarnLines = $yarnVersionOutput | ForEach-Object { if ($_ -is [System.Management.Automation.ErrorRecord]) { $_.ToString() } else { $_ } }
+            $message = $yarnLines | Where-Object { $_ -match 'EPERM|Error:|failed|not permitted' } | Select-Object -First 1
+            if (-not $message) {
+                $message = $yarnLines | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -First 1
+            }
+            throw "Yarn version check failed: $message"
+        }
+        $yarnVersion = ($yarnVersionOutput | Out-String).Trim()
+        $YarnAvailable = $true
+    }
+    catch {
+        $webNodeModules = Join-Path $WebDir 'node_modules'
+        $e2eNodeModules = Join-Path $RepoRoot 'e2e\node_modules'
+        if ((Test-Path $webNodeModules) -and (Test-Path $e2eNodeModules)) {
+            Write-Warn "Yarn is installed but could not run in this shell; existing node_modules found, so Yarn install steps will be skipped. Error: $($_.Exception.Message)"
+        }
+        else {
+            throw
+        }
+    }
+    finally {
+        $ErrorActionPreference = $prevEap
+    }
+    if ($YarnAvailable) {
+        Write-Ok "Yarn $yarnVersion"
+    }
 
     if (Test-CommandAvailable 'aspire') {
         $aspireVersion = (aspire --version 2>&1 | Out-String).Trim()
@@ -367,14 +367,39 @@ Aspire CLI not on PATH (optional but recommended).
     }
 
     # --- .NET ---
-    Write-Step 'Restoring .NET packages'
-    Invoke-Checked 'dotnet restore' {
-        dotnet restore $SolutionPath | Out-Host
+    if (-not $SkipRestore) {
+        Write-Step 'Restoring .NET packages'
+        Invoke-Checked 'dotnet restore' {
+            dotnet restore $SolutionPath | Out-Host
+        }
+    }
+    else {
+        Write-Warn 'Skipped .NET package restore (-SkipRestore)'
     }
 
     Write-Step 'Installing Aspire project templates (idempotent)'
-    Invoke-Checked 'Aspire.ProjectTemplates' {
-        dotnet new install Aspire.ProjectTemplates | Out-Host
+    $prevEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $templateOutput = dotnet new install Aspire.ProjectTemplates 2>&1
+        $templateLines = $templateOutput | ForEach-Object { if ($_ -is [System.Management.Automation.ErrorRecord]) { $_.ToString() } else { $_ } }
+        if ($LASTEXITCODE -eq 0) {
+            $templateLines | Out-Host
+            Write-Ok 'Aspire.ProjectTemplates installed or already present'
+        }
+        else {
+            $firstTemplateError = $templateLines | Where-Object { $_ -match 'could not|invalid|failed|Error:' } | Select-Object -First 1
+            if (-not $firstTemplateError) {
+                $firstTemplateError = $templateLines | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -First 1
+            }
+            if ($firstTemplateError) {
+                Write-Warn "Aspire.ProjectTemplates install failed: $firstTemplateError"
+            }
+            Write-Warn 'Continuing because templates are optional for running this repo'
+        }
+    }
+    finally {
+        $ErrorActionPreference = $prevEap
     }
 
     # --- Frontend ---
@@ -382,46 +407,55 @@ Aspire CLI not on PATH (optional but recommended).
         throw "Frontend project not found: $WebDir"
     }
 
-    Write-Step 'Installing frontend dependencies (yarn)'
-    Invoke-Checked 'yarn install' {
-        Invoke-YarnInstall -WorkingDirectory $WebDir
+    if ($YarnAvailable) {
+        Write-Step 'Installing frontend dependencies (yarn)'
+        Invoke-Checked 'yarn install' {
+            Invoke-YarnInstall -WorkingDirectory $WebDir
+        }
+    }
+    else {
+        Write-Warn 'Skipped frontend dependency install because Yarn is unavailable in this shell and web/node_modules already exists'
     }
 
     # --- E2E tests (Playwright) ---
     $E2eDir = Join-Path $RepoRoot 'e2e'
     if (Test-Path (Join-Path $E2eDir 'package.json')) {
-        Write-Step 'Installing e2e test dependencies (Playwright)'
-        Invoke-Checked 'e2e yarn install' {
-            Invoke-YarnInstall -WorkingDirectory $E2eDir
-        }
+        if ($YarnAvailable) {
+            Write-Step 'Installing e2e test dependencies (Playwright)'
+            Invoke-Checked 'e2e yarn install' {
+                Invoke-YarnInstall -WorkingDirectory $E2eDir
+            }
 
-        Write-Step 'Installing Playwright Chromium browser'
-        $prevEap = $ErrorActionPreference
-        $ErrorActionPreference = 'Continue'
-        try {
-            $yarnExe2 = Get-YarnExecutable
-            & $yarnExe2 --cwd $E2eDir playwright install chromium 2>&1 | Out-Host
-            if ($LASTEXITCODE -eq 0) {
-                Write-Ok 'Playwright Chromium installed'
+            Write-Step 'Installing Playwright Chromium browser'
+            $prevEap = $ErrorActionPreference
+            $ErrorActionPreference = 'Continue'
+            try {
+                $yarnExe2 = Get-YarnExecutable
+                & $yarnExe2 --cwd $E2eDir playwright install chromium 2>&1 | Out-Host
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Ok 'Playwright Chromium installed'
+                }
+                else {
+                    Write-Warn 'Playwright Chromium install failed; run manually: cd e2e && yarn install:browsers'
+                }
             }
-            else {
-                Write-Warn 'Playwright Chromium install failed — run manually: cd e2e && yarn install:browsers'
+            finally {
+                $ErrorActionPreference = $prevEap
             }
         }
-        finally {
-            $ErrorActionPreference = $prevEap
+        else {
+            Write-Warn 'Skipped e2e dependency and Playwright browser install because Yarn is unavailable in this shell and e2e/node_modules already exists'
         }
     }
 
     # --- Local config (not committed) ---
-    Write-Step 'Seeding local config (.env, MCP)'
+    Write-Step 'Seeding local config (.env)'
     $rootEnvPath = Join-Path $RepoRoot '.env'
     Copy-EnvFile -ExamplePath (Join-Path $RepoRoot '.env.example') -TargetPath $rootEnvPath
     Initialize-WebEnvFile `
         -ExamplePath (Join-Path $WebDir '.env.example') `
         -TargetPath (Join-Path $WebDir '.env') `
         -ApiHttpsUrl $ApiHttpsUrl
-    Initialize-McpConfig -RepoRoot $RepoRoot -EnvFilePath $rootEnvPath
 
     # --- HTTPS dev cert ---
     if (-not $SkipTrustCert) {
@@ -460,9 +494,9 @@ Next steps:
        API:    $ApiHttpsUrl  (HTTP $ApiHttpUrl)
        Web UI: $WebHttpsUrl
 
-Docs: README.md, docs/technical.md
-MCP: .mcp.json is local-only (copy from .mcp.json.example); Postgres URI must match .env / AppHost.
-Re-run with -ForceEnvCopy to refresh .env, web\.env, and .mcp.json from templates.
+Docs: README.md, docs/_memory/source/technical-design.md
+MCP: shared Codex MCP servers live in .codex/config.toml.
+Re-run with -ForceEnvCopy to refresh .env and web\.env from templates.
 
 "@ -ForegroundColor Green
 }

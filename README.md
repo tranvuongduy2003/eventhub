@@ -14,13 +14,13 @@ Local-first event management and ticketing platform. .NET backend (Clean Archite
 | **Skills** (`.agents/skills/`) | OpenAPI sync, MCP (Postgres, Neo4j GraphRAG), env setup, git/PR, UI |
 | **Custom agents** (`.codex/agents/`) | Read-only subagents and workflow helpers |
 
-Open the repo in Codex; agents read `AGENTS.md` and **`docs/constitution.md`** plus companion docs before changing code.
+Open the repo in Codex; agents read `AGENTS.md` and **`docs/CONSTITUTION.md`** plus companion docs before changing code.
 
-**Agent workflow:** `/spec` (spec in `docs/specs/` + one GitHub issue) → `/plan` (agent skills manage implementation) → `/cook` (implement, then delete plan if one was created).
+**Agent workflow:** `/spec` (spec in `docs/_memory/specs/` + one GitHub issue) → `/plan` (agent skills manage implementation) → `/cook` (implement, then delete plan if one was created).
 
 ### Stack highlights
 
-- **Modular monolith** — bounded contexts in [`docs/ddd.md`](docs/ddd.md)
+- **Modular monolith** — bounded contexts in [`docs/_memory/source/domain-model-specification.md`](docs/_memory/source/domain-model-specification.md)
 - **PostgreSQL** (authoritative) + **Redis** (cache) + **MinIO** (images) + **RabbitMQ** (integration events)
 - **React 19 + Vite** frontend with OpenAPI → TypeScript codegen
 - **.NET Aspire** AppHost — no hand-authored `docker-compose`
@@ -49,7 +49,6 @@ yarn --cwd web install
 
 cp .env.example .env
 cp web/.env.example web/.env
-cp .mcp.json.example .mcp.json
 
 dotnet dev-certs https
 dotnet dev-certs https --trust
@@ -79,13 +78,16 @@ aspire run --project src/AppHost/EventHub.AppHost.csproj
 
 ## MCP servers
 
-Copy [`.mcp.json.example`](.mcp.json.example) to `.mcp.json` and set credentials in `.env`:
+Shared MCP server config lives in [`.codex/config.toml`](.codex/config.toml). Do not use `.mcp.json` as a repository standard; it is local-only and may contain machine-specific secrets.
 
 | Server | Purpose |
 |--------|---------|
 | `aspire` | Aspire dashboard resources, logs |
 | `postgres` | Read-only SQL against local `app` database |
 | `neo4j-graphrag` | Cypher, vector/fulltext search, GraphRAG |
+| `playwright` | Browser automation for e2e diagnostics |
+| `github` | GitHub MCP over HTTP |
+| `shadcn` | shadcn component registry MCP |
 
 See `.agents/skills/postgres-mcp/SKILL.md` and `.agents/skills/neo4j-graphrag/SKILL.md`.
 
@@ -93,12 +95,12 @@ See `.agents/skills/postgres-mcp/SKILL.md` and `.agents/skills/neo4j-graphrag/SK
 
 | Document | Role |
 |----------|------|
-| [`docs/constitution.md`](docs/constitution.md) | Immutable principles |
-| [`docs/prd.md`](docs/prd.md) | Product intent and decisions |
-| [`docs/features.md`](docs/features.md) | Epics, features, acceptance criteria |
-| [`docs/ddd.md`](docs/ddd.md) | Domain model |
-| [`docs/technical.md`](docs/technical.md) | Architecture and infrastructure |
-| [`docs/specs/`](docs/specs/) | Product specs (committed) |
+| [`docs/CONSTITUTION.md`](docs/CONSTITUTION.md) | Immutable principles |
+| [`docs/_memory/source/product-requirements.md`](docs/_memory/source/product-requirements.md) | Product intent and decisions |
+| [`docs/_memory/source/feature-specification.md`](docs/_memory/source/feature-specification.md) | Epics, features, acceptance criteria |
+| [`docs/_memory/source/domain-model-specification.md`](docs/_memory/source/domain-model-specification.md) | Domain model |
+| [`docs/_memory/source/technical-design.md`](docs/_memory/source/technical-design.md) | Architecture and infrastructure |
+| [`docs/_memory/specs/`](docs/_memory/specs/) | Product specs (committed) |
 
 Ephemeral plans live in `.codex/plans/` (gitignored; deleted after `/cook`).
 

@@ -10,7 +10,7 @@ assignees: []
 
 ## Summary
 
-**Spec:** `docs/specs/<YYYYMMDDHHmmss>-<feature-kebab>.md`
+**Spec:** `docs/_memory/specs/<YYYYMMDDHHmmss>-<feature-kebab>.md`
 
 **Features:** F-* refs
 
@@ -33,5 +33,5 @@ assignees: []
 
 ## Tracking
 
-- [ ] Plan: `/plan docs/specs/<file>.md`
-- [ ] Cook: `/cook docs/specs/<file>.md`
+- [ ] Plan: `/plan docs/_memory/specs/<file>.md`
+- [ ] Cook: `/cook docs/_memory/specs/<file>.md`

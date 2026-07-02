@@ -1,14 +1,13 @@
 {
   "id": "harness-stop-gate-clean-tree",
   "layer": "harness",
-  "description": "stop hook allows done when verify gate clear and no failing git-diff checks",
+  "description": "stop hook allows done when verify gate clear and the evaluated project tree is clean",
   "run": {
-    "type": "hook",
-    "script": ".codex/hooks/stop-gate.ps1",
-    "stdinFixture": "evals/fixtures/stop-completed.json"
+    "type": "command",
+    "command": "$exitCode = 1; $evalRoot = Join-Path (Get-Location) '.codex/state/evals'; $tmp = New-Item -ItemType Directory -Force -Path (Join-Path $evalRoot ('eventhub-stop-eval-' + [guid]::NewGuid())); git -C $tmp.FullName init --quiet; try { $env:CODEX_PROJECT_DIR = $tmp.FullName; Get-Content -Raw -Encoding UTF8 evals/fixtures/stop-completed.json | powershell -NoProfile -ExecutionPolicy Bypass -File .codex/hooks/stop-gate.ps1; $exitCode = $LASTEXITCODE } finally { $env:CODEX_PROJECT_DIR = $null; try { Remove-Item -Recurse -Force -LiteralPath $tmp.FullName -ErrorAction Stop } catch { } }; powershell -NoProfile -Command \"exit $exitCode\""
   },
   "assert": {
     "exitCode": 0,
-    "json": {}
+    "json": { "decision": "allow" }
   }
 }

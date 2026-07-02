@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  Run agent eval cases — objective pass/fail for harness, graph, and agent layers.
+  Run agent eval cases - objective pass/fail for harness, graph, and agent layers.
 
 .DESCRIPTION
   Each case in evals/cases/*.json defines input + assert criteria.
@@ -24,6 +24,50 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $casesDir = Join-Path $PSScriptRoot 'cases'
 $resultsDir = Join-Path $PSScriptRoot 'results'
+$powerShellStateDir = Join-Path $repoRoot '.codex\state\powershell'
+$powerShellLocalAppData = Join-Path $powerShellStateDir 'LocalAppData'
+$powerShellRoamingAppData = Join-Path $powerShellStateDir 'AppData'
+$powerShellModuleAnalysisCache = Join-Path $powerShellLocalAppData 'Microsoft\Windows\PowerShell\ModuleAnalysisCache'
+
+function Initialize-PowerShellCacheEnvironment {
+    foreach ($dir in @($powerShellLocalAppData, $powerShellRoamingAppData)) {
+        if (-not (Test-Path -LiteralPath $dir)) {
+            New-Item -ItemType Directory -Force -Path $dir | Out-Null
+        }
+    }
+
+    $env:LOCALAPPDATA = $powerShellLocalAppData
+    $env:APPDATA = $powerShellRoamingAppData
+    $env:PSModuleAnalysisCachePath = $powerShellModuleAnalysisCache
+}
+
+function Remove-RepoRootPowerShellCacheArtifact {
+    $cachePath = Join-Path $repoRoot 'Microsoft\Windows\PowerShell\ModuleAnalysisCache'
+    if (Test-Path -LiteralPath $cachePath) {
+        Remove-Item -LiteralPath $cachePath -Force -ErrorAction SilentlyContinue
+    }
+
+    foreach ($dir in @(
+        (Join-Path $repoRoot 'Microsoft\Windows\PowerShell'),
+        (Join-Path $repoRoot 'Microsoft\Windows'),
+        (Join-Path $repoRoot 'Microsoft')
+    )) {
+        if ((Test-Path -LiteralPath $dir) -and -not (Get-ChildItem -LiteralPath $dir -Force -ErrorAction SilentlyContinue | Select-Object -First 1)) {
+            Remove-Item -LiteralPath $dir -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+function Set-ProcessPowerShellCacheEnvironment {
+    param([System.Diagnostics.ProcessStartInfo]$ProcessStartInfo)
+
+    $ProcessStartInfo.EnvironmentVariables['LOCALAPPDATA'] = $powerShellLocalAppData
+    $ProcessStartInfo.EnvironmentVariables['APPDATA'] = $powerShellRoamingAppData
+    $ProcessStartInfo.EnvironmentVariables['PSModuleAnalysisCachePath'] = $powerShellModuleAnalysisCache
+}
+
+Initialize-PowerShellCacheEnvironment
+Remove-RepoRootPowerShellCacheArtifact
 
 function Get-HookPowerShellExe {
     # Reuse the interpreter running this script (pwsh on Linux CI, pwsh or Windows PowerShell locally).
@@ -38,6 +82,77 @@ function Get-HookPowerShellExe {
 }
 
 $script:HookPowerShellExe = Get-HookPowerShellExe
+
+function ConvertTo-ProcessArgumentString {
+    param([string[]]$ArgumentList)
+
+    $quoted = foreach ($arg in @($ArgumentList)) {
+        if ($null -eq $arg) {
+            continue
+        }
+
+        $value = [string]$arg
+        if ($value -notmatch '[\s"]') {
+            $value
+            continue
+        }
+
+        $escaped = $value -replace '(\\*)"', '$1$1\"'
+        $escaped = $escaped -replace '(\\+)$', '$1$1'
+        '"' + $escaped + '"'
+    }
+
+    return ($quoted -join ' ')
+}
+
+function powershell {
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [object]$InputObject,
+
+        [Parameter(ValueFromRemainingArguments = $true)]
+        [string[]]$ArgumentList
+    )
+
+    begin {
+        $pipelineInput = New-Object System.Collections.Generic.List[string]
+    }
+    process {
+        if ($null -ne $InputObject) {
+            $pipelineInput.Add([string]$InputObject) | Out-Null
+        }
+    }
+    end {
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = $script:HookPowerShellExe
+        $psi.Arguments = ConvertTo-ProcessArgumentString -ArgumentList $ArgumentList
+        $psi.RedirectStandardInput = $true
+        $psi.RedirectStandardOutput = $true
+        $psi.RedirectStandardError = $true
+        $psi.UseShellExecute = $false
+        $psi.CreateNoWindow = $true
+        $psi.WorkingDirectory = (Get-Location).Path
+        Set-ProcessPowerShellCacheEnvironment -ProcessStartInfo $psi
+
+        $proc = [System.Diagnostics.Process]::Start($psi)
+        if ($pipelineInput.Count -gt 0) {
+            $proc.StandardInput.Write(($pipelineInput.ToArray() -join [Environment]::NewLine))
+        }
+        $proc.StandardInput.Close()
+
+        $stdout = $proc.StandardOutput.ReadToEnd()
+        $stderr = $proc.StandardError.ReadToEnd()
+        $proc.WaitForExit()
+        $global:LASTEXITCODE = $proc.ExitCode
+
+        if (-not [string]::IsNullOrEmpty($stdout)) {
+            Write-Output $stdout.TrimEnd()
+        }
+        if (-not [string]::IsNullOrEmpty($stderr)) {
+            Write-Output $stderr.TrimEnd()
+        }
+    }
+}
 
 function Expand-FixtureText {
     param([string]$Text)
@@ -101,6 +216,7 @@ function Invoke-HookCase {
     $psi.UseShellExecute = $false
     $psi.CreateNoWindow = $true
     $psi.WorkingDirectory = $repoRoot
+    Set-ProcessPowerShellCacheEnvironment -ProcessStartInfo $psi
 
     $proc = [System.Diagnostics.Process]::Start($psi)
     $proc.StandardInput.Write($stdin)
@@ -119,9 +235,10 @@ function Invoke-HookCase {
 function Invoke-CommandCase {
     param([string]$Command)
     $expanded = Expand-FixtureText $Command
+    $global:LASTEXITCODE = 0
     $output = Invoke-Expression $expanded 2>&1 | Out-String
     return @{
-        ExitCode = $LASTEXITCODE
+        ExitCode = $global:LASTEXITCODE
         Stdout   = $output.Trim()
         Stderr   = ''
     }
@@ -203,7 +320,7 @@ function Invoke-EvalCase {
             id      = $Case.id
             layer   = $Case.layer
             status  = 'skipped'
-            reason  = 'manual agent case — use -IncludeAgent'
+            reason  = 'manual agent case - use -IncludeAgent'
             errors  = @()
         }
     }
@@ -271,6 +388,7 @@ $summary | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $result
 $summary | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $resultsDir 'latest.json') -Encoding utf8
 
 if ($Json) {
+    Remove-RepoRootPowerShellCacheArtifact
     $summary | ConvertTo-Json -Depth 8
 }
 else {
@@ -295,6 +413,7 @@ else {
 
     Write-Host ''
     Write-Host "Report: evals/results/latest.json"
+    Remove-RepoRootPowerShellCacheArtifact
 }
 
 if ($failed -gt 0) {

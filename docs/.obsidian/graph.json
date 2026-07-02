@@ -1,0 +1,33 @@
+{
+  "collapse-filter": false,
+  "search": "",
+  "showTags": true,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {
+      "query": "path:_memory/mocs",
+      "color": {
+        "a": 1,
+        "rgb": 25525511680
+      }
+    },
+    {
+      "query": "path:specs",
+      "color": {
+        "a": 1,
+        "rgb": 2559153815
+      }
+    },
+    {
+      "query": "path:harness",
+      "color": {
+        "a": 1,
+        "rgb": 2555757184
+      }
+    }
+  ]
+}
+

@@ -15,7 +15,7 @@ function Invoke-VerifyQuiet {
     )
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName = $FilePath
-    $psi.Arguments = ($ArgumentList -join ' ')
+    $psi.Arguments = ConvertTo-ProcessArgumentString -ArgumentList $ArgumentList
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
     $psi.UseShellExecute = $false
@@ -30,6 +30,28 @@ function Invoke-VerifyQuiet {
         ExitCode = $proc.ExitCode
         Output   = ($stdout + $stderr).Trim()
     }
+}
+
+function ConvertTo-ProcessArgumentString {
+    param([string[]]$ArgumentList)
+
+    $quoted = foreach ($arg in @($ArgumentList)) {
+        if ($null -eq $arg) {
+            continue
+        }
+
+        $value = [string]$arg
+        if ($value -notmatch '[\s"]') {
+            $value
+            continue
+        }
+
+        $escaped = $value -replace '(\\*)"', '$1$1\"'
+        $escaped = $escaped -replace '(\\+)$', '$1$1'
+        '"' + $escaped + '"'
+    }
+
+    return ($quoted -join ' ')
 }
 
 function Get-AffectedPlan {
@@ -61,7 +83,8 @@ function Get-StepKey {
     $filter = if ($Step.filter) { [string]$Step.filter } else { '' }
     $file = if ($Step.file) { [string]$Step.file } else { '' }
     $project = if ($Step.project) { [string]$Step.project } else { '' }
-    return "$($Step.kind)|$project|$filter|$file"
+    $command = if ($Step.command) { [string]$Step.command } else { '' }
+    return "$($Step.kind)|$project|$filter|$file|$command"
 }
 
 function Invoke-VerificationSteps {
@@ -122,7 +145,7 @@ function Invoke-VerificationSteps {
                 $argList = if ($argStr) { $argStr -split ' ' } else { @() }
                 $result = Invoke-VerifyQuiet -FilePath $exe -ArgumentList $argList -WorkingDirectory $ProjectRoot
                 if ($result.ExitCode -ne 0) {
-                    $errors.Add("e2e test failed: $cmd")
+                    $errors.Add("shell test failed: $cmd")
                 }
             }
         }
@@ -141,6 +164,8 @@ function Get-GitChangedFiles {
 
     Push-Location $ProjectRoot
     try {
+        $previousErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
         $files = New-Object System.Collections.Generic.List[string]
         foreach ($line in (& git diff --name-only 2>$null)) {
             if ($line) { $files.Add([string]$line) }
@@ -151,9 +176,10 @@ function Get-GitChangedFiles {
         foreach ($line in (& git ls-files --others --exclude-standard 2>$null)) {
             if ($line) { $files.Add([string]$line) }
         }
-        return ,@($files | Select-Object -Unique)
+        return @($files | Select-Object -Unique)
     }
     finally {
+        $ErrorActionPreference = $previousErrorActionPreference
         Pop-Location
     }
 }
@@ -200,7 +226,7 @@ function Invoke-StopVerification {
             continue
         }
 
-        $plan = Get-AffectedPlan -ProjectRoot $projectRoot -FilePath $abs
+        $plan = Get-AffectedPlan -ProjectRoot $ProjectRoot -FilePath $abs
         if ($null -eq $plan -or $plan.skip -or -not $plan.steps) {
             continue
         }

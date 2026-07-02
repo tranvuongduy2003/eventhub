@@ -94,5 +94,4 @@ Include `api:verify` in local PR checks when touching Api or `contracts/openapi/
 
 ## More detail
 
-Repo README section **API contract (OpenAPI â†’ TypeScript)** and [`contracts/openapi/README.md`](../../contracts/openapi/README.md) if present.
-
+Repo README section **API contract (OpenAPI â†’ TypeScript)** and [`contracts/openapi/README.md`](../../../contracts/openapi/README.md) if present.
