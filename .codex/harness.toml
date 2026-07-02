@@ -1,0 +1,32 @@
+# EventHub Codex harness manifest.
+# This is documentation-as-config for agents and reviewers; hook enforcement lives
+# in .codex/hooks and .codex/policies/harness-policy.json.
+
+version = 1
+source_plan = "deep-research-report.md"
+state_dir = ".codex/state"
+
+[layers]
+repo_guidance = "AGENTS.md"
+policy = ".codex/policies/harness-policy.json"
+hooks = ".codex/hooks"
+skills = ".agents/skills"
+verification_graph = ".graph/index.json"
+evals = "evals"
+runtime_scaffold = "harness"
+
+[foundation_skills]
+repo_bootstrap = ".agents/skills/repo-bootstrap/SKILL.md"
+verify_changed_code = ".agents/skills/verify-changed-code/SKILL.md"
+pr_handoff = ".agents/skills/pr-handoff/SKILL.md"
+
+[commands]
+bootstrap = "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Repo-Bootstrap.ps1"
+verify_changed = "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1"
+handoff = "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/New-PrHandoff.ps1"
+eval_harness = "powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer harness"
+
+[future_runtime]
+provider_contract = "Responses API"
+orchestration = "Agents SDK"
+codex_executor = "Codex CLI via MCP when multi-step coding workflows need external orchestration"

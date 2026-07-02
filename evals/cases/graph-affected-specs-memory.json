@@ -1,0 +1,17 @@
+{
+  "id": "graph-affected-specs-memory",
+  "layer": "graph",
+  "description": "Implementation specs are Obsidian memory and run docs memory validation",
+  "run": {
+    "type": "command",
+    "command": "node scripts/affected-tests.mjs docs/_memory/specs/20260616011034-register-organizer-account.md"
+  },
+  "assert": {
+    "exitCode": 0,
+    "jsonStdout": {
+      "skip": "False",
+      "steps.0.kind": "shell-test",
+      "steps.0.command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1"
+    }
+  }
+}

@@ -14,7 +14,7 @@ Add or extend a test that **fails before the fix** and passes after — objectiv
 
 ## Process
 
-1. Choose test project (`backend-testing.md`):
+1. Choose test project (Constitution VII and `docs/_memory/source/technical-design.md` §11):
    - Domain behavior → `tests/Domain.UnitTests/`
    - HTTP / wiring → `tests/Api.IntegrationTests/`
 2. Name: `Method_Scenario_Expected`.
@@ -47,5 +47,4 @@ Add or extend a test that **fails before the fix** and passes after — objectiv
 - Do not fix production code — parent `/cook` agent implements minimal fix.
 - No trivial assertion tests.
 """
-
 

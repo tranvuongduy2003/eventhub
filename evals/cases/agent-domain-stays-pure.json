@@ -4,7 +4,7 @@
   "mode": "manual",
   "description": "Agent adds domain logic without EF/ASP.NET imports in EventHub.Domain",
   "input": {
-    "prompt": "Add a value object EmailAddress validation test skeleton under src/Domain/Users/ following ddd.md and architecture.mdc. Do not add Infrastructure references."
+    "prompt": "Add a value object EmailAddress validation test skeleton under src/Domain/Users/ following docs/_memory/source/domain-model-specification.md and docs/CONSTITUTION.md. Do not add Infrastructure references."
   },
   "assert": {
     "commands": [

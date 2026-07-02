@@ -2,10 +2,7 @@
   "version": 1,
   "description": "Lightweight path→verification map for agent harness. Extend with full dependency graph later.",
   "skipPatterns": [
-    ".codex/**",
-    "docs/**",
     ".github/**",
-    "**/*.md",
     "**/web/src/generated/**",
     "**/contracts/openapi/.build/**",
     "**/Migrations/**",
@@ -15,6 +12,62 @@
     "**/e2e/playwright-report/**"
   ],
   "layers": {
+    "AGENTS.md": {
+      "postEditAction": "test",
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer harness"
+    },
+    ".codex/": {
+      "postEditAction": "test",
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer harness"
+    },
+    ".agents/": {
+      "postEditAction": "test",
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer harness"
+    },
+    "evals/": {
+      "postEditAction": "test",
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer harness"
+    },
+    "scripts/agent/": {
+      "postEditAction": "test",
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer harness"
+    },
+    "docs/README.md": {
+      "postEditAction": "test",
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1"
+    },
+    "docs/CONSTITUTION.md": {
+      "postEditAction": "test",
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1"
+    },
+    "docs/.gitignore": {
+      "postEditAction": "test",
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1"
+    },
+    "docs/.obsidian/": {
+      "postEditAction": "test",
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1"
+    },
+    "docs/_memory/source/harness-": {
+      "postEditAction": "test",
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer harness"
+    },
+    "docs/_memory/": {
+      "postEditAction": "test",
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1"
+    },
+    "harness/": {
+      "postEditAction": "test",
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer harness"
+    },
+    "scripts/affected-tests.mjs": {
+      "postEditAction": "test",
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer graph"
+    },
+    ".graph/": {
+      "postEditAction": "test",
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer graph"
+    },
     "src/Domain/": {
       "postEditAction": "test",
       "testProject": "tests/Domain.UnitTests/EventHub.Domain.UnitTests.csproj",

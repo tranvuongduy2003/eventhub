@@ -16,11 +16,11 @@ Local-first event management and ticketing platform. .NET backend (Clean Archite
 
 Open the repo in Codex; agents read `AGENTS.md` and **`docs/constitution.md`** plus companion docs before changing code.
 
-**Agent workflow:** `/spec` (spec in `docs/specs/` + one GitHub issue) → `/plan` (agent skills manage implementation) → `/cook` (implement, then delete plan if one was created).
+**Agent workflow:** `/spec` (spec in `docs/_memory/specs/` + one GitHub issue) → `/plan` (agent skills manage implementation) → `/cook` (implement, then delete plan if one was created).
 
 ### Stack highlights
 
-- **Modular monolith** — bounded contexts in [`docs/ddd.md`](docs/ddd.md)
+- **Modular monolith** — bounded contexts in [`docs/_memory/source/domain-model-specification.md`](docs/_memory/source/domain-model-specification.md)
 - **PostgreSQL** (authoritative) + **Redis** (cache) + **MinIO** (images) + **RabbitMQ** (integration events)
 - **React 19 + Vite** frontend with OpenAPI → TypeScript codegen
 - **.NET Aspire** AppHost — no hand-authored `docker-compose`
@@ -94,11 +94,11 @@ See `.agents/skills/postgres-mcp/SKILL.md` and `.agents/skills/neo4j-graphrag/SK
 | Document | Role |
 |----------|------|
 | [`docs/constitution.md`](docs/constitution.md) | Immutable principles |
-| [`docs/prd.md`](docs/prd.md) | Product intent and decisions |
-| [`docs/features.md`](docs/features.md) | Epics, features, acceptance criteria |
-| [`docs/ddd.md`](docs/ddd.md) | Domain model |
-| [`docs/technical.md`](docs/technical.md) | Architecture and infrastructure |
-| [`docs/specs/`](docs/specs/) | Product specs (committed) |
+| [`docs/_memory/source/product-requirements.md`](docs/_memory/source/product-requirements.md) | Product intent and decisions |
+| [`docs/_memory/source/feature-specification.md`](docs/_memory/source/feature-specification.md) | Epics, features, acceptance criteria |
+| [`docs/_memory/source/domain-model-specification.md`](docs/_memory/source/domain-model-specification.md) | Domain model |
+| [`docs/_memory/source/technical-design.md`](docs/_memory/source/technical-design.md) | Architecture and infrastructure |
+| [`docs/_memory/specs/`](docs/_memory/specs/) | Product specs (committed) |
 
 Ephemeral plans live in `.codex/plans/` (gitignored; deleted after `/cook`).
 

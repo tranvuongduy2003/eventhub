@@ -85,7 +85,7 @@ Useful node types to ingest from docs (optional project setup):
 - `Feature` (`F-*`), `Epic` (`EP-*`), `Aggregate` (`AGG-*`), `BoundedContext` (`BC-*`)
 - Relationships: `DEPENDS_ON`, `REALIZES`, `OWNS`, `REFERENCES`
 
-Source documents: [`docs/features.md`](../../../docs/features.md), [`docs/ddd.md`](../../../docs/ddd.md).
+Source documents: [`docs/_memory/source/feature-specification.md`](../../../docs/_memory/source/feature-specification.md), [`docs/_memory/source/domain-model-specification.md`](../../../docs/_memory/source/domain-model-specification.md).
 
 ## Safety
 

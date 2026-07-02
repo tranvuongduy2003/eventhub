@@ -13,8 +13,8 @@ This document defines the **non-negotiable invariants** of the repository. Every
 When guidance conflicts:
 
 1. **This constitution** wins over all other documents and Codex rules.
-2. **Product and technical docs** (`prd.md`, `features.md`, `ddd.md`, `technical.md`) win over scoped Codex rules.
-3. **Resolved product decisions** in [`prd.md`](prd.md) (`DEC-*`) win over informal notes or session artifacts.
+2. **Product and technical source memory** ([[_memory/source/product-requirements|product requirements]], [[_memory/source/feature-specification|feature specification]], [[_memory/source/domain-model-specification|domain model specification]], [[_memory/source/technical-design|technical design]]) wins over scoped Codex rules.
+3. **Resolved product decisions** in [[_memory/source/product-requirements|product requirements]] (`DEC-*`) win over informal notes or session artifacts.
 
 Fix contradictions in lower-level docs or rules — do not weaken these principles without an explicit constitution amendment.
 
@@ -47,13 +47,13 @@ Business rules live in `EventHub.Domain` as framework-free C#. No ORM attributes
 
 Aggregates enforce invariants internally. **No anemic domain models** — behavior belongs on aggregates and value objects, not scattered in handlers.
 
-The domain model — bounded contexts, aggregates, invariants, events — is specified in [`ddd.md`](ddd.md). Code must stay aligned with that document.
+The domain model — bounded contexts, aggregates, invariants, events — is specified in [[_memory/source/domain-model-specification|domain model specification]]. Code must stay aligned with that document.
 
 ### 3. Modular monolith
 
-EventHub runs as a **single deployable** with **logical bounded contexts** inside one Domain project (see `ddd.md` §2). Do not split into microservices unless a future constitution amendment explicitly allows it.
+EventHub runs as a **single deployable** with **logical bounded contexts** inside one Domain project (see [[_memory/source/domain-model-specification|domain model specification]] §2). Do not split into microservices unless a future constitution amendment explicitly allows it.
 
-Cross-context integration follows `technical.md` §4–5: in-process domain events within a context; **RabbitMQ integration events** across contexts with idempotent consumers.
+Cross-context integration follows [[_memory/source/technical-design|technical design]] §4–5: in-process domain events within a context; **RabbitMQ integration events** across contexts with idempotent consumers.
 
 ---
 
@@ -101,7 +101,7 @@ Binary assets (cover images, avatars) are stored in **MinIO**; PostgreSQL holds 
 
 ### 9. Storage follows aggregate boundaries
 
-- One primary table per aggregate root (see `ddd.md` and `technical.md` §6).
+- One primary table per aggregate root (see [[_memory/source/domain-model-specification|domain model specification]] and [[_memory/source/technical-design|technical design]] §6).
 - Declarative constraints enforce invariants at the database where possible.
 - Mutable aggregates use optimistic concurrency (`row_version`).
 - Timestamps are stored as **UTC** (`TIMESTAMPTZ`).
@@ -110,7 +110,7 @@ Binary assets (cover images, avatars) are stored in **MinIO**; PostgreSQL holds 
 
 - Generate migrations via EF Core tooling in `src/Infrastructure/Migrations/`.
 - **Never edit merged migrations** — add a new migration instead.
-- Schema changes must stay aligned with [`technical.md`](technical.md) §6 and EF configurations.
+- Schema changes must stay aligned with [[_memory/source/technical-design|technical design]] §6 and EF configurations.
 
 ---
 
@@ -121,7 +121,7 @@ Binary assets (cover images, avatars) are stored in **MinIO**; PostgreSQL holds 
 - Endpoints implement `IEndpoint` and are discovered via assembly scan.
 - Endpoints send MediatR requests and map to **Contracts DTOs** — never serialize domain entities.
 - **MediatR only** in the Api layer for use-case dispatch.
-- Realtime updates use **SignalR hubs** in Api (see `technical.md` §5).
+- Realtime updates use **SignalR hubs** in Api (see [[_memory/source/technical-design|technical design]] §5).
 
 ### 12. REST and error conventions are stable
 
@@ -175,7 +175,7 @@ Connection strings and endpoints are Aspire-injected (e.g. `ConnectionStrings__a
 ### 18. File size and quality bar
 
 - Prefer files **≤ 500 lines**; split when a type or handler grows unwieldy.
-- Significant architecture choices that extend beyond [`prd.md`](prd.md) decisions require a new `DEC-*` entry in `prd.md` §11 or an amendment to this constitution.
+- Significant architecture choices that extend beyond [[_memory/source/product-requirements|product requirements]] decisions require a new `DEC-*` entry in [[_memory/source/product-requirements|product requirements]] §11 or an amendment to this constitution.
 
 ---
 
@@ -198,29 +198,29 @@ Fixed top-level structure:
 src/       AppHost, ServiceDefaults, Api, Application, Domain, Infrastructure, Contracts
 tests/     Domain.UnitTests, Api.IntegrationTests, Testing.Common
 web/       React 19 + Vite (outside .slnx; Yarn; run via Aspire web resource)
-docs/      constitution, prd, features, ddd, technical, specs/
+docs/      Obsidian knowledge memory, constitution, source memory, specs, harness docs
 contracts/ OpenAPI contract and codegen scripts
 .codex/   Project config, hooks, MCP servers, custom agents
 ```
 
 Do not collapse layers into monolithic projects or move orchestration outside AppHost.
 
-**Durable workflow artifact:** specs in `docs/specs/` (`YYYYMMDDHHmmss-<name>.md`).
+**Durable workflow artifact:** specs in `docs/_memory/specs/` (`YYYYMMDDHHmmss-<name>.md`).
 
 ---
 
 ## IX. Explicitly out of scope
 
-Unless explicitly requested and documented as a decision in `prd.md`, the following are **not part of EventHub**:
+Unless explicitly requested and documented as a decision in [[_memory/source/product-requirements|product requirements]], the following are **not part of EventHub**:
 
 - Production deployment and CD pipelines
 - Transactional outbox (RabbitMQ is in scope; outbox pattern is not)
 - Multi-tenancy
-- Horizontal scaling patterns beyond documented hot-aggregate trade-offs in `ddd.md` §8
-- Large-scale / high-concurrency on-sale handling (`prd.md` §6.2)
+- Horizontal scaling patterns beyond documented hot-aggregate trade-offs in [[_memory/source/domain-model-specification|domain model specification]] §8
+- Large-scale / high-concurrency on-sale handling ([[_memory/source/product-requirements|product requirements]] §6.2)
 - Enterprise venue features, multi-currency, blockchain ticketing, paid secondary marketplace
 
-Adding in-scope capabilities (e.g. a new bounded context) requires alignment with `ddd.md`, `features.md`, and `technical.md` — not silent drift.
+Adding in-scope capabilities (e.g. a new bounded context) requires alignment with [[_memory/source/domain-model-specification|domain model specification]], [[_memory/source/feature-specification|feature specification]], and [[_memory/source/technical-design|technical design]] — not silent drift.
 
 ---
 
@@ -228,8 +228,8 @@ Adding in-scope capabilities (e.g. a new bounded context) requires alignment wit
 
 To change an invariant in this document:
 
-1. Propose the change with rationale (new `DEC-*` in `prd.md` or a dedicated spec in `docs/specs/`).
-2. Update affected docs (`prd.md`, `features.md`, `ddd.md`, `technical.md`, Codex rules) to match.
+1. Propose the change with rationale (new `DEC-*` in [[_memory/source/product-requirements|product requirements]] or a dedicated spec in `docs/_memory/specs/`).
+2. Update affected source memory ([[_memory/source/product-requirements|product requirements]], [[_memory/source/feature-specification|feature specification]], [[_memory/source/domain-model-specification|domain model specification]], [[_memory/source/technical-design|technical design]]) and Codex rules to match.
 3. Amend this constitution in the same change set.
 
 Silent drift — code or rules that contradict this document without amendment — is a defect.
@@ -241,10 +241,10 @@ Silent drift — code or rules that contradict this document without amendment �
 | Document | Role |
 |----------|------|
 | **This file** | Immutable principles |
-| [`prd.md`](prd.md) | Product intent — why, who, scope, goals, decisions (`DEC-*`), guardrails (`QG-*`) |
-| [`features.md`](features.md) | Observable capabilities — epics (`EP-*`), features (`F-*`), acceptance criteria, build order |
-| [`ddd.md`](ddd.md) | Domain model — bounded contexts, aggregates, invariants, events, context map |
-| [`technical.md`](technical.md) | How it is built — architecture, CQRS, infrastructure, API, persistence, testing |
-| [`docs/specs/`](specs/) | Product specs (`/spec`) — committed |
+| [[_memory/source/product-requirements|Product requirements]] | Product intent — why, who, scope, goals, decisions (`DEC-*`), guardrails (`QG-*`) |
+| [[_memory/source/feature-specification|Feature specification]] | Observable capabilities — epics (`EP-*`), features (`F-*`), acceptance criteria, build order |
+| [[_memory/source/domain-model-specification|Domain model specification]] | Domain model — bounded contexts, aggregates, invariants, events, context map |
+| [[_memory/source/technical-design|Technical design]] | How it is built — architecture, CQRS, infrastructure, API, persistence, testing |
+| [[_memory/specs/README|Implementation specs memory]] | Product specs (`/spec`) — committed |
 
-**Reading order for agents:** constitution → prd → features (for the feature at hand) → ddd (domain rules) → technical (mechanics).
+**Reading order for agents:** constitution → product requirements → feature specification (for the feature at hand) → domain model specification (domain rules) → technical design (mechanics).

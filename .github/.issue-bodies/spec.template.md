@@ -1,6 +1,6 @@
 ## Summary
 
-**Spec:** `docs/specs/<timestamp>-<feature-kebab>.md`
+**Spec:** `docs/_memory/specs/<timestamp>-<feature-kebab>.md`
 
 **Features:** <F-* refs>
 
@@ -29,8 +29,8 @@
 
 ## Tracking
 
-- [ ] Plan: `/plan docs/specs/<file>.md`
-- [ ] Cook: `/cook docs/specs/<file>.md`
+- [ ] Plan: `/plan docs/_memory/specs/<file>.md`
+- [ ] Cook: `/cook docs/_memory/specs/<file>.md`
 
 ---
 

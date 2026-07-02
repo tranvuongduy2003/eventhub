@@ -1,257 +1,147 @@
-# EVENTHUB — CORE
+# EVENTHUB - CORE
 
-**EventHub** — Clean Architecture + CQRS + DDD event management and ticketing. Local-only via .NET Aspire.
+EventHub is a Clean Architecture + CQRS + DDD event management and ticketing platform. Local topology is .NET Aspire only.
 
-## SOURCE OF TRUTH (read before acting)
+## Source Of Truth
 
-**Do not load overlapping skills when these docs cover the task.** Skills are for procedures not spelled out below.
+Read the smallest relevant set before acting. Do not load overlapping skills when these docs already cover the task.
 
-| Document | When to consult |
+| Document | Use For |
 |---|---|
-| [`docs/constitution.md`](docs/constitution.md) | Non-negotiable invariants (architecture, CQRS, data, API, local run, naming) |
-| [`docs/prd.md`](docs/prd.md) | Product intent, personas, goals, decisions (`DEC-*`), guardrails (`QG-*`) |
-| [`docs/features.md`](docs/features.md) | Epics (`EP-*`), features (`F-*`), acceptance criteria, build order |
-| [`docs/ddd.md`](docs/ddd.md) | Bounded contexts, aggregates, invariants, domain/integration events |
-| [`docs/technical.md`](docs/technical.md) | Layer layout, CQRS pipeline, infrastructure, persistence §6, API §7, testing §11 |
+| `docs/CONSTITUTION.md` | Non-negotiable architecture, data, API, local run, naming, testing |
+| `docs/_memory/source/product-requirements.md` | Product intent, personas, scope, decisions (`DEC-*`), guardrails (`QG-*`) |
+| `docs/_memory/source/feature-specification.md` | Epics (`EP-*`), features (`F-*`), acceptance criteria, build order |
+| `docs/_memory/source/domain-model-specification.md` | Bounded contexts, aggregates, invariants, domain/integration events |
+| `docs/_memory/source/technical-design.md` | Layer layout, CQRS, infrastructure, persistence, API, testing |
+| `docs/_memory/source/harness-architecture.md` | Codex harness boundaries and structure |
+| `docs/_memory/source/harness-operational-policies.md` | Hooks, policy, state, verification, eval loop |
 
-**Cross-reference:** `Constitution §N`, `PRD §N` / `DEC-*`, `F-*`, `Tech §N`, `ddd.md §N`.
+Precedence: Constitution -> source memory (`docs/_memory/source/`) -> harness docs -> scoped rule -> skill. Fix lower-level drift in a follow-up change.
 
-When a **rule**, **skill**, or **doc** disagree, precedence is: **Constitution → prd / features / ddd / technical → scoped rule → skill**. Fix the lower layer in a follow-up PR.
+## Non-Negotiables
 
-## DOC ROUTING (prefer over skills)
+1. Domain -> Application -> Infrastructure; Api is the composition root.
+2. `EventHub.Domain` is pure C#: no EF Core, ASP.NET, MediatR, or Infrastructure.
+3. Aspire AppHost is the local topology source of truth. Do not add hand-authored `docker-compose.yml`.
+4. `EventHub.ServiceDefaults` is mandatory for Api.
+5. PostgreSQL is authoritative. Redis is rebuildable cache only. MinIO stores binary assets.
+6. Domain model follows `docs/_memory/source/domain-model-specification.md`: modular monolith, RabbitMQ integration events across bounded contexts.
+7. Commands and queries stay separated in Application and flow through MediatR.
+8. API endpoints are thin and return Contracts DTOs, never domain entities.
+9. OpenAPI shape lives in `contracts/openapi/api.v1.yaml`; do not hand-edit `web/src/generated/`.
+10. Tests are meaningful and selective: Domain unit tests, Api integration tests, Playwright e2e when required.
 
-| Work | Read first |
-|------|------------|
-| Architecture, layers, dependencies | Constitution I · `architecture.md` · Tech §1–3 |
-| Domain / aggregates / BC map | Constitution I.2–3 · `ddd.md` · `architecture.md` §3 |
-| Feature scope / acceptance | `features.md` (feature id) · `prd.md` (intent) |
-| CQRS, handlers, pipeline | Constitution II · `architecture.md` §4–5 · Tech §4 |
-| EF Core, schema, migrations | Constitution III · Tech §6 · `migration.md` |
-| HTTP, errors, auth, SignalR | Constitution IV · Tech §7 · `api-guidelines.md` |
-| Aspire / local run | Constitution V · Tech §8–10 · `aspire.md` |
-| Naming, file size, quality | Constitution VI |
-| Tests | Constitution VII · Tech §11 · `backend-testing.md` |
-| E2E tests (Playwright) | `e2e-testing.md` · `playwright-e2e` skill |
-| Frontend (web/) | `frontend.md`, `design-system.md` |
+## Repository Layout
 
-## NON-NEGOTIABLE INVARIANTS
-
-Summarized here for quick scan; **Constitution is authoritative** if anything differs.
-
-1. **Clean Architecture** — Domain → Application → Infrastructure; Api is the composition root.
-2. **Domain is pure C#** — no EF Core, ASP.NET, MediatR, or Infrastructure in `EventHub.Domain`.
-3. **Aspire AppHost** is the local topology source of truth — no hand-authored `docker-compose.yml`.
-4. **`EventHub.ServiceDefaults` is mandatory** for Api.
-5. **PostgreSQL is authoritative**; Redis holds rebuildable cache only; MinIO for binary assets.
-6. **Domain model** follows [`docs/ddd.md`](docs/ddd.md) — modular monolith, RabbitMQ for cross-context integration events.
-
-## REPOSITORY LAYOUT
-
-```
+```text
 src/       AppHost, ServiceDefaults, Api, Application, Domain, Infrastructure, Contracts, DataSeeder
-tests/     Domain.UnitTests, Api.IntegrationTests, Testing.Common  (see backend-testing.md)
-e2e/       Playwright e2e tests (Yarn; see e2e-testing.md)
-web/       React 19 + Vite (not in .slnx; Yarn; run via Aspire `web` Vite app)
-docs/      constitution, prd, features, ddd, technical, specs/
-.codex/    config.toml, hooks.json, rules/, agents/
-.agents/   skills/
-.graph/    index.json — path→test map for agent harness (extend to full graph)
-evals/     cases/, fixtures/, run.ps1 — objective eval pipeline (harness + graph + agent)
+tests/     Domain.UnitTests, Api.IntegrationTests, Testing.Common
+e2e/       Playwright e2e tests
+web/       React + Vite; Yarn; run via Aspire web resource
+docs/      Obsidian knowledge memory, constitution, source memory, specs, harness docs
+contracts/ OpenAPI contract and codegen scripts
+.codex/    Codex config, hooks, policies, custom agents
+.agents/   repo-local skills
+.graph/    path-to-verification map
+evals/     deterministic harness/graph/agent evals
+harness/   future orchestration runtime scaffold
 ```
 
-## PROCEDURAL SKILLS (when docs are not enough)
+## Harness Contract
 
-Read `.agents/skills/<name>/SKILL.md` only for these workflows:
+Harness means the policy and orchestration layer around agent work, not ad-hoc prompt examples.
+
+- Policy data: `.codex/policies/harness-policy.json`
+- Lifecycle hooks: `.codex/hooks/`
+- Runtime state: `.codex/state/` (gitignored)
+- Path-to-check graph: `.graph/index.json`
+- Deterministic evals: `evals/run.ps1`
+- Stable agent scripts: `scripts/agent/`
+
+Default verification:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1
+```
+
+Run after harness or hook changes:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer harness
+```
+
+## Skill Routing
+
+Use repo docs first. Use a skill only for the procedure it owns.
 
 | Trigger | Skill |
-|---------|--------|
-| OpenAPI export / codegen / CI verify | `openapi-contract-sync` |
-| Live DB inspection (read-only SQL via MCP) | `postgres-mcp` |
-| Neo4j graph / GraphRAG queries via MCP | `neo4j-graphrag` |
-| Local env broken | `env-doctor` |
+|---|---|
+| Fresh workspace or broken local setup | `repo-bootstrap` or `env-doctor` |
+| Verify current diff | `verify-changed-code` |
+| Final review handoff | `pr-handoff` |
+| Product spec | `spec` |
+| Engineering plan from a spec | `plan` |
+| Implement an existing plan | `cook` |
+| OpenAPI export/codegen/CI verify | `openapi-contract-sync` |
+| Live DB read-only SQL | `postgres-mcp` |
+| Neo4j graph / GraphRAG | `neo4j-graphrag` |
+| Playwright e2e | `playwright-e2e` |
 | Frontend server state | `tanstack-query` |
 | shadcn / Tailwind UI | `shadcn`, `tailwind-patterns` |
-| Commits / PRs / GitHub | `create-pr`, `git-commit-writer`, `pr-description-writer`, `github-cli` |
-| Hooks blocked / verify gate / stop loop | See **Agent harness** section below |
-| Playwright e2e tests | `playwright-e2e` |
-| Context compaction / progress notes | See **Context memory** section below |
-| ReAct / Reflexion / subagent delegation | See **Reasoning loop** section below |
-| How layers compose (worked example) | `agent-stack.md` |
+| Commits, PRs, GitHub | `git-commit-writer`, `pr-description-writer`, `create-pr`, `github-cli` |
 
-## REUSABLE WORKFLOWS (`.agents/skills/`)
+Do not treat kubectl/goclaw-style examples as core harness components. They belong only as future CLI/skill standards when this repo actually needs those tools.
 
-| Skill | When | Outcome | Then |
-|-------|------|---------|------|
-| `spec` | New feature slice; need product spec | `docs/specs/<timestamp>-<name>.md` | `plan` |
-| `plan` | Spec exists; need engineering plan | `.codex/plans/<same-filename>.md` (never commit) | `build` |
-| `build` | Plan exists; implement | Code + green tests/type; delete plan when done | PR / review |
+## Subagents
 
-Read the matching skill before executing. `plan` and `build` delegate to project subagents below.
+Prefer project subagents over generic exploration.
 
-## PROJECT SUBAGENTS (`.codex/agents/<name>.toml`)
+| Agent | Use | Writes? |
+|---|---|---|
+| `codebase-explorer` | Path/line scout before edits | no |
+| `plan-domain-researcher` | Domain planning | no |
+| `plan-application-researcher` | CQRS/Application planning | no |
+| `plan-infrastructure-researcher` | EF/Api/contracts/tests planning | no |
+| `plan-web-researcher` | Frontend planning | no |
+| `graph-impact-analyst` | Blast radius | no |
+| `test-impact-analyzer` | Diff-to-tests scope | no |
+| `build-test-writer` | Bug path red test first | tests only |
+| `e2e-test-writer` | Feature path red e2e first | e2e only |
+| `code-reviewer` | Evidence-based review after substantial work | no |
 
-Invoke with `@agent-<name>` or `Agent(<name>)`. **Do not** substitute generic `Explore`.
+Parallelize only read-only scouts. Parent agent owns production code edits.
 
-| name | When | readonly | parallel OK |
-|------|------|----------|-------------|
-| `codebase-explorer` | Before edits — path:line scout; no dumps | yes | yes |
-| `plan-domain-researcher` | `/plan` — Domain aggregates, `INV-*`, events | yes | yes |
-| `plan-application-researcher` | `/plan` — CQRS commands/queries/handlers/ports | yes | yes |
-| `plan-infrastructure-researcher` | `/plan` — EF, Api, integration tests | yes | yes |
-| `plan-web-researcher` | `/plan` — web routes, TanStack Query, UI | yes | yes |
-| `graph-impact-analyst` | `/plan` or `/build` — blast radius (neo4j-graphrag MCP) | yes | yes |
-| `test-impact-analyzer` | git diff → affected tests + coverage gaps | yes | yes |
-| `build-test-writer` | `/build` bug path — red test before fix | no (tests only) | **no** |
-| `e2e-test-writer` | `/build` TDD path — red e2e test before feature | no (tests only) | **no** |
-| `code-reviewer` | After `/build` — Reflexion with command output | yes | no |
+## Workflow
 
-**Topology:** parallel only for readonly scouts; **parent agent** writes production code alone. See **Reasoning loop** Layer 5.
+Use ReAct: verify context, act, observe the result. Do not declare done without objective checks.
 
-Worker memory: each subagent is defined in its own TOML layer under `.codex/agents/`.
+For implementation:
 
-## WHEN TO CONSULT WHICH RULE
+1. Read the relevant source docs.
+2. Scout code paths.
+3. Edit narrowly.
+4. Run affected checks.
+5. For substantial work, run review or record why it was skipped.
+6. Handoff with changed files, tests run, and residual risk.
 
-| Concern | Rule |
-|---|---|
-| Architecture, CQRS, DDD, layers | `architecture.md` |
-| .NET services (stack, DON'Ts) | `backend.md` |
-| Tests in `tests/**` | `backend-testing.md` |
-| E2E tests in `e2e/**` | `e2e-testing.md` |
-| React UI | `frontend.md` |
-| HTTP / API contracts | `api-guidelines.md` |
-| EF / PostgreSQL schema | `migration.md` |
-| AppHost / local run | `aspire.md` |
-| Implementation specs (durable) | `spec-artifacts.md` |
-| Agent hooks / verify gate | See **Agent harness** below |
-| Session notes / compaction | See **Context memory** below |
-| ReAct / done criteria | See **Reasoning loop** below |
-| Five-layer walkthrough (example) | `agent-stack.md` |
+Bug fixes should get a red test first when feasible. Do not add low-value tests that assert the obvious.
 
-## OUT OF SCOPE (unless explicitly requested)
+## Context Memory
 
-Production CD, transactional outbox, multi-tenancy, horizontal scaling, enterprise venue features, multi-currency, paid secondary marketplace (see `prd.md` §6.2).
+Long tasks should use durable local notes instead of chat memory:
 
----
+- `.codex/plans/` for ephemeral implementation plans; never commit.
+- `.codex/notes/progress.md` for local progress; gitignored.
+- `.codex/agent-memory/*.md` for worker memory; gitignored.
 
-# Context memory (compaction-safe)
+Record only decisions, changed files, blockers, and next steps. Do not dump command output.
 
-Long tasks lose detail when Codex **compacts** context. Use durable files instead of relying on chat history.
+## Protected Actions
 
-## Session start
+Hooks and policy block common hazards, but the working rules remain:
 
-1. Read this `AGENTS.md` and any closer `AGENTS.md` files.
-2. Align work with **Goal**, **Decisions**, and **Next** before new exploration.
-
-## During work
-
-Update your working notes after milestones: task completed, architecture decision, blocker found, or before delegating to a subagent.
-
-**Write to Decisions:** approach chosen, files created/changed, spec/feature ids, anything you would regret losing after compact.
-
-Do not dump tool output — bullets only.
-
-## Subagents (Agent tool)
-
-Before launching a subagent, record the worker goal in the active task notes.
-
-Project subagents (see subagent table above — e.g. `plan-domain-researcher`, `graph-impact-analyst`):
-
-1. Read the subagent's TOML instructions at start.
-2. After non-trivial work, keep the instructions file focused on durable behavior only.
-
-**Worker memory format:** `# <agent-name>` · sections `Codepaths`, `Patterns`, `Gotchas` — bullets only.
-
-Parent owns the repo guidance; each worker owns its TOML instructions.
-
-## After compaction
-
-Re-read the latest session transcript or local notes before resuming work.
-
----
-
-# Agent harness (hooks)
-
-Deterministic enforcement in `.codex/config.toml` and `.codex/hooks.json` — not prompt advice.
-
-## Hook map
-
-| Event | Script | Behavior |
-|-------|--------|----------|
-| `PreToolUse` | `pre-tool-guard.ps1` | Deny Write to `web/src/generated/`, `.env`, `.mcp.json`; deny dangerous Shell |
-| `PreToolUse` (Bash) | `before-shell-guard.ps1` | Deny `rm -rf`, `git push --force`, `git reset --hard`, `git config`, `npm install` |
-| `PostToolUse` | `post-edit-verify.ps1` | lint/format + affected test/build via `scripts/affected-tests.mjs`; sets verify gate on fail |
-| `Stop` | `stop-gate.ps1` | Block if verify gate active or git-diff checks fail (tsc + affected steps) |
-
-## Verify gate
-
-Failure writes the verify gate state → blocks `Shell`, `Agent`, `Delete` until next green edit verification. `Write`/`Read`/`Grep` still allowed.
-
-Clear manually: delete `verify-gate.json`.
-
-## Affected checks
-
-| Changed path | Checks |
-|--------------|--------|
-| `web/**/*.{ts,tsx}` | eslint + tsc at stop if web touched |
-| `src/Domain/**` | dotnet format + filtered Domain.UnitTests |
-| `src/Application\|Infrastructure\|Api\|Contracts\|DataSeeder/**` | dotnet format + layer build |
-| Map source | `.graph/index.json` + `node scripts/affected-tests.mjs <path>` |
-
-## Regression
-
-After hook changes: `.\evals\run.ps1` (CI job `agent-evals`).
-
----
-
-# Reasoning loop (Layer 3)
-
-## ReAct (default for every task)
-
-Alternate **reason → act → observe** — do not batch many tools without reading results.
-
-1. **Reason** — one short intent: what you will verify or change and why.
-2. **Act** — one tool (or one logical edit batch).
-3. **Observe** — read exit code, linter output, test result, file content; update your notes if the outcome matters after compaction.
-
-Do not declare understanding until you have observed the tool result. Do not chain speculative edits across layers without a build/test signal in between.
-
-## Reflexion (before "done")
-
-Self-critique without external signal is unreliable. **Done** is allowed only when objective checks pass:
-
-| Gate | What runs |
-|------|-----------|
-| `PostToolUse` | lint/format + affected test/build per changed file |
-| `Stop` (`stop-gate.ps1`) | TypeScript (`tsc -b --noEmit`) if web changed; affected checks on full `git diff` |
-| Verify gate | Blocks Bash/Agent until post-edit checks pass |
-
-If the agent tries to stop while checks fail, the Stop hook sends a **followup_message** — treat it as ground truth, fix, re-run checks, then continue.
-
-After substantial implementation, delegate **`code-reviewer`** via `@agent-code-reviewer` or `Agent(code-reviewer)`.
-
-For `/plan`, launch parallel **readonly** workers only — see subagent table above.
-
-## Orchestration topology (Layer 5)
-
-> **Multi-agent for parallel read-only research; single agent for writing code** where decisions couple.
-
-| Mode | Who | Parallel? |
-|------|-----|-----------|
-| Read / scout | `codebase-explorer`, `plan-*-researcher`, `graph-impact-analyst`, `test-impact-analyzer` | **Yes** — isolated windows, summaries back to parent |
-| Write code | **Parent agent only** | **No** — never spawn multiple writers on the same change |
-| Write tests (bug path) | `build-test-writer` then parent fix | **Sequential** — test writer first, then parent production code |
-| Review | `code-reviewer` after parent finishes | Sequential |
-
-**Golden rule:** parallel Agent calls must all target **readonly** subagents. If two subagents would make conflicting implementation choices, keep one writer (the parent).
-
-Built-in `Explore` is a fallback only when no project subagent fits — prefer `codebase-explorer` or layer-specific `plan-*-researcher`.
-
-## Not default
-
-**Tree-of-Thoughts** — only for explicit multi-branch search problems (architecture options, complex bug hypotheses). Not for routine feature work.
-
-## Workflow tie-in
-
-- `/cook` completion: `dotnet test`, `yarn --cwd web lint`, update the task checklist.
-- Before PR: `.\evals\run.ps1` when hooks or graph changed.
-- Worked example (all layers): `agent-stack.md` — add `Phone` to `User`.
+- Do not edit `.env`, `.env.*`, `.mcp.json`, `web/src/generated/`, or generated OpenAPI build output.
+- Do not run destructive git operations.
+- Do not add production dependencies without explicit approval.
+- Do not use npm in `web/`; use Yarn.
+- Do not hand-author Docker Compose for local service topology.

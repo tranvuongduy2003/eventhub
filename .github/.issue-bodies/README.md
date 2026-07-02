@@ -11,6 +11,6 @@ Skeleton for **`gh issue create --body-file`** when running `/spec`.
 **Workflow**
 
 1. Copy `spec.template.md` to a temp path.
-2. Fill from `docs/specs/<YYYYMMDDHHmmss>-<feature>.md` (problem, AC list, links).
+2. Fill from `docs/_memory/specs/<YYYYMMDDHHmmss>-<feature>.md` (problem, AC list, links).
 3. `gh issue create --title "Spec: …" --label "spec,enhancement" --body-file $path`
 4. Set spec frontmatter `github_issue: <number>`.

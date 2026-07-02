@@ -56,10 +56,10 @@ If MCP connection fails, compare the URL to the Aspire dashboard connection stri
 | Task | Use |
 |---|---|
 | Inspect live rows, counts, joins, explain plans | **This skill** â†’ MCP `query` |
-| Table/column meaning, invariants, indexes | [`docs/technical.md`](../../../docs/technical.md) Â§6 and [`docs/ddd.md`](../../../docs/ddd.md) first, then MCP to confirm |
-| Add/change schema, EF migrations | Constitution III Â· Tech Â§6 Â· `migration.md` â€” **not** MCP (no writes) |
+| Table/column meaning, invariants, indexes | [`docs/_memory/source/technical-design.md`](../../../docs/_memory/source/technical-design.md) Â§6 and [`docs/_memory/source/domain-model-specification.md`](../../../docs/_memory/source/domain-model-specification.md) first, then MCP to confirm |
+| Add/change schema, EF migrations | Constitution III · Tech §6 — **not** MCP (no writes) |
 | AppHost / container not up | `aspire.md`, `env-doctor` |
-| Integration tests | Constitution VII Â· Tech Â§10 Â· `backend-testing.md` |
+| Integration tests | Constitution VII · Tech §11 |
 
 ## MCP capabilities
 
@@ -74,7 +74,7 @@ The server exposes per-table schema resources (URI pattern like `postgres://â�
 
 ## Project conventions (always apply in SQL)
 
-From [`docs/technical.md`](../../../docs/technical.md) Â§6 and [`docs/ddd.md`](../../../docs/ddd.md):
+From [`docs/_memory/source/technical-design.md`](../../../docs/_memory/source/technical-design.md) Â§6 and [`docs/_memory/source/domain-model-specification.md`](../../../docs/_memory/source/domain-model-specification.md):
 
 - Application schema: **`app`** (not `public` for app tables)
 - Qualify tables: `app.users`, `app.user_sessions`, â€¦
@@ -85,7 +85,7 @@ Core tables: `users`, `user_sessions`.
 ## Workflow
 
 1. Confirm Postgres is up (Aspire dashboard or `env-doctor`).
-2. Read [`docs/technical.md`](../../../docs/technical.md) Â§6 and [`docs/ddd.md`](../../../docs/ddd.md) for the question (FKs, indexes, aggregates).
+2. Read [`docs/_memory/source/technical-design.md`](../../../docs/_memory/source/technical-design.md) Â§6 and [`docs/_memory/source/domain-model-specification.md`](../../../docs/_memory/source/domain-model-specification.md) for the question (FKs, indexes, aggregates).
 3. Call MCP **`query`** with qualified `app.*` SQL.
 4. Interpret results against Constitution Iâ€“III and Tech Â§5â€“6 â€” MCP shows storage, not business validation.
 
@@ -98,4 +98,3 @@ Core tables: `users`, `user_sessions`.
 ## Examples
 
 See [reference.md](reference.md) for starter queries.
-

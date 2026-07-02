@@ -71,8 +71,8 @@ pnpm-debug.log*
 .codex/notes/progress.md
 .codex/notes/backups/
 
-# Harness runtime state (verify gate, etc.)
-.codex/hooks/state/
+# Harness runtime state (verify gate, traces, temporary task artifacts)
+.codex/state/
 
 # Agent eval run output (cases/fixtures are committed)
 evals/results/
@@ -146,8 +146,4 @@ logs/
 *.tmp
 *.temp
 .cache/
-
-# Codex ephemeral plans
-.codex/plans/
-.codex/hooks/state/
 

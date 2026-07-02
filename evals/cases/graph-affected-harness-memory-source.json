@@ -1,0 +1,17 @@
+{
+  "id": "graph-affected-harness-memory-source",
+  "layer": "graph",
+  "description": "Harness source memory maps to harness evals instead of generic docs checks",
+  "run": {
+    "type": "command",
+    "command": "node scripts/affected-tests.mjs docs/_memory/source/harness-architecture.md"
+  },
+  "assert": {
+    "exitCode": 0,
+    "jsonStdout": {
+      "skip": "False",
+      "steps.0.kind": "shell-test"
+    },
+    "stdoutContains": ["-Layer harness"]
+  }
+}

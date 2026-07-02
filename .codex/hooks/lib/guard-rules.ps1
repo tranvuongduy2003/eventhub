@@ -1,41 +1,64 @@
-# Deterministic guard rules — paths and shell commands the agent must not touch.
+# Deterministic guard rules. Policy data lives in .codex/policies; this file is
+# only the lifecycle-hook adapter.
+
+function Get-HarnessPolicyPath {
+    $root = Get-ProjectRoot
+    return Join-Path $root '.codex\policies\harness-policy.json'
+}
+
+function Get-HarnessPolicy {
+    if ($script:HarnessPolicy) {
+        return $script:HarnessPolicy
+    }
+
+    $path = Get-HarnessPolicyPath
+    if (-not (Test-Path -LiteralPath $path)) {
+        throw "Harness policy not found: $path"
+    }
+
+    $script:HarnessPolicy = Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json
+    return $script:HarnessPolicy
+}
+
+function Normalize-HarnessPath {
+    param([string]$Path)
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return ''
+    }
+    return ($Path -replace '\\', '/')
+}
+
+function Get-MatchingPolicyRule {
+    param(
+        [object[]]$Rules,
+        [string]$Value
+    )
+    foreach ($rule in @($Rules)) {
+        if ($Value -match [string]$rule.pattern) {
+            return $rule
+        }
+    }
+    return $null
+}
 
 function Test-BlockedEditPath {
     param([string]$Path)
-    if ([string]::IsNullOrWhiteSpace($Path)) {
+    $normalized = Normalize-HarnessPath -Path $Path
+    if (-not $normalized) {
         return $false
     }
-    $normalized = $Path -replace '\\', '/'
 
-    $blockedPatterns = @(
-        '/web/src/generated/',
-        '/contracts/openapi/.build/',
-        '/node_modules/',
-        '/bin/',
-        '/obj/',
-        '/.env',
-        '/.mcp.json'
-    )
-
-    foreach ($pattern in $blockedPatterns) {
-        if ($normalized -match [regex]::Escape($pattern)) {
-            return $true
-        }
-    }
-    return $false
+    $policy = Get-HarnessPolicy
+    return $null -ne (Get-MatchingPolicyRule -Rules $policy.protectedEditPaths -Value $normalized)
 }
 
 function Get-BlockedEditReason {
     param([string]$Path)
-    $normalized = $Path -replace '\\', '/'
-    if ($normalized -match '/web/src/generated/') {
-        return 'web/src/generated/ is codegen output - run yarn api:codegen instead of editing by hand.'
-    }
-    if ($normalized -match '/contracts/openapi/.build/') {
-        return 'contracts/openapi/.build/ is build output - edit contracts/openapi/api.v1.yaml or run api:export.'
-    }
-    if ($normalized -match '/\.env|/\.mcp\.json') {
-        return 'Secrets and local MCP config must not be edited by the agent.'
+    $normalized = Normalize-HarnessPath -Path $Path
+    $policy = Get-HarnessPolicy
+    $rule = Get-MatchingPolicyRule -Rules $policy.protectedEditPaths -Value $normalized
+    if ($rule) {
+        return [string]$rule.reason
     }
     return 'This path is protected by the agent harness.'
 }
@@ -45,38 +68,17 @@ function Test-DangerousShellCommand {
     if ([string]::IsNullOrWhiteSpace($Command)) {
         return $false
     }
-    $patterns = @(
-        'rm\s+-rf',
-        'Remove-Item\s+.*-Recurse\s+-Force',
-        'git\s+push\s+.*--force',
-        'git\s+push\s+-f\b',
-        'git\s+reset\s+--hard',
-        'git\s+clean\s+-fd',
-        'git\s+config\s+',
-        'npm\s+install',
-        'npm\s+i\b'
-    )
-    foreach ($pattern in $patterns) {
-        if ($Command -match $pattern) {
-            return $true
-        }
-    }
-    return $false
+
+    $policy = Get-HarnessPolicy
+    return $null -ne (Get-MatchingPolicyRule -Rules $policy.blockedShellCommands -Value $Command)
 }
 
 function Get-DangerousShellReason {
     param([string]$Command)
-    if ($Command -match 'rm\s+-rf|Remove-Item\s+.*-Recurse\s+-Force') {
-        return 'Destructive delete blocked by harness - use targeted file edits.'
-    }
-    if ($Command -match 'git\s+push\s+.*--force|git\s+push\s+-f\b|git\s+reset\s+--hard|git\s+clean\s+-fd') {
-        return 'Destructive git operation blocked - see user git safety rules.'
-    }
-    if ($Command -match 'git\s+config\s+') {
-        return 'git config changes are blocked.'
-    }
-    if ($Command -match 'npm\s+install|npm\s+i\b') {
-        return 'web/ uses Yarn only - use yarn --cwd web install.'
+    $policy = Get-HarnessPolicy
+    $rule = Get-MatchingPolicyRule -Rules $policy.blockedShellCommands -Value $Command
+    if ($rule) {
+        return [string]$rule.reason
     }
     return 'Command blocked by agent harness.'
 }
@@ -96,25 +98,12 @@ function Test-ShouldVerifyFile {
     }
     $rel = $rel -replace '\\', '/'
 
-    $skipPatterns = @(
-        '^\.codex/',
-        '^docs/',
-        '^\.github/',
-        '^README\.md$',
-        '\.md$',
-        '\.json$',
-        '\.yaml$',
-        '\.yml$',
-        '\.gitignore$',
-        '/Migrations/',
-        'web/src/generated/'
-    )
-
-    foreach ($pattern in $skipPatterns) {
-        if ($rel -match $pattern) {
+    $policy = Get-HarnessPolicy
+    foreach ($pattern in @($policy.verify.skipPatterns)) {
+        if ($rel -match [string]$pattern) {
             return $false
         }
     }
 
-    return ($rel -match '\.(cs|tsx?|jsx?|css)$|^tests/|^e2e/')
+    return ($rel -match [string]$policy.verify.verifiablePattern)
 }

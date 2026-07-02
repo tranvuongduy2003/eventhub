@@ -460,7 +460,7 @@ Next steps:
        API:    $ApiHttpsUrl  (HTTP $ApiHttpUrl)
        Web UI: $WebHttpsUrl
 
-Docs: README.md, docs/technical.md
+Docs: README.md, docs/_memory/source/technical-design.md
 MCP: .mcp.json is local-only (copy from .mcp.json.example); Postgres URI must match .env / AppHost.
 Re-run with -ForceEnvCopy to refresh .env, web\.env, and .mcp.json from templates.
 

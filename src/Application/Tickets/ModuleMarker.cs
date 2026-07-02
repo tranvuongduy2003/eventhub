@@ -1,4 +1,4 @@
 namespace EventHub.Application.Tickets;
 
-// BC-5 Ticketing — see docs/ddd.md
+// BC-5 Ticketing — see docs/_memory/source/domain-model-specification.md
 public static class ModuleMarker;

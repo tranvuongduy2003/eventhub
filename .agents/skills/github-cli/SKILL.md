@@ -78,49 +78,49 @@ gh pr create --title "Feature" --body "Description" --base main
 For comprehensive workflows and advanced usage, refer to these detailed guides:
 
 ### Repository Management
-See [REPO.md](REPO.md) for:
+Use `gh repo --help` for:
 - Creating and configuring repositories
 - Cloning and forking workflows
 - Repository settings and management
 - Branch protection and settings
 
 ### Issue Management
-See [ISSUES.md](ISSUES.md) for:
+Use `gh issue --help` for:
 - Creating and managing issues
 - Labels, milestones, and projects
 - Issue templates and automation
 - Searching and filtering issues
 
 ### Pull Request Workflows
-See [PR.md](PR.md) for:
+Use `gh pr --help` for:
 - Creating and managing pull requests
 - Code review workflows
 - PR checks and status
 - Merge strategies and options
 
 ### GitHub Actions & Workflows
-See [WORKFLOW.md](WORKFLOW.md) for:
+Use `gh workflow --help` and `gh run --help` for:
 - Listing and viewing workflows
 - Triggering workflow runs
 - Monitoring and debugging runs
 - Working with workflow artifacts
 
 ### Release Management
-See [RELEASE.md](RELEASE.md) for:
+Use `gh release --help` for:
 - Creating and managing releases
 - Uploading release assets
 - Draft releases and pre-releases
 - Release automation patterns
 
 ### Team Collaboration
-See [TEAM.md](TEAM.md) for:
+Use `gh repo`, `gh pr`, and `gh api` help for:
 - Multi-developer workflows
 - Code review best practices
 - Branch strategies for teams
 - Managing permissions and teams
 
 ### Solo Developer Workflows
-See [SOLO-DEV.md](SOLO-DEV.md) for:
+Use the quick command reference above for:
 - Personal project workflows
 - Quick PR and issue patterns
 - Efficient solo development with gh
@@ -247,12 +247,11 @@ Use this skill when the user wants to:
 
 ## Next Steps
 
-Based on the user's request, load the appropriate detailed guide:
-- Repository operations â†’ Load REPO.md
-- Issue management â†’ Load ISSUES.md
-- Pull request workflows â†’ Load PR.md
-- Workflow/Actions operations â†’ Load WORKFLOW.md
-- Release operations â†’ Load RELEASE.md
-- Team collaboration â†’ Load TEAM.md
-- Solo development â†’ Load SOLO-DEV.md
-
+Based on the user's request, use the matching `gh --help` namespace:
+- Repository operations â†’ `gh repo --help`
+- Issue management â†’ `gh issue --help`
+- Pull request workflows â†’ `gh pr --help`
+- Workflow/Actions operations â†’ `gh workflow --help` and `gh run --help`
+- Release operations â†’ `gh release --help`
+- Team collaboration â†’ `gh repo`, `gh pr`, and `gh api`
+- Solo development â†’ quick command reference above

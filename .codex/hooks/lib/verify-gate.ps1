@@ -1,8 +1,17 @@
-# Verify gate — hard block via PreToolUse until post-edit verification passes.
+# Verify gate. Runtime state lives under .codex/state, not beside hook code.
 
 function Get-VerifyGatePath {
     param([string]$ProjectRoot)
-    $stateDir = Join-Path $ProjectRoot '.codex\hooks\state'
+
+    if (Get-Command Get-HarnessPolicy -ErrorAction SilentlyContinue) {
+        $policy = Get-HarnessPolicy
+        $stateRel = if ($policy.stateDirectory) { [string]$policy.stateDirectory } else { '.codex/state' }
+    }
+    else {
+        $stateRel = '.codex/state'
+    }
+
+    $stateDir = Join-Path $ProjectRoot ($stateRel -replace '/', '\')
     if (-not (Test-Path -LiteralPath $stateDir)) {
         New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
     }
@@ -48,6 +57,12 @@ function Clear-VerifyGate {
 
 function Test-ToolAllowedWhenGated {
     param([string]$ToolName)
-    $allowed = @('Read', 'Write', 'Edit', 'Grep', 'Glob')
+    if (Get-Command Get-HarnessPolicy -ErrorAction SilentlyContinue) {
+        $policy = Get-HarnessPolicy
+        $allowed = @($policy.verify.allowedToolsWhenGated)
+    }
+    else {
+        $allowed = @('Read', 'Write', 'Edit', 'Grep', 'Glob')
+    }
     return $allowed -contains $ToolName
 }
