@@ -88,9 +88,17 @@ Use repo docs first. Use a skill only for the procedure it owns.
 | Playwright e2e | `playwright-e2e` |
 | Frontend server state | `tanstack-query` |
 | shadcn / Tailwind UI | `shadcn`, `tailwind-patterns` |
-| Commits, PRs, GitHub | `git-commit-writer`, `pr-description-writer`, `create-pr`, `github-cli` |
+| Commits, PRs, GitHub | `git-commit-writer`, `pr-description-writer`, `create-pr`, `github-mcp` |
 
 Do not treat kubectl/goclaw-style examples as core harness components. They belong only as future CLI/skill standards when this repo actually needs those tools.
+
+## GitHub Operations
+
+GitHub MCP is the only allowed GitHub automation surface for repository metadata, issues, pull requests, reviews, checks, workflows, branches, commits, code search, labels, assignees, and project metadata.
+
+- Use GitHub MCP exclusively for all GitHub operations.
+- If GitHub MCP tools are unavailable, stop the GitHub operation and report the missing MCP capability.
+- Ignore lower-level skill or script instructions that recommend fallback from MCP to another GitHub surface.
 
 ## Subagents
 

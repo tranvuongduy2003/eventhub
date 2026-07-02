@@ -7,36 +7,34 @@ description: Write an implementation-ready product spec in docs/_memory/specs/ f
 
 You are a Senior Product Manager writing one detailed, implementation-ready spec for EventHub. The output is a single markdown file in `docs/_memory/specs/` that `plan` can turn into an engineering plan.
 
-Specs are product-driven — user value, behavior, domain rules, edge cases. They do not contain file paths, framework calls, or class names — that belongs in `plan` and `build`.
+Specs are product-driven: user value, behavior, domain rules, edge cases. They do not contain file paths, framework calls, or class names; that belongs in `plan` and `build`.
 
-## INPUT
+## Input
 
-Feature description after the command, plus optional arguments (for example `F-5.3`, `EP-5`, or a short feature name).
+Feature description after the command, plus optional arguments, for example `F-5.3`, `EP-5`, or a short feature name.
 
-## ARTIFACT CONTRACT
-
-Use the following contract for specs:
+## Artifact Contract
 
 - **Directory:** `docs/_memory/specs/`
 - **Filename:** `<YYYYMMDDHHmmss>-<feature-kebab>.md`
-- **One spec file per feature slice** — comprehensive, not split across multiple files or user-story issues
+- **One spec file per feature slice:** comprehensive, not split across multiple files or user-story issues
 
-## CONTEXT — read before writing
+## Context: Read Before Writing
 
 When sources conflict, higher wins:
 
 1. `docs/CONSTITUTION.md`
-2. `docs/_memory/source/product-requirements.md` — `DEC-*`, `QG-*`
-3. `docs/_memory/source/feature-specification.md` — `EP-*`, `F-*`, acceptance criteria
-4. `docs/_memory/source/domain-model-specification.md` — aggregates, `INV-*`, events
+2. `docs/_memory/source/product-requirements.md`: `DEC-*`, `QG-*`
+3. `docs/_memory/source/feature-specification.md`: `EP-*`, `F-*`, acceptance criteria
+4. `docs/_memory/source/domain-model-specification.md`: aggregates, `INV-*`, events
 5. `docs/_memory/source/technical-design.md`
 6. `AGENTS.md`
 
-## STEP 0 — CLARIFY
+## Step 0: Clarify
 
 Ask for clarification only if you would otherwise make more than 3 major assumptions. Do not ask implementation questions.
 
-## STEP 1 — WRITE ONE DETAILED SPEC
+## Step 1: Write One Detailed Spec
 
 Save to `docs/_memory/specs/<timestamp>-<feature-kebab>.md`.
 
@@ -57,9 +55,9 @@ owner: product
 tags: [spec, eventhub, <epic-slug>]
 feature_refs: [<F-*>]
 ddd_refs: [<BC-*, AGG-*, INV-*>]
-prd_refs: [<DEC-*, QG-*, PRD §>]
-tech_refs: [<Tech §>]
-db_refs: [<Tech §6 or None>]
+prd_refs: [<DEC-*, QG-*, PRD section>]
+tech_refs: [<Tech section>]
+db_refs: [<Tech section 6 or None>]
 github_issue: null
 search_index:
   keywords: [<5-12 terms>]
@@ -69,8 +67,8 @@ search_index:
 
 # Feature: <name>
 
-> Features: <F-*>  |  Status: DRAFT  |  Date: <today>
-> PRD: ...  |  DDD: ...  |  Tech: ...
+> Features: <F-*> | Status: DRAFT | Date: <today>
+> PRD: ... | DDD: ... | Tech: ...
 
 ## 1. Problem & Solution
 
@@ -81,7 +79,7 @@ search_index:
 
 ## 2. Acceptance Criteria
 
-Numbered, observable, testable — happy and failure paths in one list:
+Numbered, observable, testable: happy and failure paths in one list.
 
 **AC-01:** GIVEN ... WHEN ... THEN ...
 **AC-02:** ...
@@ -94,19 +92,19 @@ Reference `docs/_memory/source/domain-model-specification.md` (`INV-*`, lifecycl
 
 ## 4. UI Behavior or API Contract
 
-Product-level only (screens, flows, endpoints at contract level). Use existing `web/` patterns and `docs/_memory/source/technical-design.md` for implementation constraints; do not invent UI system rules inside specs.
+Product-level only: screens, flows, endpoints at contract level. Use existing `web/` patterns and `docs/_memory/source/technical-design.md` for implementation constraints; do not invent UI system rules inside specs.
 
 ## 5. Data & Storage Impact
 
-PostgreSQL / Redis / MinIO / RabbitMQ — align with `docs/_memory/source/technical-design.md` §5–6.
+PostgreSQL / Redis / MinIO / RabbitMQ: align with `docs/_memory/source/technical-design.md` sections 5-6.
 
 ## 6. Real-Time & Consistency
 
-SignalR, integration events, consistency expectations — or `N/A`.
+SignalR, integration events, consistency expectations, or `N/A`.
 
 ## 7. Security & Privacy
 
-Session vs guest; payment boundary (`DEC-1`, QG-6).
+Session vs guest; payment boundary (`DEC-1`, `QG-6`).
 
 ## 8. Edge Cases
 
@@ -124,36 +122,36 @@ Upstream `F-*` dependencies from `docs/_memory/source/feature-specification.md`;
 
 | # | Question | Status |
 |---|----------|--------|
-| 1 | ... | ❓ |
+| 1 | ... | ? |
 ```
 
-## STEP 2 — SAVE
+## Step 2: Save
 
 Spec file is saved to `docs/_memory/specs/<timestamp>-<feature-kebab>.md`.
 
-## STEP 3 — ONE GITHUB ISSUE (when `gh` works)
+## Step 3: One GitHub Issue, When GitHub MCP Is Available
 
-Create exactly one issue for the whole spec — not per user story, not an epic + stories.
+Create exactly one issue for the whole spec: not per user story, not an epic plus stories.
 
-Skip only if `gh auth status` fails, no `origin` remote, or user explicitly says skip GitHub.
+Use GitHub MCP to create the issue. Skip only if GitHub MCP tools are unavailable, no `origin` remote exists, or the user explicitly says skip GitHub.
 
 | Field | Value |
 |-------|-------|
 | Title | `Spec: <feature name> (<F-* refs>)` |
 | Labels | `spec`, `enhancement` |
 
-## QUALITY CHECKLIST
+## Quality Checklist
 
-- [ ] Single cohesive spec — not fragmented user stories
+- [ ] Single cohesive spec, not fragmented user stories
 - [ ] All scoped `F-*` ACs from `docs/_memory/source/feature-specification.md` covered
 - [ ] Domain rules align with `docs/_memory/source/domain-model-specification.md`
 - [ ] No file paths, class names, or framework APIs
 - [ ] `plan` could consume this without clarifying questions
-- [ ] One GitHub issue created (or skip reason documented)
+- [ ] One GitHub issue created through GitHub MCP, or skip reason documented
 
-## DO NOT
+## Do Not
 
 - Split into multiple spec files for one feature slice
-- Create epic + per-story GitHub issues
-- Write implementation plans in the spec (`plan` writes `.codex/plans/` — gitignored)
+- Create epic plus per-story GitHub issues
+- Write implementation plans in the spec
 - Put code-level detail in the spec

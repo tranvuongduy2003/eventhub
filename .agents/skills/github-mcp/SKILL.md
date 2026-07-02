@@ -1,6 +1,6 @@
 ---
 name: github-mcp
-description: Use the GitHub remote MCP server for repository, issue, pull request, workflow, branch, commit, and code-search operations. Use when the user mentions GitHub MCP, remote GitHub MCP, GitHub issues, PRs, review threads, Actions, repository metadata, or wants GitHub data through the configured MCP server instead of gh CLI.
+description: Use the GitHub remote MCP server for repository, issue, pull request, workflow, branch, commit, and code-search operations. Use for all GitHub automation in this repository.
 ---
 
 # GitHub MCP
@@ -20,8 +20,8 @@ Use the `github` MCP server configured in `.mcp.json`:
 
 ## Priority
 
-1. Prefer GitHub MCP tools when they are available in the active tool list.
-2. Use `github-cli` / `gh` only as a fallback when MCP tools are not exposed, a workflow needs a `gh`-only feature, or the user explicitly asks for CLI.
+1. Use GitHub MCP tools for all GitHub automation.
+2. Do not use command-line or direct HTTP GitHub surfaces for GitHub operations.
 3. Never put GitHub tokens or OAuth values in `.mcp.json`; the remote MCP handles authentication through the host client.
 
 ## Before Acting
@@ -33,7 +33,7 @@ git remote -v
 git branch --show-current
 ```
 
-- If GitHub MCP tools are missing from the session, say the `github` MCP server is configured but not currently exposed, then use `gh` only if authenticated and appropriate.
+- If GitHub MCP tools are missing from the session, stop the GitHub operation and report that the MCP capability is unavailable.
 - For destructive actions such as closing issues, deleting branches, merging PRs, cancelling workflows, or changing repository settings, ask for explicit confirmation unless the user already gave that exact instruction.
 
 ## Common Workflows
@@ -58,4 +58,4 @@ Use MCP to inspect workflow runs, jobs, logs, and check conclusions. If logs are
 
 - Include repository owner/name and concrete issue/PR/run numbers when reporting results.
 - Distinguish live GitHub state from local git state.
-- Do not invent GitHub state if MCP/CLI access is unavailable.
+- Do not invent GitHub state if MCP access is unavailable.
