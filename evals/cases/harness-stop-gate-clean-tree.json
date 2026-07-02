@@ -4,7 +4,7 @@
   "description": "stop hook allows done when verify gate clear and the evaluated project tree is clean",
   "run": {
     "type": "command",
-    "command": "$tmp = New-Item -ItemType Directory -Force -Path (Join-Path $env:TEMP ('eventhub-stop-eval-' + [guid]::NewGuid())); $env:CODEX_PROJECT_DIR = $tmp.FullName; Get-Content -Raw -Encoding UTF8 evals/fixtures/stop-completed.json | powershell -NoProfile -ExecutionPolicy Bypass -File .codex/hooks/stop-gate.ps1; $exitCode = $LASTEXITCODE; Remove-Item -Recurse -Force -LiteralPath $tmp.FullName; cmd /c exit $exitCode"
+    "command": "$tmp = New-Item -ItemType Directory -Force -Path (Join-Path $env:TEMP ('eventhub-stop-eval-' + [guid]::NewGuid())); $env:CODEX_PROJECT_DIR = $tmp.FullName; Get-Content -Raw -Encoding UTF8 evals/fixtures/stop-completed.json | powershell -NoProfile -ExecutionPolicy Bypass -File .codex/hooks/stop-gate.ps1; $exitCode = $LASTEXITCODE; Remove-Item -Recurse -Force -LiteralPath $tmp.FullName; powershell -NoProfile -Command \"exit $exitCode\""
   },
   "assert": {
     "exitCode": 0,

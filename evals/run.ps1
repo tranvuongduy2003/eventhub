@@ -39,6 +39,33 @@ function Get-HookPowerShellExe {
 
 $script:HookPowerShellExe = Get-HookPowerShellExe
 
+function powershell {
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [object]$InputObject,
+
+        [Parameter(ValueFromRemainingArguments = $true)]
+        [string[]]$ArgumentList
+    )
+
+    begin {
+        $pipelineInput = New-Object System.Collections.Generic.List[object]
+    }
+    process {
+        if ($null -ne $InputObject) {
+            $pipelineInput.Add($InputObject) | Out-Null
+        }
+    }
+    end {
+        if ($pipelineInput.Count -gt 0) {
+            $pipelineInput.ToArray() | & $script:HookPowerShellExe @ArgumentList
+        }
+        else {
+            & $script:HookPowerShellExe @ArgumentList
+        }
+    }
+}
+
 function Expand-FixtureText {
     param([string]$Text)
     return $Text.Replace('{{PROJECT_ROOT}}', $repoRoot.Replace('\', '/'))
@@ -119,6 +146,7 @@ function Invoke-HookCase {
 function Invoke-CommandCase {
     param([string]$Command)
     $expanded = Expand-FixtureText $Command
+    $LASTEXITCODE = 0
     $output = Invoke-Expression $expanded 2>&1 | Out-String
     return @{
         ExitCode = $LASTEXITCODE
