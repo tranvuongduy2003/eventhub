@@ -16,7 +16,9 @@ const repoRoot = resolve(__dirname, '..');
 
 function loadGraph() {
   try {
-    return JSON.parse(readFileSync(join(repoRoot, '.graph', 'index.json'), 'utf8'));
+    return JSON.parse(
+      readFileSync(join(repoRoot, '.graph', 'index.json'), 'utf8').replace(/^\uFEFF/, ''),
+    );
   } catch {
     return { version: 1, layers: {}, skipPatterns: [] };
   }
@@ -51,6 +53,12 @@ function featureSegment(rel, layerPrefix) {
   return seg && !seg.includes('.') ? seg : null;
 }
 
+function matchingLayers(rel, graph) {
+  return Object.entries(graph.layers ?? {})
+    .filter(([prefix]) => rel.startsWith(prefix))
+    .sort(([left], [right]) => right.length - left.length);
+}
+
 function buildSteps(rel, graph) {
   const steps = [];
 
@@ -62,9 +70,7 @@ function buildSteps(rel, graph) {
   if (rel.endsWith('.cs')) {
     steps.push({ kind: 'dotnet-format', file: rel });
 
-    for (const [prefix, cfg] of Object.entries(graph.layers ?? {})) {
-      if (!rel.startsWith(prefix)) continue;
-
+    for (const [prefix, cfg] of matchingLayers(rel, graph)) {
       const feature =
         cfg.namespaceFromSegment === true ? featureSegment(rel, prefix) : null;
 
@@ -79,8 +85,7 @@ function buildSteps(rel, graph) {
     }
   }
 
-  for (const [prefix, cfg] of Object.entries(graph.layers ?? {})) {
-    if (!rel.startsWith(prefix)) continue;
+  for (const [, cfg] of matchingLayers(rel, graph)) {
     if (cfg.postEditAction === 'test' && cfg.testCommand) {
       steps.push({ kind: 'shell-test', command: cfg.testCommand });
     }

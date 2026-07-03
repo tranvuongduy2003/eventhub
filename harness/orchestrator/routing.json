@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "defaultWorkflow": "spec-plan-cook",
+  "workflows": {
+    "spec-plan-cook": {
+      "steps": [
+        {
+          "name": "spec",
+          "skill": "spec",
+          "requiresHarnessImpact": true
+        },
+        {
+          "name": "plan",
+          "skill": "plan",
+          "requiresHarnessImpactTable": true
+        },
+        {
+          "name": "cook",
+          "skill": "cook",
+          "requiresHarnessImpactGate": true
+        }
+      ]
+    },
+    "harness-lane-change": {
+      "laneSkills": {
+        "evals": "harness-evals",
+        "orchestrator": "harness-orchestrator",
+        "policies": "harness-policies",
+        "telemetry": "harness-telemetry",
+        "tools": "harness-tools"
+      },
+      "requiredValidation": [
+        "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Get-HarnessStatus.ps1 -Json",
+        "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness"
+      ]
+    }
+  },
+  "stopConditions": {
+    "complete": [
+      "changed-code verification passed",
+      "harness lane validation passed when a harness lane changed"
+    ],
+    "blocked": [
+      "policy denied required action",
+      "required external state unavailable"
+    ]
+  }
+}

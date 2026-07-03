@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "type": "object",
+  "required": [
+    "id",
+    "objective",
+    "workflow",
+    "harnessImpact",
+    "stopConditions"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^task-[0-9]{14}-[a-z0-9-]+$"
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workflow": {
+      "type": "string",
+      "enum": [
+        "spec",
+        "plan",
+        "cook",
+        "harness"
+      ]
+    },
+    "relatedSpec": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "planPath": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "harnessImpact": {
+      "type": "object",
+      "required": [
+        "evals",
+        "orchestrator",
+        "policies",
+        "telemetry",
+        "tools",
+        "workflow"
+      ],
+      "properties": {
+        "evals": {
+          "$ref": "#/$defs/impactLane"
+        },
+        "orchestrator": {
+          "$ref": "#/$defs/impactLane"
+        },
+        "policies": {
+          "$ref": "#/$defs/impactLane"
+        },
+        "telemetry": {
+          "$ref": "#/$defs/impactLane"
+        },
+        "tools": {
+          "$ref": "#/$defs/impactLane"
+        },
+        "workflow": {
+          "$ref": "#/$defs/impactLane"
+        }
+      }
+    },
+    "stopConditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "checks-passed",
+          "blocked",
+          "user-stop",
+          "policy-denied"
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "impactLane": {
+      "type": "object",
+      "required": [
+        "status",
+        "files",
+        "validation"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "none",
+            "planned",
+            "changed"
+          ]
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "validation": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

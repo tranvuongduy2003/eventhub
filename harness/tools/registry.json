@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "tools": {
+    "verify-changed-code": {
+      "mode": "read-and-execute-checks",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1",
+      "jsonCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1 -Json",
+      "output": "status, commands, files, errors",
+      "sideEffects": [
+        ".codex/state/verify-changed-code-latest.json"
+      ]
+    },
+    "test-harness-policy": {
+      "mode": "read-only-check",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-HarnessPolicy.ps1 -Json",
+      "output": "status, errors, timestamp"
+    },
+    "get-harness-status": {
+      "mode": "read-only-check",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Get-HarnessStatus.ps1 -Json",
+      "output": "status, lanes, artifacts, errors, timestamp"
+    },
+    "new-harness-skill": {
+      "mode": "write",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/New-HarnessSkill.ps1 -Lane <lane>",
+      "output": "status, lane, path, reason",
+      "approval": "required when overwriting with -Force"
+    },
+    "eval-runner": {
+      "mode": "execute-checks",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness",
+      "output": "passed, failed, skipped, cases",
+      "sideEffects": [
+        "harness/evals/results/latest.json",
+        "harness/evals/results/run-*.json"
+      ]
+    }
+  }
+}

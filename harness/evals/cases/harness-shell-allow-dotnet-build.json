@@ -1,0 +1,14 @@
+{
+  "id": "harness-shell-allow-dotnet-build",
+  "layer": "harness",
+  "description": "beforeShellExecution allows dotnet build",
+  "run": {
+    "type": "hook",
+    "script": ".codex/hooks/before-shell-guard.ps1",
+    "stdinFixture": "harness/evals/fixtures/shell-dotnet-build.json"
+  },
+  "assert": {
+    "exitCode": 0,
+    "json": { "permission": "allow" }
+  }
+}

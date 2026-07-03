@@ -34,17 +34,156 @@ function Test-VerifyExpectation {
     }
 }
 
+function Test-PathAbsent {
+    param([string]$RelativePath)
+
+    $path = Join-Path $repoRoot ($RelativePath -replace '/', '\')
+    if (Test-Path -LiteralPath $path) {
+        Add-Error "Path must not exist: $RelativePath"
+    }
+}
+
+function Test-FileContains {
+    param(
+        [string]$RelativePath,
+        [string[]]$Needles
+    )
+
+    $path = Join-Path $repoRoot ($RelativePath -replace '/', '\')
+    if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+        Add-Error "Missing file for content check: $RelativePath"
+        return
+    }
+
+    $text = Get-Content -LiteralPath $path -Raw -Encoding UTF8
+    foreach ($needle in $Needles) {
+        if ($text -notmatch [regex]::Escape($needle)) {
+            Add-Error "$RelativePath missing required text: $needle"
+        }
+    }
+}
+
 foreach ($path in @(
     'AGENTS.md',
     '.agents/skills/spec/SKILL.md',
+    '.agents/skills/harness-evals/SKILL.md',
+    '.agents/skills/harness-orchestrator/SKILL.md',
+    '.agents/skills/harness-policies/SKILL.md',
+    '.agents/skills/harness-telemetry/SKILL.md',
+    '.agents/skills/harness-tools/SKILL.md',
     '.codex/policies/harness-policy.json',
     '.graph/index.json',
     'docs/_memory/source/harness-architecture.md',
     'docs/_memory/specs/README.md',
+    'harness/manifest.json',
+    'harness/orchestrator/routing.json',
+    'harness/orchestrator/task-spec.schema.json',
+    'harness/policies/runtime-policy.json',
+    'harness/telemetry/events.schema.json',
+    'harness/tools/registry.json',
+    'scripts/agent/Get-HarnessStatus.ps1',
+    'scripts/agent/New-HarnessSkill.ps1',
     'scripts/agent/Test-DocsMemory.ps1',
-    'evals/cases/harness-docs-memory-lifecycle.json'
+    'harness/evals/cases/harness-runtime-status.json',
+    'harness/evals/cases/harness-docs-memory-lifecycle.json'
 )) {
     Test-VerifyExpectation -RelativePath $path -Expected $true
+}
+
+Test-PathAbsent 'evals'
+Test-PathAbsent 'harness/README.md'
+Test-PathAbsent 'harness/orchestrator/README.md'
+Test-PathAbsent 'harness/policies/README.md'
+Test-PathAbsent 'harness/telemetry/README.md'
+Test-PathAbsent 'harness/tools/README.md'
+
+Test-FileContains '.agents/skills/spec/SKILL.md' @(
+    '## 7. Harness Impact',
+    'evals/',
+    'harness/orchestrator/',
+    'harness/telemetry/',
+    'harness/tools/'
+)
+
+Test-FileContains '.agents/skills/plan/SKILL.md' @(
+    '## Harness Impact',
+    'evals/',
+    'harness/orchestrator/',
+    'harness/telemetry/',
+    'harness/tools/'
+)
+
+Test-FileContains '.agents/skills/cook/SKILL.md' @(
+    '## Step 1b: Harness Impact Gate',
+    'harness/evals/run.ps1 -Layer harness',
+    'harness/telemetry/',
+    'harness/tools/'
+)
+
+Test-FileContains 'docs/_memory/source/harness-architecture.md' @(
+    'Workflow Harness Contract',
+    'spec',
+    'plan',
+    'cook',
+    'Do not add a root `evals/` tree'
+)
+
+Test-FileContains 'harness/evals/README.md' @(
+    'harness/evals/',
+    'Do not add root `evals/`'
+)
+
+Test-FileContains 'AGENTS.md' @(
+    'harness-evals',
+    'harness-orchestrator',
+    'harness-policies',
+    'harness-telemetry',
+    'harness-tools'
+)
+
+Test-FileContains 'docs/_memory/source/harness-architecture.md' @(
+    'Harness Lane Skills',
+    'scripts/agent/New-HarnessSkill.ps1'
+)
+
+Test-FileContains 'scripts/agent/New-HarnessSkill.ps1' @(
+    'ValidateSet(''evals'', ''orchestrator'', ''policies'', ''telemetry'', ''tools'')',
+    '.agents\skills\',
+    'harness/evals/'
+)
+
+Test-FileContains 'scripts/agent/Get-HarnessStatus.ps1' @(
+    'harness/manifest.json',
+    'harness/orchestrator/routing.json',
+    'harness/policies/runtime-policy.json',
+    'harness/telemetry/events.schema.json',
+    'harness/tools/registry.json',
+    'Forbidden placeholder path exists'
+)
+
+Test-FileContains 'harness/manifest.json' @(
+    '"statusCommand"',
+    '"evalCommand"',
+    '"orchestrator"',
+    '"policies"',
+    '"telemetry"',
+    '"tools"'
+)
+
+foreach ($skill in @(
+    'harness-evals',
+    'harness-orchestrator',
+    'harness-policies',
+    'harness-telemetry',
+    'harness-tools'
+)) {
+    Test-FileContains ".agents/skills/$skill/SKILL.md" @(
+        "name: $skill",
+        '## Read First',
+        '## Workflow',
+        '## Validation',
+        '## Do Not'
+    )
 }
 
 foreach ($path in @(

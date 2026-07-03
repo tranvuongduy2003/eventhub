@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness Evals"
+  short_description: "Create and maintain EventHub harness eval cases."
+  default_prompt: "Use harness-evals to add or update EventHub eval cases and verification evidence."

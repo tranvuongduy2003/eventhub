@@ -102,23 +102,38 @@ PostgreSQL / Redis / MinIO / RabbitMQ: align with `docs/_memory/source/technical
 
 SignalR, integration events, consistency expectations, or `N/A`.
 
-## 7. Security & Privacy
+## 7. Harness Impact
+
+This section is mandatory for every spec, even when the answer is `N/A`.
+
+Record whether the feature changes any agent harness surface:
+
+- `harness/evals/` cases, fixtures, runner behavior, or expected evidence
+- `harness/orchestrator/` runtime contract, routing, handoffs, or stop conditions
+- `.codex/policies/` or `harness/policies/` permission, approval, or guardrail policy
+- `harness/telemetry/` traces, logs, metrics, or improvement-loop evidence
+- `harness/tools/` tool adapters, CLI contracts, MCP usage, or hosted tool assumptions
+- `.agents/skills/`, `.codex/hooks/`, `scripts/agent/`, `.graph/`, or AGENTS.md workflow rules
+
+If there is no impact, write: `N/A - product slice only; no harness behavior changes.` Do not omit the section.
+
+## 8. Security & Privacy
 
 Session vs guest; payment boundary (`DEC-1`, `QG-6`).
 
-## 8. Edge Cases
+## 9. Edge Cases
 
 EC-01: ...
 
-## 9. Dependencies & Risks
+## 10. Dependencies & Risks
 
 Upstream `F-*` dependencies from `docs/_memory/source/feature-specification.md`; key delivery risks.
 
-## 10. Assumptions
+## 11. Assumptions
 
-## 11. Out of Scope
+## 12. Out of Scope
 
-## 12. Open Questions
+## 13. Open Questions
 
 | # | Question | Status |
 |---|----------|--------|
@@ -145,6 +160,7 @@ Use GitHub MCP to create the issue. Skip only if GitHub MCP tools are unavailabl
 - [ ] Single cohesive spec, not fragmented user stories
 - [ ] All scoped `F-*` ACs from `docs/_memory/source/feature-specification.md` covered
 - [ ] Domain rules align with `docs/_memory/source/domain-model-specification.md`
+- [ ] Harness Impact section records evals, orchestrator, policies, telemetry, tools, or states `N/A`
 - [ ] No file paths, class names, or framework APIs
 - [ ] `plan` could consume this without clarifying questions
 - [ ] One GitHub issue created through GitHub MCP, or skip reason documented

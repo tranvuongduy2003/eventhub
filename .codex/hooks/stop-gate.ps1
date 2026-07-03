@@ -30,7 +30,7 @@ if ($errors.Count -gt 0) {
     if ($detail.Length -gt 1500) {
         $detail = $detail.Substring(0, 1500) + '...'
     }
-    Send-StopBlock "Stop gate: objective checks failed - not done yet. Fix the issues below, then continue.`n`n- $detail`n`nRun locally: .\evals\run.ps1 -Layer harness; dotnet test; yarn --cwd web exec tsc -b --noEmit"
+    Send-StopBlock "Stop gate: objective checks failed - not done yet. Fix the issues below, then continue.`n`n- $detail`n`nRun locally: .\harness\evals\run.ps1 -Layer harness; dotnet test; yarn --cwd web exec tsc -b --noEmit"
 }
 
 Write-HookJson @{
