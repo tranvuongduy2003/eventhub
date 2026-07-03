@@ -1,4 +1,4 @@
-﻿---
+---
 artifact_type: spec
 artifact_version: 1
 id: spec-20260703003908-select-tickets-and-start-checkout
@@ -15,14 +15,12 @@ ddd_refs: ["BC-2", "BC-3", "AGG-Event", "AGG-Order", "ENT-TicketType", "ENT-Rese
 prd_refs: ["DEC-1", "DEC-3", "QG-1", "QG-2", "QG-4", "QG-5", "QG-6"]
 tech_refs: ["Tech Section 4", "Tech Section 5", "Tech Section 6", "Tech Section 7"]
 db_refs: ["Tech Section 6"]
-github_issue: null
+github_issue: "https://github.com/tranvuongduy2003/eventhub/issues/61"
 search_index:
   keywords: [tickets, checkout, quantity, availability, order, attendee, buyer, purchase, limits, inventory, mobile]
   bounded_contexts: ["Event Management", "Sales"]
   user_personas: ["PER-A1", "PER-A2"]
 ---
-
-> GitHub: skipped - gh auth status reports an invalid default token for tranvuongduy2003.
 
 # Feature: Select tickets and start checkout
 
