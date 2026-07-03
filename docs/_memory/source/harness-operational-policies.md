@@ -46,13 +46,13 @@ Use this order:
 For hook, graph, or agent harness changes:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer harness
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness
 ```
 
 For `.graph/index.json` or `scripts/affected-tests.mjs` changes:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer graph
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer graph
 ```
 
 ## State And Memory
@@ -72,7 +72,7 @@ Ignored:
 - `.codex/plans/`
 - `.codex/notes/progress.md`
 - `.codex/agent-memory/*.md`
-- `evals/results/`
+- `harness/evals/results/`
 
 Do not place durable policy in ignored state files.
 
@@ -96,3 +96,52 @@ When the harness fails or blocks incorrectly:
    - hook for lifecycle handling
    - graph for verification scope
 4. Run the relevant eval layer.
+
+## Spec Plan Cook Contract
+
+Harness impact is part of normal delivery, not an afterthought:
+
+- `spec` must include a Harness Impact section and state `N/A` only when evals, orchestrator, policies, telemetry, tools, hooks, skills, scripts, graph, and AGENTS.md are unaffected.
+- `plan` must include a Harness Impact table with each lane resolved to files and validation, or `N/A`.
+- `cook` must update the plan when implementation discovers harness impact and must run `harness/evals/run.ps1 -Layer harness` after harness changes.
+
+The only committed eval tree is `harness/evals/`. Store runtime-orchestration eval cases there and do not create a root `evals/` tree.
+
+## Harness Skill Operations
+
+Dedicated lane skills keep harness work explicit:
+
+- `harness-evals` for eval cases, fixtures, runner assertions, and evidence format.
+- `harness-orchestrator` for runtime routing, handoffs, retries, approvals, and stop conditions.
+- `harness-policies` for guardrails, permissions, approvals, protected paths, and policy evals.
+- `harness-telemetry` for traces, logs, metrics, sanitized run evidence, and improvement-loop records.
+- `harness-tools` for hosted tool, MCP, and local CLI adapter contracts.
+
+When adding another harness lane, create the repo-local skill with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/New-HarnessSkill.ps1 -Lane <lane>
+```
+
+Then update `AGENTS.md`, this source memory, and harness eval coverage in the same change.
+
+## Runtime Artifact Policy
+
+The `harness/` directory stores machine-readable contracts, not placeholder README files.
+
+Required artifacts:
+
+- `harness/manifest.json`
+- `harness/orchestrator/task-spec.schema.json`
+- `harness/orchestrator/routing.json`
+- `harness/policies/runtime-policy.json`
+- `harness/telemetry/events.schema.json`
+- `harness/tools/registry.json`
+
+Validate them with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Get-HarnessStatus.ps1 -Json
+```
+
+The status command must fail if placeholder `README.md` files appear under the harness runtime contract directories.

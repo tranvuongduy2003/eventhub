@@ -1,0 +1,15 @@
+{
+  "id": "harness-runtime-status",
+  "layer": "harness",
+  "description": "Harness runtime contract artifacts are present, parseable, and free of placeholder README scaffolds",
+  "run": {
+    "type": "command",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Get-HarnessStatus.ps1 -Json"
+  },
+  "assert": {
+    "exitCode": 0,
+    "jsonStdout": {
+      "status": "passed"
+    }
+  }
+}

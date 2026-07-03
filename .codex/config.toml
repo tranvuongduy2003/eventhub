@@ -50,8 +50,9 @@ args = [
   "run",
   "-i",
   "--rm",
+  "--name", "eventhub-github-mcp-server",
   "-e", "GITHUB_PERSONAL_ACCESS_TOKEN",
-  "-e", "GITHUB_TOOLSETS=default,pull_requests,repos,issues",
+  "-e", "GITHUB_TOOLSETS=all",
   "ghcr.io/github/github-mcp-server"
 ]
 env_vars = ["GITHUB_PERSONAL_ACCESS_TOKEN"]

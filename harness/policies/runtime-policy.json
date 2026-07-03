@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "permissionProfile": "workspace-write",
+  "approvalPolicy": "on-request-for-side-effects",
+  "policySource": ".codex/policies/harness-policy.json",
+  "stateDirectory": ".codex/state",
+  "protectedEditPaths": [
+    "web/src/generated/",
+    "contracts/openapi/.build/",
+    "node_modules/",
+    "bin/",
+    "obj/",
+    ".env",
+    ".env.*",
+    ".mcp.json"
+  ],
+  "blockedCommandFamilies": [
+    "destructive-delete",
+    "destructive-git",
+    "git-config",
+    "npm-install"
+  ],
+  "enforcement": {
+    "preTool": ".codex/hooks/pre-tool-guard.ps1",
+    "preShell": ".codex/hooks/before-shell-guard.ps1",
+    "postEdit": ".codex/hooks/post-edit-verify.ps1",
+    "stop": ".codex/hooks/stop-gate.ps1"
+  },
+  "requiredValidation": [
+    "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-HarnessPolicy.ps1 -Json",
+    "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness"
+  ]
+}

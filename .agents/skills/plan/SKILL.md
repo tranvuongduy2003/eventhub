@@ -20,7 +20,7 @@ Read in order before delegating:
 
 1. Spec (ACs, scope, edge cases)
 2. `docs/CONSTITUTION.md` · `docs/_memory/source/domain-model-specification.md` · `docs/_memory/source/technical-design.md`
-3. `docs/_memory/source/harness-architecture.md` when the plan changes agent workflow or verification
+3. `docs/_memory/source/harness-architecture.md` and `docs/_memory/source/harness-operational-policies.md`
 4. the current task notes if present
 
 Split ACs into research workstreams (skip empty streams):
@@ -53,11 +53,29 @@ Workers: readonly only · parallel OK · no product code · no plan file.
 | Finding | Route into plan as |
 |---------|-------------------|
 | AC -> files mapping | Task list with concrete paths |
+| Spec Harness Impact -> evals, orchestrator, policies, telemetry, tools | Dedicated Harness Impact section + task(s) when changed |
 | Cross-cutting concern | Dedicated task or Notes |
 | Unknown / conflict | Blockers section + ask user if blocking |
 | Out of scope | Omit (see `docs/_memory/source/product-requirements.md` §6.2) |
 
 De-duplicate overlapping worker results. Prefer Constitution -> spec -> domain model source memory on conflicts.
+
+## Harness Impact Triage
+
+Every plan must include a `## Harness Impact` section before the task list. Use the spec's Harness Impact section as the starting point, then verify against the intended files.
+
+Track each lane explicitly:
+
+| Lane | Plan entry |
+|------|------------|
+| `harness/evals/` | New/changed deterministic or manual cases, fixtures, runner assertions, or `N/A` |
+| `harness/orchestrator/` | Runtime routing, handoff, retry, approval, or stop-condition changes, or `N/A` |
+| `.codex/policies/`, `harness/policies/` | Guardrail, permission, approval, protected path, or verification policy changes, or `N/A` |
+| `harness/telemetry/` | Trace/log/metric/evidence changes, or `N/A` |
+| `harness/tools/` | Tool adapter, MCP, CLI, hosted-tool contract changes, or `N/A` |
+| Workflow surfaces | `.agents/skills/`, `.codex/hooks/`, `scripts/agent/`, `.graph/`, AGENTS.md changes, or `N/A` |
+
+If any lane is not `N/A`, add concrete tasks and validation commands for that harness work. Do not hide harness changes inside product tasks.
 
 ## Step 4: Write plan file
 
@@ -74,6 +92,17 @@ created_at: <ISO-8601>
 ```markdown
 # Plan: <title>
 
+## Harness Impact
+
+| Lane | Impact | Files | Validation |
+|------|--------|-------|------------|
+| evals | N/A or ... | `harness/evals/...` | `powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness` |
+| orchestrator | N/A or ... | `harness/orchestrator/...` | ... |
+| policies | N/A or ... | `.codex/policies/...` / `harness/policies/...` | ... |
+| telemetry | N/A or ... | `harness/telemetry/...` | ... |
+| tools | N/A or ... | `harness/tools/...` | ... |
+| workflow | N/A or ... | `.agents/skills/...` / `.codex/hooks/...` / `scripts/agent/...` / `.graph/...` / `AGENTS.md` | ... |
+
 **3–8 tasks.** Task 1 = vertical skeleton; last = polish/tests.
 
 | AC | Tasks |
@@ -89,7 +118,7 @@ created_at: <ISO-8601>
 
 ## Step 5: Validate
 
-Every AC mapped · 3–8 tasks · concrete paths · `build` can start without more research
+Every AC mapped · Harness Impact table completed · 3–8 tasks · concrete paths · `build` can start without more research
 
 ## Present
 

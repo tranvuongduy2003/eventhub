@@ -12,8 +12,8 @@ policy = ".codex/policies/harness-policy.json"
 hooks = ".codex/hooks"
 skills = ".agents/skills"
 verification_graph = ".graph/index.json"
-evals = "evals"
-runtime_scaffold = "harness"
+evals = "harness/evals"
+runtime_contract = "harness"
 
 [foundation_skills]
 repo_bootstrap = ".agents/skills/repo-bootstrap/SKILL.md"
@@ -24,7 +24,7 @@ pr_handoff = ".agents/skills/pr-handoff/SKILL.md"
 bootstrap = "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Repo-Bootstrap.ps1"
 verify_changed = "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1"
 handoff = "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/New-PrHandoff.ps1"
-eval_harness = "powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer harness"
+eval_harness = "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness"
 
 [future_runtime]
 provider_contract = "Responses API"

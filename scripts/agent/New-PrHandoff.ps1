@@ -38,7 +38,7 @@ foreach ($line in (Invoke-GitLines -ArgumentList @('ls-files', '--others', '--ex
 
 $files = @($changed | Select-Object -Unique)
 $verifyReportPath = Join-Path $repoRoot '.codex\state\verify-changed-code-latest.json'
-$latestEval = Join-Path $repoRoot 'evals\results\latest.json'
+$latestEval = Join-Path $repoRoot 'harness\evals\results\latest.json'
 $verifySummary = $null
 if (Test-Path -LiteralPath $verifyReportPath) {
     try {

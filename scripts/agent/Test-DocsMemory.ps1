@@ -82,7 +82,7 @@ function Test-MarkdownLinks {
             $relative.StartsWith('obj/') -or
             $relative.StartsWith('node_modules/') -or
             $relative.Contains('/node_modules/') -or
-            $relative.StartsWith('evals/results/') -or
+            $relative.StartsWith('harness/evals/results/') -or
             $relative.StartsWith('.codex/state/')) {
             return
         }
@@ -122,7 +122,7 @@ function Test-NoLegacyDocReferences {
         '/bin/',
         '/obj/',
         '/node_modules/',
-        '/evals/results/',
+        '/harness/evals/results/',
         '/.codex/state/'
     )
 
@@ -315,7 +315,7 @@ Test-FileContains 'docs/_memory/mocs/harness-memory.md' @(
 )
 
 $docsMemoryCommand = 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1'
-$harnessCommand = 'powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer harness'
+$harnessCommand = 'powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness'
 Test-GraphMapping 'docs/README.md' $docsMemoryCommand
 Test-GraphMapping 'docs/CONSTITUTION.md' $docsMemoryCommand
 Test-GraphMapping 'docs/.gitignore' $docsMemoryCommand

@@ -37,8 +37,8 @@ It is not a random collection of prompt notes, CLI examples, or product implemen
 | Execution scripts | `scripts/agent/` and `scripts/affected-tests.mjs` | Stable, agent-friendly command surface |
 | Verification graph | `.graph/index.json` | Path-to-check mapping for changed files |
 | State | `.codex/state/` | Runtime artifacts such as verify gate state; gitignored |
-| Evals | `evals/` | Deterministic regression checks for hooks, graph, and agent behavior |
-| Runtime scaffold | `harness/` | Future orchestration boundary; no EventHub product logic |
+| Evals | `harness/evals/` | Harness-owned eval surface for deterministic regression checks across hooks, graph, agent behavior, and future runtime behavior |
+| Runtime contract | `harness/` | Machine-readable orchestration, policy, telemetry, and tool contracts; no EventHub product logic |
 
 ## Boundaries
 
@@ -55,7 +55,31 @@ Memory has four lanes:
 
 Long-term memory is validated through `scripts/agent/Test-DocsMemory.ps1` and mapped in `.graph/index.json` for `docs/README.md`, `docs/.obsidian/`, and `docs/_memory/`.
 
-Monitoring is evidence for improvement, not decoration. `evals/results/latest.json`, hook outcomes, and command exit codes are the first observability layer.
+Monitoring is evidence for improvement, not decoration. `harness/evals/results/latest.json`, hook outcomes, and command exit codes are the first observability layer.
+
+## Workflow Harness Contract
+
+The `spec` -> `plan` -> `cook` workflow must keep harness impact explicit:
+
+- `spec` records whether the feature touches evals, orchestrator, policies, telemetry, tools, or workflow surfaces.
+- `plan` translates every non-`N/A` harness impact into concrete files, tasks, and validation commands.
+- `cook` stops on missing harness-impact planning, updates the plan when new harness impact appears, and runs harness evals for harness changes.
+
+Harness changes must not be hidden inside product implementation tasks. Changes to `harness/evals/`, `harness/orchestrator/`, `.codex/policies/`, `harness/policies/`, `harness/telemetry/`, `harness/tools/`, `.agents/skills/`, `.codex/hooks/`, `scripts/agent/`, `.graph/`, or AGENTS.md require visible plan entries and objective verification.
+
+## Harness Lane Skills
+
+Each harness lane has a dedicated repo-local skill with a standard professional format:
+
+| Lane | Skill | Owns |
+|---|---|---|
+| Evals | `harness-evals` | `harness/evals/` cases, fixtures, runner evidence, manual agent cases |
+| Orchestrator | `harness-orchestrator` | `harness/orchestrator/` TaskSpec routing, handoffs, retries, approvals, stop conditions |
+| Policies | `harness-policies` | `.codex/policies/`, `harness/policies/`, guardrails, permission and approval mapping |
+| Telemetry | `harness-telemetry` | `harness/telemetry/`, traces, logs, metrics, evidence, improvement-loop records |
+| Tools | `harness-tools` | `harness/tools/`, hosted tool, MCP, and local CLI adapter contracts |
+
+Use `scripts/agent/New-HarnessSkill.ps1` to scaffold or refresh a harness lane skill skeleton when a new lane is introduced or a lane skill needs standard metadata.
 
 ## Future Runtime
 
@@ -67,6 +91,24 @@ If EventHub needs an application-owned orchestrator, build it under `harness/` w
 
 Do not start new runtime work on Assistants API.
 
+All eval cases live under `harness/evals/` because evals are part of the harness. Do not add a root `evals/` tree; use case `layer` and `id` naming to distinguish runtime, hook, graph, and agent checks.
+
+## Runtime Artifacts
+
+The harness must expose real machine-readable artifacts, not placeholder README files:
+
+| Artifact | Purpose |
+|---|---|
+| `harness/manifest.json` | Lane registry, status command, eval command, and artifact inventory |
+| `harness/orchestrator/task-spec.schema.json` | TaskSpec and Harness Impact schema |
+| `harness/orchestrator/routing.json` | `spec` -> `plan` -> `cook` routing and lane-skill routing |
+| `harness/policies/runtime-policy.json` | Runtime permission, approval, protected path, and hook enforcement contract |
+| `harness/telemetry/events.schema.json` | Harness event schema and redaction contract |
+| `harness/tools/registry.json` | Agent-facing command/tool registry and side-effect declarations |
+| `scripts/agent/Get-HarnessStatus.ps1` | Status command that validates these artifacts and fails on placeholder README scaffolds |
+
+Do not add `README.md` files under `harness/`, `harness/orchestrator/`, `harness/policies/`, `harness/telemetry/`, or `harness/tools/`.
+
 ## Done Criteria
 
 The repo harness is useful when an agent can:
@@ -75,4 +117,5 @@ The repo harness is useful when an agent can:
 - map a diff to checks with `verify-changed-code`
 - hand off work with explicit files and verification evidence
 - rely on hooks to block protected paths and known-dangerous commands
-- run `evals/run.ps1 -Layer harness` after hook or policy changes
+- run `scripts/agent/Get-HarnessStatus.ps1 -Json` and get `status: passed`
+- run `harness/evals/run.ps1 -Layer harness` after hook or policy changes

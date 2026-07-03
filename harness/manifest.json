@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "status": "active",
+  "purpose": "EventHub agent harness runtime contract and lane registry.",
+  "singleEvalTree": "harness/evals/",
+  "statusCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Get-HarnessStatus.ps1 -Json",
+  "evalCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness",
+  "lanes": {
+    "evals": {
+      "skill": "harness-evals",
+      "root": "harness/evals/",
+      "artifacts": [
+        "harness/evals/run.ps1",
+        "harness/evals/cases/",
+        "harness/evals/fixtures/"
+      ]
+    },
+    "orchestrator": {
+      "skill": "harness-orchestrator",
+      "root": "harness/orchestrator/",
+      "artifacts": [
+        "harness/orchestrator/task-spec.schema.json",
+        "harness/orchestrator/routing.json"
+      ]
+    },
+    "policies": {
+      "skill": "harness-policies",
+      "root": "harness/policies/",
+      "artifacts": [
+        "harness/policies/runtime-policy.json",
+        ".codex/policies/harness-policy.json"
+      ]
+    },
+    "telemetry": {
+      "skill": "harness-telemetry",
+      "root": "harness/telemetry/",
+      "artifacts": [
+        "harness/telemetry/events.schema.json"
+      ]
+    },
+    "tools": {
+      "skill": "harness-tools",
+      "root": "harness/tools/",
+      "artifacts": [
+        "harness/tools/registry.json"
+      ]
+    }
+  }
+}

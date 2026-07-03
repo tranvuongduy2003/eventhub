@@ -18,7 +18,7 @@ Use `-Json` when another tool needs structured output.
 ## Required Inputs
 
 - Current git diff
-- Verification evidence from `verify-changed-code`, `evals/run.ps1`, `dotnet test`, or web checks
+- Verification evidence from `verify-changed-code`, `harness/evals/run.ps1`, `dotnet test`, or web checks
 
 ## Rules
 
@@ -35,4 +35,3 @@ Return:
 - Changed files
 - Verification
 - Risks and reviewer focus
-

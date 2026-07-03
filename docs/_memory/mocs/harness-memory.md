@@ -1,4 +1,4 @@
-﻿---
+---
 title: Harness Memory MOC
 type: moc
 status: active
@@ -29,7 +29,7 @@ It is not a pile of prompt examples or product implementation code.
 | Lifecycle hooks | `.codex/hooks/` |
 | Verification graph | `.graph/index.json` |
 | Runtime state | `.codex/state/` |
-| Evals | `evals/` |
+| Evals | `harness/evals/` |
 | Runtime scaffold | `harness/` |
 | Long-term docs memory checks | `scripts/agent/Test-DocsMemory.ps1` |
 

@@ -23,7 +23,7 @@ Execute the ephemeral plan using the evaluator-optimizer loop: generate -> verif
 
 ## Step 0: Read context
 
-`docs/CONSTITUTION.md` · `docs/_memory/source/domain-model-specification.md` · `docs/_memory/source/technical-design.md` · `docs/_memory/source/harness-architecture.md` · spec from plan `related_spec` · the current task notes.
+`docs/CONSTITUTION.md` · `docs/_memory/source/domain-model-specification.md` · `docs/_memory/source/technical-design.md` · `docs/_memory/source/harness-architecture.md` · `docs/_memory/source/harness-operational-policies.md` · spec from plan `related_spec` · the current task notes.
 
 ## Step 1: Parse input
 
@@ -38,6 +38,23 @@ Execute the ephemeral plan using the evaluator-optimizer loop: generate -> verif
 Branch: `feature/<slug>` from plan frontmatter; create from `main` if missing.
 
 If all tasks checked -> delete plan -> report done.
+
+## Step 1b: Harness Impact Gate
+
+Before editing code, read the plan's `## Harness Impact` section and mirror it into `progress.md` Decisions.
+
+For each non-`N/A` lane, keep the work visible as its own task or subtask:
+
+| Lane | Required handling |
+|------|-------------------|
+| `harness/evals/` | Add or update deterministic/manual cases before relying on new harness behavior |
+| `harness/orchestrator/` | Keep runtime routing, handoff, retry, approval, and stop-condition changes isolated from product code |
+| `.codex/policies/`, `harness/policies/` | Update guardrail/permission/approval policy and matching eval coverage together |
+| `harness/telemetry/` | Record trace/log/metric/evidence changes and how they feed the improvement loop |
+| `harness/tools/` | Document tool adapter, MCP, CLI, or hosted-tool contract changes |
+| Workflow surfaces | Update `.agents/skills/`, `.codex/hooks/`, `scripts/agent/`, `.graph/`, or AGENTS.md with matching verification |
+
+If the plan has no `## Harness Impact` section, stop and update the plan before implementation. If a harness impact appears during implementation, update the plan immediately instead of burying it in the final summary.
 
 ## Step 2: Context retrieval (parallel readonly — then you write)
 
@@ -99,6 +116,18 @@ Run the returned steps (EventHub stack — not npm):
 
 If web `.ts/.tsx` changed: `yarn --cwd web exec tsc -b --noEmit`.
 
+If any harness lane changed, also run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness
+```
+
+If `.graph/index.json` or `scripts/affected-tests.mjs` changed, also run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer graph
+```
+
 ### 3d. Optimize — loop until green
 
 Still red -> return to 3b. Do not mark task done. Do not declare session complete.
@@ -106,7 +135,7 @@ Still red -> return to 3b. Do not mark task done. Do not declare session complet
 Only when all steps exit 0:
 
 - Mark task `[x]` in plan
-- Update `progress.md` (`Status`, `Decisions`, `Next`)
+- Update `progress.md` (`Status`, `Decisions`, `Next`) with any harness lane touched
 
 ### 3e. Continue
 

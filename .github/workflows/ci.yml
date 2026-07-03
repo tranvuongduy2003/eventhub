@@ -66,14 +66,14 @@ jobs:
 
       - name: Run deterministic agent evals (harness + graph)
         shell: pwsh
-        run: ./evals/run.ps1
+        run: ./harness/evals/run.ps1
 
       - name: Upload eval report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: agent-evals
-          path: evals/results/latest.json
+          path: harness/evals/results/latest.json
 
       - name: Upload test results
         if: always()

@@ -43,7 +43,7 @@ contracts/ OpenAPI contract and codegen scripts
 .codex/    Codex config, hooks, policies, custom agents
 .agents/   repo-local skills
 .graph/    path-to-verification map
-evals/     deterministic harness/graph/agent evals
+harness/evals/ deterministic harness/graph/agent evals
 harness/   future orchestration runtime scaffold
 ```
 
@@ -55,8 +55,11 @@ Harness means the policy and orchestration layer around agent work, not ad-hoc p
 - Lifecycle hooks: `.codex/hooks/`
 - Runtime state: `.codex/state/` (gitignored)
 - Path-to-check graph: `.graph/index.json`
-- Deterministic evals: `evals/run.ps1`
+- Deterministic evals: `harness/evals/run.ps1` (evals are part of harness; do not add root `evals/`)
+- Runtime contract status: `scripts/agent/Get-HarnessStatus.ps1 -Json`
 - Stable agent scripts: `scripts/agent/`
+
+The `spec` -> `plan` -> `cook` workflow must keep harness impact explicit. Specs record whether evals, orchestrator, policies, telemetry, tools, or workflow surfaces are affected; plans map those lanes to files and validation; cook updates the plan when new harness impact appears and runs harness evals after harness changes.
 
 Default verification:
 
@@ -67,7 +70,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-Changed
 Run after harness or hook changes:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File evals/run.ps1 -Layer harness
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness
 ```
 
 ## Skill Routing
@@ -82,6 +85,11 @@ Use repo docs first. Use a skill only for the procedure it owns.
 | Product spec | `spec` |
 | Engineering plan from a spec | `plan` |
 | Implement an existing plan | `cook` |
+| Harness eval cases / runner evidence | `harness-evals` |
+| Harness orchestrator runtime contracts | `harness-orchestrator` |
+| Harness policies / guardrails / approvals | `harness-policies` |
+| Harness telemetry / traces / improvement evidence | `harness-telemetry` |
+| Harness tool adapters / CLI contracts | `harness-tools` |
 | OpenAPI export/codegen/CI verify | `openapi-contract-sync` |
 | Live DB read-only SQL | `postgres-mcp` |
 | Neo4j graph / GraphRAG | `neo4j-graphrag` |
