@@ -1,11 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { useParams } from 'react-router-dom'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
+import { paths } from '@/app/paths'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import * as checkoutApi from '@/features/checkout/api'
+import {
+  decodeTicketSelection,
+  encodeTicketSelection,
+  readStoredSelection,
+  selectionToLines,
+  writeCheckoutSnapshot,
+  writeStoredSelection,
+  type TicketSelection,
+} from '@/features/checkout/selection-storage'
+import { ApiError } from '@/types/api-problem'
 
 import * as eventsApi from '../api'
 import { CoverImageDisplay } from '../cover-image-display'
@@ -16,13 +28,45 @@ import { TicketTypeList } from '../components/ticket-type-list'
 
 export function PublicEventPage() {
   const { slug } = useParams<{ slug: string }>()
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const ctaSentinelRef = useRef<HTMLDivElement>(null)
   const [isCtaVisible, setIsCtaVisible] = useState(true)
+  const [quantities, setQuantities] = useState<TicketSelection>(() => {
+    const fromUrl = decodeTicketSelection(searchParams.get('tickets'))
+    return Object.keys(fromUrl).length > 0 || !slug ? fromUrl : readStoredSelection(slug)
+  })
+  const [lineErrors, setLineErrors] = useState<Record<number, string>>({})
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
 
   const eventQuery = useQuery({
     queryKey: ['public-event', slug],
     queryFn: ({ signal }) => eventsApi.getPublicEventBySlug(slug!, signal),
     enabled: !!slug,
+  })
+
+  const checkoutMutation = useMutation({
+    mutationFn: (selection: TicketSelection) =>
+      checkoutApi.startCheckout(slug!, { lines: selectionToLines(selection) }),
+    onSuccess: (checkout, selection) => {
+      writeStoredSelection(checkout.eventSlug, selection)
+      writeCheckoutSnapshot(checkout.eventSlug, checkout)
+
+      const query = new URLSearchParams({
+        event: checkout.eventSlug,
+        tickets: encodeTicketSelection(selection),
+      })
+
+      navigate(`${paths.checkout}?${query.toString()}`)
+    },
+    onError: (error) => {
+      if (error instanceof ApiError) {
+        setCheckoutError(error.problem.detail ?? error.problem.title ?? error.message)
+        return
+      }
+
+      setCheckoutError('Tickets could not be validated. Please try again.')
+    },
   })
 
   useEffect(() => {
@@ -35,6 +79,72 @@ export function PublicEventPage() {
     observer.observe(sentinel)
     return () => observer.disconnect()
   }, [eventQuery.data])
+
+  function updateQuantity(ticketTypeId: number, quantity: number) {
+    if (!slug) {
+      return
+    }
+
+    const nextSelection = {
+      ...quantities,
+      [ticketTypeId]: Math.max(0, quantity),
+    }
+
+    if (nextSelection[ticketTypeId] === 0) {
+      delete nextSelection[ticketTypeId]
+    }
+
+    setQuantities(nextSelection)
+    setCheckoutError(null)
+    setLineErrors((current) => {
+      const nextErrors = { ...current }
+      delete nextErrors[ticketTypeId]
+      return nextErrors
+    })
+    writeStoredSelection(slug, nextSelection)
+
+    const nextSearchParams = new URLSearchParams(searchParams)
+    const encodedSelection = encodeTicketSelection(nextSelection)
+    if (encodedSelection) {
+      nextSearchParams.set('tickets', encodedSelection)
+    } else {
+      nextSearchParams.delete('tickets')
+    }
+
+    setSearchParams(nextSearchParams, { replace: true })
+  }
+
+  function startCheckout() {
+    const selectedLines = selectionToLines(quantities)
+    if (selectedLines.length === 0) {
+      setCheckoutError('Select at least one ticket.')
+      return
+    }
+
+    const nextLineErrors: Record<number, string> = {}
+    for (const line of selectedLines) {
+      const ticketType = eventQuery.data?.ticketTypes.find(
+        (item) => item.ticketTypeId === line.ticketTypeId,
+      )
+
+      if (!ticketType?.isPurchasable) {
+        nextLineErrors[line.ticketTypeId] =
+          ticketType?.availabilityReason ?? 'This ticket type is not available.'
+      } else if (ticketType.maxPerOrder != null && line.quantity > ticketType.maxPerOrder) {
+        nextLineErrors[line.ticketTypeId] = `Maximum ${ticketType.maxPerOrder} per order.`
+      }
+    }
+
+    if (Object.keys(nextLineErrors).length > 0) {
+      setLineErrors(nextLineErrors)
+      setCheckoutError('Please adjust your ticket selection.')
+      return
+    }
+
+    setLineErrors({})
+    setCheckoutError(null)
+    checkoutMutation.mutate(quantities)
+  }
 
   if (eventQuery.isPending) {
     return (
@@ -59,6 +169,8 @@ export function PublicEventPage() {
   }
 
   const event = eventQuery.data
+  const selectedCount = Object.values(quantities).reduce((total, quantity) => total + quantity, 0)
+  const checkoutDisabled = selectedCount === 0
 
   return (
     <>
@@ -126,8 +238,22 @@ export function PublicEventPage() {
               </Alert>
             ) : (
               <>
+                {checkoutError && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{checkoutError}</AlertDescription>
+                  </Alert>
+                )}
                 <div ref={ctaSentinelRef}>
-                  <TicketTypeList ticketTypes={event.ticketTypes} purchasable={event.purchasable} />
+                  <TicketTypeList
+                    ticketTypes={event.ticketTypes}
+                    purchasable={event.purchasable}
+                    quantities={quantities}
+                    lineErrors={lineErrors}
+                    onQuantityChange={updateQuantity}
+                    onStartCheckout={startCheckout}
+                    checkoutDisabled={checkoutDisabled}
+                    checkoutPending={checkoutMutation.isPending}
+                  />
                 </div>
               </>
             )}
@@ -135,7 +261,16 @@ export function PublicEventPage() {
         </Card>
       </div>
 
-      {event.purchasable && <StickyCtaBar eventTitle={event.title} visible={!isCtaVisible} />}
+      {event.purchasable && (
+        <StickyCtaBar
+          eventTitle={event.title}
+          visible={!isCtaVisible}
+          selectedCount={selectedCount}
+          disabled={checkoutDisabled}
+          pending={checkoutMutation.isPending}
+          onStartCheckout={startCheckout}
+        />
+      )}
     </>
   )
 }

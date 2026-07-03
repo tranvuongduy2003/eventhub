@@ -47,7 +47,7 @@ public sealed class GetPublicEventTests(IntegrationTestFixture fixture)
     }
 
     [Fact]
-    public async Task GetPublicEvent_PublishedEvent_ReturnsTicketAvailability()
+    public async Task GetPublicEvent_PublishedEvent_ReturnsBuyerFacingAvailability()
     {
         var userId = await RegisterOrganizerAsync();
         var eventId = await SeedDraftEventAsync(userId);
@@ -62,10 +62,9 @@ public sealed class GetPublicEventTests(IntegrationTestFixture fixture)
         result.Should().NotBeNull();
 
         var ticketType = result!.TicketTypes.Single();
-        ticketType.Capacity.Should().Be(100);
-        ticketType.Sold.Should().Be(30);
-        ticketType.Reserved.Should().Be(5);
-        ticketType.IsSoldOut.Should().BeFalse();
+        ticketType.IsPurchasable.Should().BeTrue();
+        ticketType.AvailabilityState.Should().Be("available");
+        ticketType.AvailabilityReason.Should().Be("Available.");
     }
 
     [Fact]
@@ -84,7 +83,9 @@ public sealed class GetPublicEventTests(IntegrationTestFixture fixture)
         result.Should().NotBeNull();
 
         var ticketType = result!.TicketTypes.Single();
-        ticketType.IsSoldOut.Should().BeTrue();
+        ticketType.IsPurchasable.Should().BeFalse();
+        ticketType.AvailabilityState.Should().Be("sold_out");
+        ticketType.AvailabilityReason.Should().Be("This ticket type is sold out.");
     }
 
     [Fact]

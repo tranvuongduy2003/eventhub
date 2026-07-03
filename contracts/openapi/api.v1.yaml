@@ -1117,19 +1117,11 @@ components:
       type: object
     PublicTicketTypeResponse:
       properties:
-        available:
-          format: int32
-          pattern: ^-?(?:0|[1-9]\d*)$
-          type:
-            - integer
-            - string
-        capacity:
-          format: int32
-          pattern: ^-?(?:0|[1-9]\d*)$
-          type:
-            - integer
-            - string
-        isSoldOut:
+        availabilityReason:
+          type: string
+        availabilityState:
+          type: string
+        isPurchasable:
           type: boolean
         maxPerOrder:
           format: int32
@@ -1148,12 +1140,6 @@ components:
             - string
         priceCurrency:
           type: string
-        reserved:
-          format: int32
-          pattern: ^-?(?:0|[1-9]\d*)$
-          type:
-            - integer
-            - string
         salesWindowEnd:
           format: date-time
           type:
@@ -1168,12 +1154,6 @@ components:
           type:
             - "null"
             - string
-        sold:
-          format: int32
-          pattern: ^-?(?:0|[1-9]\d*)$
-          type:
-            - integer
-            - string
         ticketTypeId:
           format: int32
           pattern: ^-?(?:0|[1-9]\d*)$
@@ -1185,12 +1165,10 @@ components:
         - name
         - priceAmount
         - priceCurrency
-        - capacity
         - maxPerOrder
-        - sold
-        - reserved
-        - available
-        - isSoldOut
+        - isPurchasable
+        - availabilityState
+        - availabilityReason
         - salesWindowStart
         - salesWindowEnd
         - salesWindowStatus
@@ -1346,6 +1324,99 @@ components:
       required:
         - email
         - expiresInDays
+      type: object
+    StartCheckoutLineRequest:
+      properties:
+        quantity:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketTypeId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+      required:
+        - ticketTypeId
+        - quantity
+      type: object
+    StartCheckoutLineResponse:
+      properties:
+        lineTotalAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        lineTotalCurrency:
+          type: string
+        quantity:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketTypeId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketTypeName:
+          type: string
+        unitPriceAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        unitPriceCurrency:
+          type: string
+      required:
+        - ticketTypeId
+        - ticketTypeName
+        - quantity
+        - unitPriceAmount
+        - unitPriceCurrency
+        - lineTotalAmount
+        - lineTotalCurrency
+      type: object
+    StartCheckoutRequest:
+      properties:
+        lines:
+          items:
+            $ref: "#/components/schemas/StartCheckoutLineRequest"
+          type: array
+      required:
+        - lines
+      type: object
+    StartCheckoutResponse:
+      properties:
+        eventSlug:
+          type: string
+        eventTitle:
+          type: string
+        lines:
+          items:
+            $ref: "#/components/schemas/StartCheckoutLineResponse"
+          type: array
+        totalAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        totalCurrency:
+          type: string
+      required:
+        - eventSlug
+        - eventTitle
+        - totalAmount
+        - totalCurrency
+        - lines
       type: object
     UpdateDiscountCodeRequest:
       properties:
@@ -3183,6 +3254,54 @@ paths:
           description: Not Found
       tags:
         - Events
+  /api/events/{slug}/checkout/start:
+    post:
+      operationId: StartCheckout
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartCheckoutRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StartCheckoutResponse"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Bad Request
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Orders
   /api/health:
     get:
       operationId: GetApiHealth

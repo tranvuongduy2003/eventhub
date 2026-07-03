@@ -45,17 +45,18 @@ public sealed class GetPublicEventQueryHandler(
                             : "sales_ended";
                 }
 
+                var (isPurchasable, availabilityState, availabilityReason) =
+                    GetBuyerAvailability(eventAggregate.Status, tt, salesWindowStatus);
+
                 return new PublicTicketTypeResponse(
                     tt.Id.Value,
                     tt.Name.Value,
                     tt.Price.Amount,
                     tt.Price.Currency,
-                    tt.Capacity.Value,
                     tt.MaxPerOrder,
-                    tt.Sold,
-                    tt.Reserved,
-                    tt.Available,
-                    tt.Available <= 0,
+                    isPurchasable,
+                    availabilityState,
+                    availabilityReason,
                     tt.SalesWindow?.Start,
                     tt.SalesWindow?.End,
                     salesWindowStatus);
@@ -64,8 +65,7 @@ public sealed class GetPublicEventQueryHandler(
 
         var status = eventAggregate.Status.ToString();
         var purchasable = eventAggregate.Status == EventStatus.Published
-            && ticketTypes.Any(tt => !tt.IsSoldOut
-                && tt.SalesWindowStatus is null or "on_sale");
+            && ticketTypes.Any(tt => tt.IsPurchasable);
 
         return new PublicEventResponse(
             eventAggregate.Slug!.Value,
@@ -80,5 +80,38 @@ public sealed class GetPublicEventQueryHandler(
             status,
             purchasable,
             ticketTypes);
+    }
+
+    private static (bool IsPurchasable, string State, string Reason) GetBuyerAvailability(
+        EventStatus eventStatus,
+        TicketType ticketType,
+        string? salesWindowStatus)
+    {
+        if (eventStatus is not EventStatus.Published)
+        {
+            return (false, "unavailable", "This event is not currently open for ticket sales.");
+        }
+
+        if (salesWindowStatus == "not_yet_on_sale")
+        {
+            return (false, "not_yet_on_sale", "Sales for this ticket type have not started yet.");
+        }
+
+        if (salesWindowStatus == "sales_ended")
+        {
+            return (false, "sales_ended", "Sales for this ticket type have ended.");
+        }
+
+        if (ticketType.Available <= 0)
+        {
+            return (false, "sold_out", "This ticket type is sold out.");
+        }
+
+        if (ticketType.Available <= 10)
+        {
+            return (true, "limited", "Limited availability.");
+        }
+
+        return (true, "available", "Available.");
     }
 }

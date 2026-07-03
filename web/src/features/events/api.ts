@@ -196,12 +196,10 @@ export type PublicTicketTypeResponse = {
   name: string
   priceAmount: number
   priceCurrency: string
-  capacity: number
   maxPerOrder: number | null
-  sold: number
-  reserved: number
-  available: number
-  isSoldOut: boolean
+  isPurchasable: boolean
+  availabilityState: string
+  availabilityReason: string
   salesWindowStart: string | null
   salesWindowEnd: string | null
   salesWindowStatus: string | null
