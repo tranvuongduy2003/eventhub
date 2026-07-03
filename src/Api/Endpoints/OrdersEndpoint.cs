@@ -11,6 +11,17 @@ internal sealed class OrdersEndpoint : IEndpoint
 {
     public void Map(IEndpointRouteBuilder endpoints)
     {
+        endpoints.MapPost("/api/events/{slug}/checkout/start", StartCheckout)
+            .WithName("StartCheckout")
+            .WithTags("Orders")
+            .RequireCompleteJsonBody<StartCheckoutRequest>()
+            .Accepts<StartCheckoutRequest>("application/json")
+            .Produces<StartCheckoutResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+
         endpoints.MapPost("/api/events/{eventId}/orders", PlaceOrder)
             .WithName("PlaceOrder")
             .WithTags("Orders")
@@ -28,6 +39,42 @@ internal sealed class OrdersEndpoint : IEndpoint
             .Produces<OrderStatusResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
+    }
+
+    private static async Task<IResult> StartCheckout(
+        string slug,
+        StartCheckoutRequest request,
+        ISender sender)
+    {
+        var command = new StartCheckoutCommand(
+            slug,
+            request.Lines.Select(l => new Application.Orders.Commands.StartCheckoutLineRequest(
+                l.TicketTypeId,
+                l.Quantity)).ToList());
+
+        var result = await sender.Send(command);
+
+        if (!result.IsSuccess)
+        {
+            return result.ToHttpResult();
+        }
+
+        var checkout = result.Value!;
+
+        return Results.Ok(
+            new StartCheckoutResponse(
+                checkout.EventSlug,
+                checkout.EventTitle,
+                checkout.TotalAmount,
+                checkout.TotalCurrency,
+                checkout.Lines.Select(l => new StartCheckoutLineResponse(
+                    l.TicketTypeId,
+                    l.TicketTypeName,
+                    l.Quantity,
+                    l.UnitPriceAmount,
+                    l.UnitPriceCurrency,
+                    l.LineTotalAmount,
+                    l.LineTotalCurrency)).ToList()));
     }
 
     private static async Task<IResult> PlaceOrder(

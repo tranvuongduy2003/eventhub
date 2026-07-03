@@ -29,10 +29,10 @@ export function OrderSummary({ lineItems, discount }: OrderSummaryProps) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <CardTitle className="text-lg">Order Summary</CardTitle>
           <Badge variant="secondary" className="text-xs">
-            All-inclusive — no hidden fees
+            All-inclusive
           </Badge>
         </div>
       </CardHeader>
@@ -66,8 +66,7 @@ export function OrderSummary({ lineItems, discount }: OrderSummaryProps) {
           <span className="text-lg font-bold">{formatPrice(total, currency)}</span>
         </div>
         <p className="text-muted-foreground text-xs">
-          All-inclusive pricing — the price you see is the price you pay. No platform fees, no
-          service fees, no hidden charges. Price includes applicable taxes.
+          All-inclusive pricing. The price you see is the price you pay.
         </p>
       </CardContent>
     </Card>

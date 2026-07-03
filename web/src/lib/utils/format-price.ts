@@ -1,8 +1,4 @@
 export function formatPrice(amount: number, currency: string): string {
-  if (amount === 0) {
-    return 'Free'
-  }
-
   return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
     currency,
