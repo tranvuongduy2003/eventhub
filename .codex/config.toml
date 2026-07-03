@@ -45,8 +45,29 @@ command = "npx"
 args = ["@playwright/mcp@latest"]
 
 [mcp_servers.github]
-type = "http"
-url = "https://api.githubcopilot.com/mcp/"
+command = "docker"
+args = [
+  "run",
+  "-i",
+  "--rm",
+  "-e", "GITHUB_PERSONAL_ACCESS_TOKEN",
+  "-e", "GITHUB_TOOLSETS=default,pull_requests,repos,issues",
+  "ghcr.io/github/github-mcp-server"
+]
+env_vars = ["GITHUB_PERSONAL_ACCESS_TOKEN"]
+enabled = true
+
+[mcp_servers.github.tools.create_pull_request]
+approval_mode = "approve"
+
+[mcp_servers.github.tools.issue_write]
+approval_mode = "approve"
+
+[mcp_servers.github.tools.update_pull_request]
+approval_mode = "approve"
+
+[mcp_servers.github.tools.create_or_update_file]
+approval_mode = "approve"
 
 [mcp_servers.shadcn]
 command = "npx"
