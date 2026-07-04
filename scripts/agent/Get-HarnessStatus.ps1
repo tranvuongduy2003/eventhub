@@ -116,6 +116,13 @@ if ($null -ne $manifest) {
 }
 
 if ($null -ne $routing) {
+    if ($routing.memorySyncSkill -ne 'memory-sync') {
+        Add-Error "harness/orchestrator/routing.json memorySyncSkill must be memory-sync"
+    }
+    elseif (-not (Test-Path -LiteralPath (Join-Path $repoRoot '.agents\skills\memory-sync\SKILL.md') -PathType Leaf)) {
+        Add-Error "Missing memory-sync skill: .agents/skills/memory-sync/SKILL.md"
+    }
+
     foreach ($skill in @('harness-evals', 'harness-orchestrator', 'harness-policies', 'harness-telemetry', 'harness-tools')) {
         $found = $false
         foreach ($prop in $routing.workflows.'harness-lane-change'.laneSkills.PSObject.Properties) {

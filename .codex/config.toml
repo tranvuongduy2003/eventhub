@@ -1,24 +1,8 @@
 #:schema https://developers.openai.com/codex/config-schema.json
 
-default_permissions = "repo-workspace-write"
-
 [agents]
 max_threads = 6
 max_depth = 1
-
-[permissions.repo-workspace-write]
-extends = ":workspace"
-
-[permissions.repo-workspace-write.filesystem]
-glob_scan_max_depth = 3
-
-[permissions.repo-workspace-write.filesystem.":workspace_roots"]
-"." = "write"
-".env" = "deny"
-".env.*" = "deny"
-"web/src/generated" = "deny"
-"contracts/openapi/.build" = "deny"
-".codex/state" = "write"
 
 [mcp_servers.aspire]
 command = "aspire"

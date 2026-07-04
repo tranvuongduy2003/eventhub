@@ -59,7 +59,7 @@ Harness means the policy and orchestration layer around agent work, not ad-hoc p
 - Runtime contract status: `scripts/agent/Get-HarnessStatus.ps1 -Json`
 - Stable agent scripts: `scripts/agent/`
 
-The `spec` -> `plan` -> `cook` workflow must keep harness impact explicit. Specs record whether evals, orchestrator, policies, telemetry, tools, or workflow surfaces are affected; plans map those lanes to files and validation; cook updates the plan when new harness impact appears and runs harness evals after harness changes.
+The `spec` -> `plan` -> `cook` workflow must keep harness impact and memory sync explicit. Specs record whether evals, orchestrator, policies, telemetry, tools, or workflow surfaces are affected, and must be discoverable from the relevant long-term memory surfaces when created. Plans map harness lanes plus a Memory Sync inventory to files and validation using `memory-sync`. Cook updates the plan when new harness impact or memory drift appears, runs harness evals after harness changes, then marks the related spec `implemented`, updates every affected long-term memory and harness contract surface, and runs docs-memory plus changed-code verification before handoff.
 
 Default verification:
 
@@ -90,6 +90,7 @@ Use repo docs first. Use a skill only for the procedure it owns.
 | Harness policies / guardrails / approvals | `harness-policies` |
 | Harness telemetry / traces / improvement evidence | `harness-telemetry` |
 | Harness tool adapters / CLI contracts | `harness-tools` |
+| Memory sync after spec/cook or docs drift | `memory-sync` |
 | OpenAPI export/codegen/CI verify | `openapi-contract-sync` |
 | Live DB read-only SQL | `postgres-mcp` |
 | Neo4j graph / GraphRAG | `neo4j-graphrag` |

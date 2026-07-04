@@ -58,7 +58,11 @@ Authoritative source: [[_memory/source/feature-specification|feature specificati
 - `F-4.4` [[_memory/specs/20260627160000-public-event-listing|Public event listing]]
 - `F-4.5` [[_memory/specs/20260627170000-search-and-filter|Search and filter]]
 
-### EP-5 through EP-11
+### EP-5 - Purchase & Checkout
+
+- `F-5.1` [[_memory/specs/20260703003908-select-tickets-and-start-checkout|Select tickets and start checkout]] - implemented
+
+### EP-6 through EP-11
 
 Specs are not present yet. Use [[_memory/source/feature-specification|feature specification]] for acceptance criteria until implementation specs are written.
 

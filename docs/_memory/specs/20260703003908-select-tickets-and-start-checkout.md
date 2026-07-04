@@ -6,8 +6,8 @@ title: Select tickets and start checkout
 slug: select-tickets-and-start-checkout
 filename_template: 20260703003908-select-tickets-and-start-checkout.md
 created_at: "2026-07-03T00:39:08+07:00"
-updated_at: "2026-07-03T02:21:14+07:00"
-status: draft
+updated_at: "2026-07-03T22:37:03+07:00"
+status: implemented
 owner: product
 tags: [spec, eventhub, purchase-checkout]
 feature_refs: ["F-5.1"]
@@ -24,7 +24,7 @@ search_index:
 
 # Feature: Select tickets and start checkout
 
-> Features: F-5.1  |  Status: DRAFT  |  Date: 2026-07-03
+> Features: F-5.1  |  Status: IMPLEMENTED  |  Date: 2026-07-03
 > PRD: DEC-1, DEC-3, QG-1, QG-2, QG-4, QG-5, QG-6  |  DDD: BC-2 AGG-Event, BC-3 AGG-Order, INV-10, INV-14, INV-21, INV-24  |  Tech: Sections 4-7
 
 ## 1. Problem & Solution

@@ -50,6 +50,24 @@ Promote a fact into long-term memory when it is:
 
 Do not promote a fact when it is only a one-off implementation detail or an unresolved thought.
 
+
+## Completion memory sync
+
+When a `/cook` run completes a spec-backed feature or workflow change, update every durable memory surface that became stale. Do not stop at the first obvious index.
+
+Use the `memory-sync` skill for this audit. Check this inventory and mark each item updated or explicitly `N/A` in the plan/handoff:
+
+The inventory spans source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data, and owned handoff evidence.
+
+- Related spec front matter and visible status header.
+- Authoritative source docs when product, domain, technical, or harness contracts changed.
+- MOCs: feature roadmap, product intent, domain model, technical architecture, and harness memory where relevant.
+- Glossaries and decision logs when terms, decisions, invariants, or policies changed.
+- Retrieval guides, source-of-truth maps, root `README.md`, `docs/README.md`, and `AGENTS.md` when navigation or workflow changed.
+- Harness runtime contracts, routing, graph mappings, policy files, eval cases, scripts, and telemetry/tool registries when agent behavior changed.
+- External tracking or handoff evidence, such as GitHub issue/PR status, when the current workflow owns it.
+
+Run `scripts/agent/Test-DocsMemory.ps1` after docs memory changes and `scripts/agent/Verify-ChangedCode.ps1` before handoff.
 ## Retrieval contract
 
 When using this vault:
