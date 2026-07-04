@@ -44,6 +44,10 @@ It is not a pile of prompt examples or product implementation code.
 
 The `cook-unified` path is the single feature-delivery workflow. Inside `cook`, the phases `spec` -> `plan` -> checkpoint implementation -> verify -> memory sync -> handoff must keep long-term docs memory current: new durable specs are discoverable from the relevant indexes, plans include a `memory-sync` inventory, and cook marks completed specs implemented only after checks pass while refreshing every affected source doc, MOC, glossary, retrieval guide, README/index, harness contract, graph/routing entry, and handoff evidence surface.
 
+Cook dry-run/audit mode is read-only for product artifacts: it reports intended specs/plans/checks and adjacent-feature risks without creating durable specs, plans, progress notes, code changes, or memory updates.
+
+Cook plans are enforceable artifacts: feature-id runs include an Adjacent Feature Boundary, every plan includes a Done Criteria Ledger, long runs maintain `.codex/notes/progress.md`, and `scripts/agent/Test-CookPlan.ps1` validates plan/progress/TaskSpec shape before implementation starts.
+
 ## Improvement loop
 
 When the harness fails:

@@ -13,10 +13,21 @@
           "requiresSourceOfTruth": true
         },
         {
+          "name": "audit",
+          "aliases": [
+            "--dry-run",
+            "dry-run",
+            "trace-only"
+          ],
+          "createsDurableArtifacts": false,
+          "requiresTraceReport": true
+        },
+        {
           "name": "spec",
           "stopAfter": "spec",
           "requiresHarnessImpact": true,
           "requiresStructuredArtifact": true,
+          "requiresDiscoveryUpdate": true,
           "artifact": "docs/_memory/specs/<timestamp>-<slug>.md"
         },
         {
@@ -24,6 +35,10 @@
           "stopAfter": "plan",
           "requiresHarnessImpactTable": true,
           "requiresMemorySyncTable": true,
+          "requiresAdjacentFeatureBoundary": true,
+          "requiresDoneCriteriaLedger": true,
+          "requiresTaskSpecSidecar": true,
+          "validator": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-CookPlan.ps1",
           "requiresStructuredArtifact": true,
           "artifact": ".codex/plans/<same-filename-as-spec>.md"
         },
@@ -42,7 +57,8 @@
         {
           "name": "handoff",
           "requiresMemorySyncComplete": true,
-          "requiresSpecImplementedWhenComplete": true
+          "requiresSpecImplementedWhenComplete": true,
+          "requiresDoneCriteriaLedgerComplete": true
         }
       ]
     },
@@ -67,6 +83,7 @@
       "harness lane validation passed when a harness lane changed",
       "docs memory validation passed after spec or long-term memory changes",
       "related spec status and all affected memory surfaces synchronized before handoff",
+      "active cook plan done criteria ledger complete or explicitly N/A",
       "confidence threshold met or explicitly waived by user"
     ],
     "blocked": [

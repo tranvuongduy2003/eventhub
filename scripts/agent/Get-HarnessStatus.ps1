@@ -200,6 +200,16 @@ if ($null -ne $routing) {
             Add-Error "harness/orchestrator/routing.json missing lane skill: $skill"
         }
     }
+
+    $cookPhases = @($routing.workflows.'cook-unified'.phases | ForEach-Object { $_.name })
+    if ($cookPhases -notcontains 'audit') {
+        Add-Error "harness/orchestrator/routing.json cook-unified phases missing audit"
+    }
+
+    $planPhase = $routing.workflows.'cook-unified'.phases | Where-Object { $_.name -eq 'plan' } | Select-Object -First 1
+    if ($null -eq $planPhase.validator -or [string]$planPhase.validator -notmatch 'scripts/agent/Test-CookPlan.ps1') {
+        Add-Error "harness/orchestrator/routing.json plan phase must reference Test-CookPlan.ps1"
+    }
 }
 
 if ($null -ne $taskSpecSchema) {
@@ -218,6 +228,16 @@ if ($null -ne $taskSpecSchema) {
     foreach ($phase in @('spec', 'plan', 'implement', 'verify', 'handoff')) {
         if (@($taskSpecSchema.properties.phase.enum) -notcontains $phase) {
             Add-Error "task-spec.schema.json phase enum missing cook phase: $phase"
+        }
+    }
+
+    if (@($taskSpecSchema.properties.phase.enum) -notcontains 'audit') {
+        Add-Error "task-spec.schema.json phase enum missing cook audit phase"
+    }
+
+    foreach ($required in @('memorySyncInventory', 'doneCriteriaLedger')) {
+        if (@($taskSpecSchema.required) -notcontains $required) {
+            Add-Error "task-spec.schema.json missing required field: $required"
         }
     }
 }
@@ -239,7 +259,7 @@ if ($null -ne $telemetrySchema) {
 }
 
 if ($null -ne $toolRegistry) {
-    foreach ($toolName in @('verify-changed-code', 'test-harness-policy', 'get-harness-status', 'new-harness-skill', 'eval-runner')) {
+    foreach ($toolName in @('verify-changed-code', 'test-harness-policy', 'get-harness-status', 'test-cook-plan', 'new-harness-skill', 'eval-runner')) {
         if ($null -eq $toolRegistry.tools.$toolName) {
             Add-Error "registry.json missing tool: $toolName"
         }

@@ -1,0 +1,79 @@
+{
+  "id": "task-20260704000000-workflow-repair",
+  "objective": "Repair cook workflow validation",
+  "workflow": "cook",
+  "phase": "plan",
+  "artifactMode": "durable",
+  "relatedSpec": null,
+  "planPath": ".codex/plans/20260704000000-workflow-repair.md",
+  "structuredArtifacts": {
+    "specMarkdown": null,
+    "planMarkdown": ".codex/plans/20260704000000-workflow-repair.md",
+    "progressNotes": ".codex/notes/progress.md",
+    "runtimeStateDirectory": ".codex/state/cook",
+    "taskSpecSidecar": ".codex/state/cook/task-20260704000000-workflow-repair.json"
+  },
+  "adjacentFeatureBoundary": {
+    "inScope": [
+      "cook workflow validation"
+    ],
+    "outOfScope": [
+      "product feature implementation"
+    ],
+    "neighboringFeatures": [
+      "N/A"
+    ]
+  },
+  "memorySyncInventory": [
+    {
+      "surface": "Harness memory",
+      "status": "planned",
+      "notes": "Update harness memory when workflow contract changes."
+    }
+  ],
+  "confidence": 0.8,
+  "harnessImpact": {
+    "evals": {
+      "status": "none",
+      "files": [],
+      "validation": []
+    },
+    "orchestrator": {
+      "status": "none",
+      "files": [],
+      "validation": []
+    },
+    "policies": {
+      "status": "none",
+      "files": [],
+      "validation": []
+    },
+    "telemetry": {
+      "status": "none",
+      "files": [],
+      "validation": []
+    },
+    "tools": {
+      "status": "none",
+      "files": [],
+      "validation": []
+    },
+    "workflow": {
+      "status": "none",
+      "files": [],
+      "validation": []
+    }
+  },
+  "doneCriteriaLedger": [
+    {
+      "criterion": "changed-code verification",
+      "status": "pending",
+      "evidence": ""
+    }
+  ],
+  "stopConditions": [
+    "checks-passed",
+    "memory-synced",
+    "done-criteria-ledger-complete"
+  ]
+}

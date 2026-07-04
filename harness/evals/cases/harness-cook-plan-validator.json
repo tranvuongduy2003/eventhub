@@ -1,0 +1,16 @@
+{
+  "id": "harness-cook-plan-validator",
+  "layer": "harness",
+  "mode": "auto",
+  "description": "Cook plan validator enforces plan, progress note, and TaskSpec shape",
+  "run": {
+    "type": "command",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-CookPlan.ps1 -PlanPath harness/evals/fixtures/cook-plan-valid.md -ProgressPath harness/evals/fixtures/cook-progress-valid.md -TaskSpecPath harness/evals/fixtures/cook-task-spec-valid.json -Json"
+  },
+  "assert": {
+    "exitCode": 0,
+    "jsonStdout": {
+      "status": "passed"
+    }
+  }
+}

@@ -23,11 +23,14 @@ Read the smallest relevant set:
 
 When sources conflict: Constitution -> source memory -> harness source docs -> scoped rule -> this skill.
 
+For docs-heavy PowerShell reads, use `Get-Content -Encoding UTF8` so punctuation in source memory and skill text remains readable.
+
 ## Step 1: Parse input
 
 | Input | Action |
 |-------|--------|
 | Feature/user request | Run from intake through done unless the user asks for a stop phase |
+| Feature/user request with `--dry-run`, `dry-run`, `audit`, or `trace-only` | Run intake/context planning as a no-write audit. Produce only a concise trace/report in chat or an explicit user-approved inbox note. Do not create product specs, plans, progress notes, code changes, or memory updates. The trace must list intended durable artifacts, adjacent-feature boundaries, likely validation, and any ambiguity that would block a real run. |
 | `.codex/plans/<file>.md` | Resume from the plan phase and implement |
 | `docs/_memory/specs/<file>.md` | Use that spec and create or resume the paired plan |
 | `task N` | Resume at task N |
@@ -64,11 +67,14 @@ Required sections:
 - Domain and business rules
 - UI behavior or API contract
 - Data, real-time, security, edge cases, dependencies, assumptions, out of scope
+- `## Adjacent Feature Boundary` for every feature-id run. Name dependent or neighboring features, state what is in this slice, and state what remains out of scope.
 - `## 7. Harness Impact`
 
 `## 7. Harness Impact` is mandatory. It must state impacts for `harness/evals/`, `harness/orchestrator/`, `.codex/policies/` or `harness/policies/`, `harness/telemetry/`, `harness/tools/`, and workflow surfaces such as `.agents/skills/`, `.codex/hooks/`, `scripts/agent/`, `.graph/`, or `AGENTS.md`. Use `N/A - product slice only; no harness behavior changes.` only when all are unaffected.
 
 If the user asked to stop after spec, run docs-memory checks for changed durable memory, report the spec path, and stop.
+
+Immediately after creating a durable spec, update the relevant long-term memory discovery surface before planning starts. Feature specs normally update `docs/_memory/mocs/feature-roadmap.md`; other durable specs may update source maps, MOCs, glossaries, retrieval guides, or README/index files. Run `scripts/agent/Test-DocsMemory.ps1` when durable docs memory changes.
 
 ## Step 4: Plan Phase
 
@@ -102,6 +108,18 @@ Every plan must include these sections before tasks:
 
 Then write 3-8 concrete tasks. Map every acceptance criterion to at least one task. Include paths, notes, and validation commands. Harness changes must be visible as their own task or subtask, not hidden inside product work.
 
+Every plan must also include:
+
+- `## Adjacent Feature Boundary` for feature-id runs, matching the spec boundary.
+- `## Done Criteria Ledger` with checkboxes for acceptance criteria, memory sync, harness validation when changed, docs-memory validation when changed, changed-code verification, and review/rationale.
+- A reference to `.codex/notes/progress.md` for long runs.
+
+Before implementation starts, create or update a TaskSpec sidecar under `.codex/state/cook/<task-id>.json` using `harness/orchestrator/task-spec.schema.json`, then validate the markdown plan and progress note:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-CookPlan.ps1 -PlanPath .codex/plans/<same-filename-as-spec>.md -ProgressPath .codex/notes/progress.md
+```
+
 If the user asked to stop after plan, report the plan path and stop.
 
 ## Step 5: Context Retrieval
@@ -120,6 +138,8 @@ Before each implementation task, use parallel read-only scouts when useful:
 
 Subagents are read-only except explicit test-writer agents for red tests. The parent agent owns production code edits.
 
+If subagent tools are unavailable, fall back to `rg`, `rg --files`, and targeted source reads. Use `rg --files` before reading guessed paths, record the scout fallback and key evidence in the plan or `.codex/notes/progress.md`, and continue with parent-agent edits.
+
 ## Step 6: Checkpoint Loop
 
 For each unchecked task:
@@ -130,6 +150,7 @@ For each unchecked task:
 4. Fix only verified failures.
 5. Mark the task complete only when checks pass.
 6. Update the plan and `.codex/notes/progress.md` when new harness impact, memory drift, or blockers appear.
+7. Keep the Done Criteria Ledger current; do not leave final criteria to chat memory.
 
 Use `node scripts/affected-tests.mjs <path>` for changed files and run the returned checks.
 
@@ -151,6 +172,7 @@ Complete only when all apply:
 - Docs-memory validation passes after durable memory changes.
 - Related spec status and affected long-term memory surfaces are synchronized.
 - No high-severity review finding, policy denial, or unresolved approval remains.
+- The active plan's Done Criteria Ledger is complete or explicitly marked `N/A` with rationale.
 
 Blocked states must record the policy denial, missing external state, repeated verifier failure, or required human decision.
 
