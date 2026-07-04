@@ -71,6 +71,7 @@ foreach ($path in @(
     '.agents/skills/harness-policies/SKILL.md',
     '.agents/skills/harness-telemetry/SKILL.md',
     '.agents/skills/harness-tools/SKILL.md',
+    '.agents/skills/memory-sync/SKILL.md',
     '.codex/policies/harness-policy.json',
     '.graph/index.json',
     'docs/_memory/source/harness-architecture.md',
@@ -125,6 +126,10 @@ Test-FileContains 'docs/_memory/source/harness-architecture.md' @(
     'spec',
     'plan',
     'cook',
+    'Memory Sync inventory',
+    'memory-sync',
+    'source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data',
+    'docs-memory plus changed-code verification before handoff',
     'Do not add a root `evals/` tree'
 )
 
@@ -138,14 +143,105 @@ Test-FileContains 'AGENTS.md' @(
     'harness-orchestrator',
     'harness-policies',
     'harness-telemetry',
-    'harness-tools'
+    'harness-tools',
+    'memory-sync',
+    'memory sync explicit',
+    'marks the related spec `implemented`'
 )
 
 Test-FileContains 'docs/_memory/source/harness-architecture.md' @(
-    'Harness Lane Skills',
-    'scripts/agent/New-HarnessSkill.ps1'
+    'Workflow Harness Contract',
+    'spec',
+    'plan',
+    'cook',
+    'Memory Sync inventory',
+    'memory-sync',
+    'source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data',
+    'docs-memory plus changed-code verification before handoff',
+    'Do not add a root `evals/` tree'
 )
 
+
+Test-FileContains 'docs/_memory/source/harness-operational-policies.md' @(
+    'Memory Sync inventory',
+    'related spec is marked `implemented`',
+    'every affected long-term memory and harness contract surface is current',
+    'changed-code verification passes'
+)
+
+Test-FileContains 'docs/_memory/mocs/harness-memory.md' @(
+    'Workflow memory sync',
+    'plans include a `memory-sync` inventory',
+    'completed specs implemented'
+)
+
+
+Test-FileContains 'docs/_memory/long-term-memory-operating-model.md' @(
+    'Completion memory sync',
+    'Do not stop at the first obvious index',
+    'source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data',
+    'GitHub issue/PR status'
+)
+
+Test-FileContains 'docs/_memory/source-of-truth-map.md' @(
+    'Spec completion or workflow handoff',
+    'Related spec, source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data'
+)
+
+Test-FileContains 'docs/_memory/agent-retrieval-guide.md' @(
+    'creates or completes durable knowledge',
+    'specs, MOCs, glossaries, source maps, README/index files, harness contracts, graph/routing data'
+)
+
+Test-FileContains 'docs/README.md' @(
+    'not only the most obvious MOC',
+    'source docs, MOCs, glossaries, retrieval guides, indexes, README files, and harness contracts'
+)
+
+Test-FileContains 'docs/_memory/specs/README.md' @(
+    'Completion Sync',
+    'every affected long-term memory surface',
+    'source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data'
+)
+Test-FileContains 'harness/orchestrator/routing.json' @(
+    'requiresMemorySync',
+    'requiresMemorySyncTable',
+    'requiresMemorySyncGate',
+    'memorySyncSkill',
+    'memory-sync',
+    'related spec status and all affected memory surfaces synchronized before handoff'
+)
+
+Test-FileContains 'README.md' @(
+    'Harness Impact and `memory-sync` inventory',
+    'mark spec implemented',
+    'refresh all affected long-term memory and harness contract surfaces'
+)
+
+Test-FileContains '.agents/skills/memory-sync/SKILL.md' @(
+    'name: memory-sync',
+    '## Inventory',
+    '## Workflow',
+    '## Validation',
+    '## Do Not',
+    'Do not stop at the first obvious MOC'
+)
+
+Test-FileContains 'docs/_memory/source/harness-architecture.md' @(
+    '## Workflow Skills',
+    '`memory-sync` owns durable docs-memory completion audits',
+    'workflow skill, not a runtime harness lane'
+)
+
+Test-FileContains 'docs/_memory/source/harness-operational-policies.md' @(
+    '`memory-sync` for completion audits',
+    'workflow skill, not a runtime lane'
+)
+
+Test-FileContains 'scripts/agent/Get-HarnessStatus.ps1' @(
+    'memorySyncSkill must be memory-sync',
+    'Missing memory-sync skill'
+)
 Test-FileContains 'scripts/agent/New-HarnessSkill.ps1' @(
     'ValidateSet(''evals'', ''orchestrator'', ''policies'', ''telemetry'', ''tools'')',
     '.agents\skills\',
