@@ -89,6 +89,7 @@ public sealed class StartCheckoutCommandHandler(
         var totalAmount = lines.Sum(l => l.LineTotalAmount);
 
         return new StartCheckoutResult(
+            eventAggregate.Id.Value,
             eventAggregate.Slug!.Value,
             eventAggregate.Title.Value,
             totalAmount,

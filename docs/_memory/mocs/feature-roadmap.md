@@ -61,6 +61,7 @@ Authoritative source: [[_memory/source/feature-specification|feature specificati
 ### EP-5 - Purchase & Checkout
 
 - `F-5.1` [[_memory/specs/20260703003908-select-tickets-and-start-checkout|Select tickets and start checkout]] - implemented
+- `F-5.2` [[_memory/specs/20260704174907-guest-checkout|Guest checkout]] - implemented
 
 ### EP-6 through EP-11
 

@@ -95,7 +95,7 @@ foreach ($file in $files) {
 
 $commands = @()
 if ($needsTypeCheck) {
-    $commands += 'yarn --cwd web exec tsc -b --noEmit'
+    $commands += 'yarn --cwd web run tsc -b --noEmit'
 }
 foreach ($step in $steps) {
     $commands += Convert-StepToCommand $step

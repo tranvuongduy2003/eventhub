@@ -63,6 +63,7 @@ internal sealed class OrdersEndpoint : IEndpoint
 
         return Results.Ok(
             new StartCheckoutResponse(
+                checkout.EventId,
                 checkout.EventSlug,
                 checkout.EventTitle,
                 checkout.TotalAmount,
