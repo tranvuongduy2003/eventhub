@@ -23,6 +23,7 @@ It is not a pile of prompt examples or product implementation code.
 | Layer | Location |
 |---|---|
 | Repo guidance | `AGENTS.md` |
+| Runtime manifest | `harness/manifest.json` |
 | Skills | `.agents/skills/` |
 | Execution scripts | `scripts/agent/` |
 | Policy data | `.codex/policies/harness-policy.json` |

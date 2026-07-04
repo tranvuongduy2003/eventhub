@@ -82,8 +82,62 @@ $expectedLanes = @('evals', 'orchestrator', 'policies', 'telemetry', 'tools')
 $laneResults = New-Object System.Collections.ArrayList
 
 if ($null -ne $manifest) {
+    if ($manifest.repoGuidance -ne 'AGENTS.md') {
+        Add-Error "harness/manifest.json repoGuidance must be AGENTS.md"
+    }
+    elseif (-not (Test-Path -LiteralPath (Join-Path $repoRoot 'AGENTS.md') -PathType Leaf)) {
+        Add-Error "Missing repo guidance: AGENTS.md"
+    }
+
+    if ($manifest.stateDirectory -ne '.codex/state') {
+        Add-Error "harness/manifest.json stateDirectory must be .codex/state"
+    }
+
     if ($manifest.singleEvalTree -ne 'harness/evals/') {
         Add-Error "harness/manifest.json singleEvalTree must be harness/evals/"
+    }
+
+    $expectedFoundationSkills = @{
+        repoBootstrap = '.agents/skills/repo-bootstrap/SKILL.md'
+        verifyChangedCode = '.agents/skills/verify-changed-code/SKILL.md'
+        prHandoff = '.agents/skills/pr-handoff/SKILL.md'
+    }
+
+    foreach ($entry in $expectedFoundationSkills.GetEnumerator()) {
+        $actual = [string]$manifest.foundationSkills.($entry.Key)
+        if ($actual -ne $entry.Value) {
+            Add-Error "harness/manifest.json foundationSkills.$($entry.Key) must be $($entry.Value)"
+            continue
+        }
+
+        if (-not (Test-Path -LiteralPath (Join-Path $repoRoot (Get-RelativePath $entry.Value)) -PathType Leaf)) {
+            Add-Error "Missing foundation skill: $($entry.Value)"
+        }
+    }
+
+    $expectedCommands = @{
+        bootstrap = 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Repo-Bootstrap.ps1'
+        verifyChanged = 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1'
+        handoff = 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/New-PrHandoff.ps1'
+        evalHarness = 'powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness'
+    }
+
+    foreach ($entry in $expectedCommands.GetEnumerator()) {
+        if ([string]$manifest.commands.($entry.Key) -ne $entry.Value) {
+            Add-Error "harness/manifest.json commands.$($entry.Key) must be $($entry.Value)"
+        }
+    }
+
+    if ($manifest.futureRuntime.providerContract -ne 'Responses API') {
+        Add-Error "harness/manifest.json futureRuntime.providerContract must be Responses API"
+    }
+
+    if ($manifest.futureRuntime.orchestration -ne 'Agents SDK') {
+        Add-Error "harness/manifest.json futureRuntime.orchestration must be Agents SDK"
+    }
+
+    if ($manifest.futureRuntime.codexExecutor -ne 'Codex CLI via MCP when multi-step coding workflows need external orchestration') {
+        Add-Error "harness/manifest.json futureRuntime.codexExecutor has an unsupported value"
     }
 
     foreach ($lane in $expectedLanes) {

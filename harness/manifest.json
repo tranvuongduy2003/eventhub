@@ -4,9 +4,27 @@
   "purpose": "EventHub agent harness runtime contract and lane registry.",
   "canonicalWorkflow": "cook-unified",
   "canonicalSkill": "cook",
+  "repoGuidance": "AGENTS.md",
+  "stateDirectory": ".codex/state",
   "singleEvalTree": "harness/evals/",
+  "foundationSkills": {
+    "repoBootstrap": ".agents/skills/repo-bootstrap/SKILL.md",
+    "verifyChangedCode": ".agents/skills/verify-changed-code/SKILL.md",
+    "prHandoff": ".agents/skills/pr-handoff/SKILL.md"
+  },
+  "commands": {
+    "bootstrap": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Repo-Bootstrap.ps1",
+    "verifyChanged": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1",
+    "handoff": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/New-PrHandoff.ps1",
+    "evalHarness": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness"
+  },
   "statusCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Get-HarnessStatus.ps1 -Json",
   "evalCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness",
+  "futureRuntime": {
+    "providerContract": "Responses API",
+    "orchestration": "Agents SDK",
+    "codexExecutor": "Codex CLI via MCP when multi-step coding workflows need external orchestration"
+  },
   "lanes": {
     "evals": {
       "skill": "harness-evals",

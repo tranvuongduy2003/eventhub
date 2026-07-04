@@ -23,6 +23,7 @@ Protected paths are also enforced by hooks:
 - dependency and build outputs
 
 Shared policy data lives in `.codex/policies/harness-policy.json`.
+The canonical runtime manifest lives in `harness/manifest.json`.
 
 ## Lifecycle Hooks
 

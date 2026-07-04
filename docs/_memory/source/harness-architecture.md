@@ -31,6 +31,7 @@ It is not a random collection of prompt notes, CLI examples, or product implemen
 | Layer | Location | Role |
 |---|---|---|
 | Repo guidance | `AGENTS.md` | Short working agreement, source-of-truth routing, non-negotiable rules |
+| Runtime manifest | `harness/manifest.json` | Canonical lane registry, foundation command list, state directory, and future-runtime summary |
 | Policy | `.codex/policies/harness-policy.json` | Protected paths, blocked shell commands, verify-gate behavior |
 | Hooks | `.codex/hooks/` | Lifecycle interception: pre-tool, pre-shell, post-edit, stop |
 | Skills | `.agents/skills/` | Reusable workflows loaded only when relevant |
@@ -112,6 +113,8 @@ The harness must expose real machine-readable artifacts, not placeholder README 
 | `harness/telemetry/events.schema.json` | Harness event schema and redaction contract |
 | `harness/tools/registry.json` | Agent-facing command/tool registry and side-effect declarations |
 | `scripts/agent/Get-HarnessStatus.ps1` | Status command that validates these artifacts and fails on placeholder README scaffolds |
+
+Keep durable harness topology and command metadata in `harness/manifest.json`, source memory, policy files, hooks, scripts, and the verification graph.
 
 Do not add `README.md` files under `harness/`, `harness/orchestrator/`, `harness/policies/`, `harness/telemetry/`, or `harness/tools/`.
 
