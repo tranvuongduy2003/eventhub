@@ -12,6 +12,7 @@ public sealed record StartCheckoutLineRequest(
     int Quantity);
 
 public sealed record StartCheckoutResult(
+    int EventId,
     string EventSlug,
     string EventTitle,
     decimal TotalAmount,

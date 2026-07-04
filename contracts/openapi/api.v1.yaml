@@ -1395,6 +1395,12 @@ components:
       type: object
     StartCheckoutResponse:
       properties:
+        eventId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
         eventSlug:
           type: string
         eventTitle:
@@ -1412,6 +1418,7 @@ components:
         totalCurrency:
           type: string
       required:
+        - eventId
         - eventSlug
         - eventTitle
         - totalAmount

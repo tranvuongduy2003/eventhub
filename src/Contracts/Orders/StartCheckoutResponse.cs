@@ -1,6 +1,7 @@
 namespace EventHub.Contracts.Orders;
 
 public sealed record StartCheckoutResponse(
+    int EventId,
     string EventSlug,
     string EventTitle,
     decimal TotalAmount,

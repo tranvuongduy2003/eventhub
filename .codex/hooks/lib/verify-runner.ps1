@@ -13,8 +13,19 @@ function Invoke-VerifyQuiet {
         [string[]]$ArgumentList,
         [string]$WorkingDirectory = (Get-VerifyProjectRoot)
     )
+    $resolvedFilePath = $FilePath
+    if (-not [System.IO.Path]::IsPathRooted($FilePath)) {
+        foreach ($candidate in @("$FilePath.exe", "$FilePath.cmd", "$FilePath.bat", $FilePath)) {
+            $command = Get-Command $candidate -ErrorAction SilentlyContinue
+            if ($command -and $command.CommandType -eq 'Application') {
+                $resolvedFilePath = $command.Source
+                break
+            }
+        }
+    }
+
     $psi = New-Object System.Diagnostics.ProcessStartInfo
-    $psi.FileName = $FilePath
+    $psi.FileName = $resolvedFilePath
     $psi.Arguments = ConvertTo-ProcessArgumentString -ArgumentList $ArgumentList
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
@@ -188,11 +199,11 @@ function Test-WebTypeCheck {
     param([string]$ProjectRoot)
 
     $result = Invoke-VerifyQuiet -FilePath 'yarn' -ArgumentList @(
-        '--cwd', 'web', 'exec', 'tsc', '-b', '--noEmit'
+        '--cwd', 'web', 'run', 'tsc', '-b', '--noEmit'
     ) -WorkingDirectory $ProjectRoot
 
     if ($result.ExitCode -ne 0) {
-        return ,@("TypeScript check failed (yarn --cwd web exec tsc -b --noEmit): $($result.Output)")
+        return ,@("TypeScript check failed (yarn --cwd web run tsc -b --noEmit): $($result.Output)")
     }
     return ,@()
 }
