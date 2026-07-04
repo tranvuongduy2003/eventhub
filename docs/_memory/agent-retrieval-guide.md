@@ -19,6 +19,7 @@ Use this guide when an agent needs durable EventHub context.
 - Need model rules: read [[_memory/source/domain-model-specification]] and [[_memory/mocs/domain-model]].
 - Need implementation mechanics: read [[_memory/source/technical-design]] and [[_memory/mocs/technical-architecture]].
 - Need Codex harness behavior: read [[_memory/source/harness-architecture]], [[_memory/source/harness-operational-policies]], and [[_memory/mocs/harness-memory]].
+- Need feature delivery workflow: use `cook`; its internal phases cover spec, plan, implementation, verification, memory sync, and handoff.
 
 ## Search keys
 

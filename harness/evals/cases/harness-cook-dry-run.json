@@ -1,0 +1,18 @@
+{
+  "id": "harness-cook-dry-run",
+  "layer": "harness",
+  "mode": "auto",
+  "description": "Cook dry-run records intended artifacts without creating durable product artifacts",
+  "run": {
+    "type": "command",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-CookPlan.ps1 -DryRun -Json"
+  },
+  "assert": {
+    "exitCode": 0,
+    "jsonStdout": {
+      "status": "passed",
+      "dryRun.createsArtifacts": "False",
+      "dryRun.requiresAdjacentFeatureBoundary": "True"
+    }
+  }
+}

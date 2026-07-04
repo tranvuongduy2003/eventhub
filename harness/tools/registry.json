@@ -20,6 +20,12 @@
       "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Get-HarnessStatus.ps1 -Json",
       "output": "status, lanes, artifacts, errors, timestamp"
     },
+    "test-cook-plan": {
+      "mode": "read-only-check",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-CookPlan.ps1 -PlanPath <path> -ProgressPath <path>",
+      "jsonCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-CookPlan.ps1 -Json -PlanPath <path> -ProgressPath <path>",
+      "output": "status, errors, dryRun, timestamp"
+    },
     "new-harness-skill": {
       "mode": "write",
       "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/New-HarnessSkill.ps1 -Lane <lane>",

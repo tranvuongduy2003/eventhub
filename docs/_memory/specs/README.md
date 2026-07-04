@@ -9,7 +9,7 @@ tags:
 
 # Implementation Specs Memory
 
-This folder holds committed, implementation-ready product specs created by the `spec` skill.
+This folder holds committed, implementation-ready product specs created by the `spec` phase of the `cook` skill.
 
 Canonical path: `docs/_memory/specs/`.
 
@@ -29,6 +29,6 @@ Use `<YYYYMMDDHHmmss>-<feature-kebab>.md`.
 When a spec-backed implementation completes, use `memory-sync` to update the spec status and every affected long-term memory surface before handoff. At minimum, feature specs must remain discoverable from [[_memory/mocs/feature-roadmap]]. Also check source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data, and external handoff evidence when relevant.
 ## Agent Contract
 
-Agents should read the relevant spec here after the constitution and source memory, then create or consume paired plans under `.codex/plans/`.
+Agents should read the relevant spec here after the constitution and source memory, then use `cook` to create or consume paired plans under `.codex/plans/`.
 
 Do not recreate the legacy loose specs directory outside `_memory`.

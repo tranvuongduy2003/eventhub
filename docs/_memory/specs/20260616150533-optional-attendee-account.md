@@ -87,7 +87,7 @@ search_index:
 
 ## 4. API Surface (high-level)
 
-> Detailed endpoint design is deferred to the engineering plan (`/plan`).
+> Detailed endpoint design is deferred to the `cook` plan phase.
 
 - **Attendee registration** is a public endpoint (no auth). Auto sign-in on success.
 - **Sign-in / sign-out** reuses the existing session mechanism (`POST /api/auth/login`, `POST /api/auth/logout`).
@@ -180,6 +180,6 @@ Consistency is strong within the User aggregate (single transaction for account 
 
 | # | Question | Status |
 |---|----------|--------|
-| 1 | ~~Should attendee registration use the same endpoint as organizers or a separate one?~~ | Deferred to `/plan` |
+| 1 | ~~Should attendee registration use the same endpoint as organizers or a separate one?~~ | Deferred to the `cook` plan phase |
 | 2 | Should order linking be synchronous at registration time, or can it be deferred to a background job? | ✅ Resolved — synchronous, in the same unit of work as account creation. Simpler; sufficient at this scale. |
 | 3 | Does the existing User aggregate already support a role field, or does it need to be added? | ✅ Resolved — `VO-UserRole` (`Organizer` / `Attendee`) is defined in `domain-model-specification.md` BC-1. The current aggregate is a template; the role field will be added as part of this feature. No migration concern. |

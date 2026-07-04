@@ -1,11 +1,14 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "type": "object",
   "required": [
     "id",
     "objective",
     "workflow",
+    "phase",
     "harnessImpact",
+    "memorySyncInventory",
+    "doneCriteriaLedger",
     "stopConditions"
   ],
   "properties": {
@@ -20,10 +23,42 @@
     "workflow": {
       "type": "string",
       "enum": [
-        "spec",
-        "plan",
         "cook",
         "harness"
+      ]
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "intake",
+        "audit",
+        "spec",
+        "plan",
+        "implement",
+        "verify",
+        "handoff"
+      ]
+    },
+    "artifactMode": {
+      "type": "string",
+      "enum": [
+        "durable",
+        "dry-run"
+      ],
+      "default": "durable"
+    },
+    "stopAfter": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "spec",
+        "plan",
+        "implement",
+        "verify",
+        "done",
+        null
       ]
     },
     "relatedSpec": {
@@ -37,6 +72,75 @@
         "string",
         "null"
       ]
+    },
+    "structuredArtifacts": {
+      "type": "object",
+      "properties": {
+        "specMarkdown": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "planMarkdown": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "progressNotes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "runtimeStateDirectory": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "taskSpecSidecar": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "adjacentFeatureBoundary": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "inScope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outOfScope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "neighboringFeatures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
     },
     "harnessImpact": {
       "type": "object",
@@ -69,15 +173,72 @@
         }
       }
     },
+    "memorySyncInventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "surface",
+          "status"
+        ],
+        "properties": {
+          "surface": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "updated",
+              "N/A"
+            ]
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "doneCriteriaLedger": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "criterion",
+          "status"
+        ],
+        "properties": {
+          "criterion": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "passed",
+              "failed",
+              "N/A"
+            ]
+          },
+          "evidence": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "stopConditions": {
       "type": "array",
       "items": {
         "type": "string",
-        "enum": [
-          "checks-passed",
-          "blocked",
+          "enum": [
+            "checks-passed",
+            "memory-synced",
+            "done-criteria-ledger-complete",
+            "confidence-threshold-met",
+            "blocked",
           "user-stop",
-          "policy-denied"
+          "policy-denied",
+          "retry-budget-exhausted"
         ]
       }
     }

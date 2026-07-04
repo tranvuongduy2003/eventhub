@@ -82,8 +82,62 @@ $expectedLanes = @('evals', 'orchestrator', 'policies', 'telemetry', 'tools')
 $laneResults = New-Object System.Collections.ArrayList
 
 if ($null -ne $manifest) {
+    if ($manifest.repoGuidance -ne 'AGENTS.md') {
+        Add-Error "harness/manifest.json repoGuidance must be AGENTS.md"
+    }
+    elseif (-not (Test-Path -LiteralPath (Join-Path $repoRoot 'AGENTS.md') -PathType Leaf)) {
+        Add-Error "Missing repo guidance: AGENTS.md"
+    }
+
+    if ($manifest.stateDirectory -ne '.codex/state') {
+        Add-Error "harness/manifest.json stateDirectory must be .codex/state"
+    }
+
     if ($manifest.singleEvalTree -ne 'harness/evals/') {
         Add-Error "harness/manifest.json singleEvalTree must be harness/evals/"
+    }
+
+    $expectedFoundationSkills = @{
+        repoBootstrap = '.agents/skills/repo-bootstrap/SKILL.md'
+        verifyChangedCode = '.agents/skills/verify-changed-code/SKILL.md'
+        prHandoff = '.agents/skills/pr-handoff/SKILL.md'
+    }
+
+    foreach ($entry in $expectedFoundationSkills.GetEnumerator()) {
+        $actual = [string]$manifest.foundationSkills.($entry.Key)
+        if ($actual -ne $entry.Value) {
+            Add-Error "harness/manifest.json foundationSkills.$($entry.Key) must be $($entry.Value)"
+            continue
+        }
+
+        if (-not (Test-Path -LiteralPath (Join-Path $repoRoot (Get-RelativePath $entry.Value)) -PathType Leaf)) {
+            Add-Error "Missing foundation skill: $($entry.Value)"
+        }
+    }
+
+    $expectedCommands = @{
+        bootstrap = 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Repo-Bootstrap.ps1'
+        verifyChanged = 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1'
+        handoff = 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/New-PrHandoff.ps1'
+        evalHarness = 'powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness'
+    }
+
+    foreach ($entry in $expectedCommands.GetEnumerator()) {
+        if ([string]$manifest.commands.($entry.Key) -ne $entry.Value) {
+            Add-Error "harness/manifest.json commands.$($entry.Key) must be $($entry.Value)"
+        }
+    }
+
+    if ($manifest.futureRuntime.providerContract -ne 'Responses API') {
+        Add-Error "harness/manifest.json futureRuntime.providerContract must be Responses API"
+    }
+
+    if ($manifest.futureRuntime.orchestration -ne 'Agents SDK') {
+        Add-Error "harness/manifest.json futureRuntime.orchestration must be Agents SDK"
+    }
+
+    if ($manifest.futureRuntime.codexExecutor -ne 'Codex CLI via MCP when multi-step coding workflows need external orchestration') {
+        Add-Error "harness/manifest.json futureRuntime.codexExecutor has an unsupported value"
     }
 
     foreach ($lane in $expectedLanes) {
@@ -116,6 +170,17 @@ if ($null -ne $manifest) {
 }
 
 if ($null -ne $routing) {
+    if ($routing.defaultWorkflow -ne 'cook-unified') {
+        Add-Error "harness/orchestrator/routing.json defaultWorkflow must be cook-unified"
+    }
+
+    if ($routing.canonicalSkill -ne 'cook') {
+        Add-Error "harness/orchestrator/routing.json canonicalSkill must be cook"
+    }
+    elseif (-not (Test-Path -LiteralPath (Join-Path $repoRoot '.agents\skills\cook\SKILL.md') -PathType Leaf)) {
+        Add-Error "Missing cook skill: .agents/skills/cook/SKILL.md"
+    }
+
     if ($routing.memorySyncSkill -ne 'memory-sync') {
         Add-Error "harness/orchestrator/routing.json memorySyncSkill must be memory-sync"
     }
@@ -135,10 +200,42 @@ if ($null -ne $routing) {
             Add-Error "harness/orchestrator/routing.json missing lane skill: $skill"
         }
     }
+
+    $cookPhases = @($routing.workflows.'cook-unified'.phases | ForEach-Object { $_.name })
+    if ($cookPhases -notcontains 'audit') {
+        Add-Error "harness/orchestrator/routing.json cook-unified phases missing audit"
+    }
+
+    $planPhase = $routing.workflows.'cook-unified'.phases | Where-Object { $_.name -eq 'plan' } | Select-Object -First 1
+    if ($null -eq $planPhase.validator -or [string]$planPhase.validator -notmatch 'scripts/agent/Test-CookPlan.ps1') {
+        Add-Error "harness/orchestrator/routing.json plan phase must reference Test-CookPlan.ps1"
+    }
 }
 
 if ($null -ne $taskSpecSchema) {
-    foreach ($required in @('id', 'objective', 'workflow', 'harnessImpact', 'stopConditions')) {
+    foreach ($required in @('id', 'objective', 'workflow', 'phase', 'harnessImpact', 'stopConditions')) {
+        if (@($taskSpecSchema.required) -notcontains $required) {
+            Add-Error "task-spec.schema.json missing required field: $required"
+        }
+    }
+
+    foreach ($workflow in @($taskSpecSchema.properties.workflow.enum)) {
+        if ($workflow -ne 'cook' -and $workflow -ne 'harness') {
+            Add-Error "task-spec.schema.json workflow enum contains unsupported workflow: $workflow"
+        }
+    }
+
+    foreach ($phase in @('spec', 'plan', 'implement', 'verify', 'handoff')) {
+        if (@($taskSpecSchema.properties.phase.enum) -notcontains $phase) {
+            Add-Error "task-spec.schema.json phase enum missing cook phase: $phase"
+        }
+    }
+
+    if (@($taskSpecSchema.properties.phase.enum) -notcontains 'audit') {
+        Add-Error "task-spec.schema.json phase enum missing cook audit phase"
+    }
+
+    foreach ($required in @('memorySyncInventory', 'doneCriteriaLedger')) {
         if (@($taskSpecSchema.required) -notcontains $required) {
             Add-Error "task-spec.schema.json missing required field: $required"
         }
@@ -162,7 +259,7 @@ if ($null -ne $telemetrySchema) {
 }
 
 if ($null -ne $toolRegistry) {
-    foreach ($toolName in @('verify-changed-code', 'test-harness-policy', 'get-harness-status', 'new-harness-skill', 'eval-runner')) {
+    foreach ($toolName in @('verify-changed-code', 'test-harness-policy', 'get-harness-status', 'test-cook-plan', 'new-harness-skill', 'eval-runner')) {
         if ($null -eq $toolRegistry.tools.$toolName) {
             Add-Error "registry.json missing tool: $toolName"
         }
