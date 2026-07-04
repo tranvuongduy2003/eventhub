@@ -245,6 +245,6 @@ Silent drift — code or rules that contradict this document without amendment �
 | [[_memory/source/feature-specification|Feature specification]] | Observable capabilities — epics (`EP-*`), features (`F-*`), acceptance criteria, build order |
 | [[_memory/source/domain-model-specification|Domain model specification]] | Domain model — bounded contexts, aggregates, invariants, events, context map |
 | [[_memory/source/technical-design|Technical design]] | How it is built — architecture, CQRS, infrastructure, API, persistence, testing |
-| [[_memory/specs/README|Implementation specs memory]] | Product specs (`/spec`) — committed |
+| [[_memory/specs/README|Implementation specs memory]] | Product specs (created by the `cook` spec phase) — committed |
 
 **Reading order for agents:** constitution → product requirements → feature specification (for the feature at hand) → domain model specification (domain rules) → technical design (mechanics).

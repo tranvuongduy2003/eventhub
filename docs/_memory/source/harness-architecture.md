@@ -59,11 +59,13 @@ Monitoring is evidence for improvement, not decoration. `harness/evals/results/l
 
 ## Workflow Harness Contract
 
-The `spec` -> `plan` -> `cook` workflow must keep harness impact and long-term memory sync explicit:
+The `cook-unified` workflow is the single entrypoint for feature delivery. Inside `cook`, the harness-owned phases are `spec` -> `plan` -> checkpoint implementation -> verify -> memory sync -> handoff.
 
-- `spec` records whether the feature touches evals, orchestrator, policies, telemetry, tools, or workflow surfaces, and makes the new spec discoverable from the relevant long-term memory surfaces. For feature specs this includes `docs/_memory/mocs/feature-roadmap.md`; for other durable knowledge it may include source maps, MOCs, glossaries, retrieval guides, or README/index files.
-- `plan` translates every non-`N/A` harness impact into concrete files, tasks, and validation commands, and includes a Memory Sync inventory owned by `memory-sync` for spec status, source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data, and docs-memory validation.
-- `cook` stops on missing harness-impact or Memory Sync planning, updates the plan when new impact or memory drift appears, runs harness evals for harness changes, marks the related spec implemented only after objective checks pass, refreshes every affected long-term memory and harness contract surface, and runs docs-memory plus changed-code verification before handoff.
+The workflow must keep harness impact and long-term memory sync explicit:
+
+- The spec phase records whether the feature touches evals, orchestrator, policies, telemetry, tools, or workflow surfaces, and makes the new spec discoverable from the relevant long-term memory surfaces. For feature specs this includes `docs/_memory/mocs/feature-roadmap.md`; for other durable knowledge it may include source maps, MOCs, glossaries, retrieval guides, or README/index files.
+- The plan phase translates every non-`N/A` harness impact into concrete files, tasks, and validation commands, and includes a Memory Sync inventory owned by `memory-sync` for spec status, source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data, and docs-memory validation.
+- The implementation phase stops on missing harness-impact or Memory Sync planning, updates the plan when new impact or memory drift appears, runs harness evals for harness changes, marks the related spec implemented only after objective checks pass, refreshes every affected long-term memory and harness contract surface, and runs docs-memory plus changed-code verification before handoff.
 
 Harness changes must not be hidden inside product implementation tasks. Changes to `harness/evals/`, `harness/orchestrator/`, `.codex/policies/`, `harness/policies/`, `harness/telemetry/`, `harness/tools/`, `.agents/skills/`, `.codex/hooks/`, `scripts/agent/`, `.graph/`, or AGENTS.md require visible plan entries and objective verification.
 
@@ -105,7 +107,7 @@ The harness must expose real machine-readable artifacts, not placeholder README 
 |---|---|
 | `harness/manifest.json` | Lane registry, status command, eval command, and artifact inventory |
 | `harness/orchestrator/task-spec.schema.json` | TaskSpec and Harness Impact schema |
-| `harness/orchestrator/routing.json` | `spec` -> `plan` -> `cook` routing and lane-skill routing |
+| `harness/orchestrator/routing.json` | `cook-unified` routing, phase contract, and lane-skill routing |
 | `harness/policies/runtime-policy.json` | Runtime permission, approval, protected path, and hook enforcement contract |
 | `harness/telemetry/events.schema.json` | Harness event schema and redaction contract |
 | `harness/tools/registry.json` | Agent-facing command/tool registry and side-effect declarations |

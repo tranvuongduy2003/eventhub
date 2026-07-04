@@ -59,7 +59,7 @@ Harness means the policy and orchestration layer around agent work, not ad-hoc p
 - Runtime contract status: `scripts/agent/Get-HarnessStatus.ps1 -Json`
 - Stable agent scripts: `scripts/agent/`
 
-The `spec` -> `plan` -> `cook` workflow must keep harness impact and memory sync explicit. Specs record whether evals, orchestrator, policies, telemetry, tools, or workflow surfaces are affected, and must be discoverable from the relevant long-term memory surfaces when created. Plans map harness lanes plus a Memory Sync inventory to files and validation using `memory-sync`. Cook updates the plan when new harness impact or memory drift appears, runs harness evals after harness changes, then marks the related spec `implemented`, updates every affected long-term memory and harness contract surface, and runs docs-memory plus changed-code verification before handoff.
+The `cook-unified` workflow is the single feature-delivery entrypoint and must keep harness impact and memory sync explicit. Inside `cook`, the phases are `spec` -> `plan` -> checkpoint implementation -> verify -> memory sync -> handoff. Specs record whether evals, orchestrator, policies, telemetry, tools, or workflow surfaces are affected, and must be discoverable from the relevant long-term memory surfaces when created. Plans map harness lanes plus a Memory Sync inventory to files and validation using `memory-sync`. Cook updates the plan when new harness impact or memory drift appears, runs harness evals after harness changes, then marks the related spec `implemented`, updates every affected long-term memory and harness contract surface, and runs docs-memory plus changed-code verification before handoff.
 
 Default verification:
 
@@ -82,9 +82,7 @@ Use repo docs first. Use a skill only for the procedure it owns.
 | Fresh workspace or broken local setup | `repo-bootstrap` or `env-doctor` |
 | Verify current diff | `verify-changed-code` |
 | Final review handoff | `pr-handoff` |
-| Product spec | `spec` |
-| Engineering plan from a spec | `plan` |
-| Implement an existing plan | `cook` |
+| Product spec, engineering plan, implementation, or verification | `cook` |
 | Harness eval cases / runner evidence | `harness-evals` |
 | Harness orchestrator runtime contracts | `harness-orchestrator` |
 | Harness policies / guardrails / approvals | `harness-policies` |

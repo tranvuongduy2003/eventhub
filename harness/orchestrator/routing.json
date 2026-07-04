@@ -1,27 +1,48 @@
 {
-  "schemaVersion": 1,
-  "defaultWorkflow": "spec-plan-cook",
+  "schemaVersion": 2,
+  "defaultWorkflow": "cook-unified",
+  "canonicalSkill": "cook",
   "memorySyncSkill": "memory-sync",
   "workflows": {
-    "spec-plan-cook": {
-      "steps": [
+    "cook-unified": {
+      "skill": "cook",
+      "description": "Single entrypoint for spec, plan, implementation, verification, repair, memory sync, and handoff.",
+      "phases": [
+        {
+          "name": "intake",
+          "requiresSourceOfTruth": true
+        },
         {
           "name": "spec",
-          "skill": "spec",
+          "stopAfter": "spec",
           "requiresHarnessImpact": true,
-          "requiresMemorySync": true
+          "requiresStructuredArtifact": true,
+          "artifact": "docs/_memory/specs/<timestamp>-<slug>.md"
         },
         {
           "name": "plan",
-          "skill": "plan",
+          "stopAfter": "plan",
           "requiresHarnessImpactTable": true,
-          "requiresMemorySyncTable": true
+          "requiresMemorySyncTable": true,
+          "requiresStructuredArtifact": true,
+          "artifact": ".codex/plans/<same-filename-as-spec>.md"
         },
         {
-          "name": "cook",
-          "skill": "cook",
+          "name": "implement",
+          "requiresCheckpointLoop": true,
           "requiresHarnessImpactGate": true,
           "requiresMemorySyncGate": true
+        },
+        {
+          "name": "verify",
+          "requiresChangedCodeVerification": true,
+          "requiresHarnessValidationWhenChanged": true,
+          "requiresDocsMemoryValidationWhenChanged": true
+        },
+        {
+          "name": "handoff",
+          "requiresMemorySyncComplete": true,
+          "requiresSpecImplementedWhenComplete": true
         }
       ]
     },
@@ -41,14 +62,18 @@
   },
   "stopConditions": {
     "complete": [
+      "acceptance criteria satisfied",
       "changed-code verification passed",
       "harness lane validation passed when a harness lane changed",
       "docs memory validation passed after spec or long-term memory changes",
-      "related spec status and all affected memory surfaces synchronized before handoff"
+      "related spec status and all affected memory surfaces synchronized before handoff",
+      "confidence threshold met or explicitly waived by user"
     ],
     "blocked": [
       "policy denied required action",
-      "required external state unavailable"
+      "required external state unavailable",
+      "repeated verifier failure exhausted retry budget",
+      "human decision required"
     ]
   }
 }

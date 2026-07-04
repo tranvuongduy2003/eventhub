@@ -2,6 +2,8 @@
   "schemaVersion": 1,
   "status": "active",
   "purpose": "EventHub agent harness runtime contract and lane registry.",
+  "canonicalWorkflow": "cook-unified",
+  "canonicalSkill": "cook",
   "singleEvalTree": "harness/evals/",
   "statusCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Get-HarnessStatus.ps1 -Json",
   "evalCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness",

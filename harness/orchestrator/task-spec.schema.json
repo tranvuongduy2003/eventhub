@@ -1,10 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "type": "object",
   "required": [
     "id",
     "objective",
     "workflow",
+    "phase",
     "harnessImpact",
     "stopConditions"
   ],
@@ -20,10 +21,33 @@
     "workflow": {
       "type": "string",
       "enum": [
-        "spec",
-        "plan",
         "cook",
         "harness"
+      ]
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "intake",
+        "spec",
+        "plan",
+        "implement",
+        "verify",
+        "handoff"
+      ]
+    },
+    "stopAfter": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "spec",
+        "plan",
+        "implement",
+        "verify",
+        "done",
+        null
       ]
     },
     "relatedSpec": {
@@ -37,6 +61,43 @@
         "string",
         "null"
       ]
+    },
+    "structuredArtifacts": {
+      "type": "object",
+      "properties": {
+        "specMarkdown": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "planMarkdown": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "progressNotes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "runtimeStateDirectory": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
     },
     "harnessImpact": {
       "type": "object",
@@ -75,9 +136,12 @@
         "type": "string",
         "enum": [
           "checks-passed",
+          "memory-synced",
+          "confidence-threshold-met",
           "blocked",
           "user-stop",
-          "policy-denied"
+          "policy-denied",
+          "retry-budget-exhausted"
         ]
       }
     }

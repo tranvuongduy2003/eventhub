@@ -41,7 +41,7 @@ It is not a pile of prompt examples or product implementation code.
 
 ## Workflow memory sync
 
-The `spec` -> `plan` -> `cook` path must keep long-term docs memory current: new durable specs are discoverable from the relevant indexes, plans include a `memory-sync` inventory, and cook marks completed specs implemented only after checks pass while refreshing every affected source doc, MOC, glossary, retrieval guide, README/index, harness contract, graph/routing entry, and handoff evidence surface.
+The `cook-unified` path is the single feature-delivery workflow. Inside `cook`, the phases `spec` -> `plan` -> checkpoint implementation -> verify -> memory sync -> handoff must keep long-term docs memory current: new durable specs are discoverable from the relevant indexes, plans include a `memory-sync` inventory, and cook marks completed specs implemented only after checks pass while refreshing every affected source doc, MOC, glossary, retrieval guide, README/index, harness contract, graph/routing entry, and handoff evidence surface.
 
 ## Improvement loop
 

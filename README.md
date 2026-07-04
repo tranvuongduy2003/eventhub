@@ -16,7 +16,7 @@ Local-first event management and ticketing platform. .NET backend (Clean Archite
 
 Open the repo in Codex; agents read `AGENTS.md` and **`docs/CONSTITUTION.md`** plus companion docs before changing code.
 
-**Agent workflow:** `/spec` (spec in `docs/_memory/specs/`, memory indexes, + one GitHub issue) -> `/plan` (implementation plan with Harness Impact and `memory-sync` inventory) -> `/cook` (implement, verify, mark spec implemented, refresh all affected long-term memory and harness contract surfaces, then delete the plan if one was created).
+**Agent workflow:** `cook-unified` is the single entrypoint. `cook` runs the internal phases `spec` (spec in `docs/_memory/specs/`) -> `plan` (implementation plan with Harness Impact and `memory-sync` inventory in `.codex/plans/`) -> implement -> verify -> memory sync and handoff. Completion means mark spec implemented, refresh all affected long-term memory and harness contract surfaces, then delete the plan if one was created.
 
 ### Stack highlights
 
@@ -102,7 +102,7 @@ See `.agents/skills/postgres-mcp/SKILL.md` and `.agents/skills/neo4j-graphrag/SK
 | [`docs/_memory/source/technical-design.md`](docs/_memory/source/technical-design.md) | Architecture and infrastructure |
 | [`docs/_memory/specs/`](docs/_memory/specs/) | Product specs (committed) |
 
-Ephemeral plans live in `.codex/plans/` (gitignored; deleted after `/cook`).
+Ephemeral plans live in `.codex/plans/` (gitignored; deleted after completed `cook` runs).
 
 ## API contract
 

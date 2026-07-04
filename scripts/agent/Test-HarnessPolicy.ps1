@@ -65,7 +65,7 @@ function Test-FileContains {
 
 foreach ($path in @(
     'AGENTS.md',
-    '.agents/skills/spec/SKILL.md',
+    '.agents/skills/cook/SKILL.md',
     '.agents/skills/harness-evals/SKILL.md',
     '.agents/skills/harness-orchestrator/SKILL.md',
     '.agents/skills/harness-policies/SKILL.md',
@@ -98,24 +98,12 @@ Test-PathAbsent 'harness/policies/README.md'
 Test-PathAbsent 'harness/telemetry/README.md'
 Test-PathAbsent 'harness/tools/README.md'
 
-Test-FileContains '.agents/skills/spec/SKILL.md' @(
-    '## 7. Harness Impact',
-    'evals/',
-    'harness/orchestrator/',
-    'harness/telemetry/',
-    'harness/tools/'
-)
-
-Test-FileContains '.agents/skills/plan/SKILL.md' @(
-    '## Harness Impact',
-    'evals/',
-    'harness/orchestrator/',
-    'harness/telemetry/',
-    'harness/tools/'
-)
-
 Test-FileContains '.agents/skills/cook/SKILL.md' @(
-    '## Step 1b: Harness Impact Gate',
+    'intake -> spec -> plan -> checkpoint loop -> verify -> memory sync -> handoff',
+    '## Step 3: Spec Phase',
+    '## Step 4: Plan Phase',
+    '## 7. Harness Impact',
+    '## Memory Sync Inventory',
     'harness/evals/run.ps1 -Layer harness',
     'harness/telemetry/',
     'harness/tools/'
@@ -123,9 +111,8 @@ Test-FileContains '.agents/skills/cook/SKILL.md' @(
 
 Test-FileContains 'docs/_memory/source/harness-architecture.md' @(
     'Workflow Harness Contract',
-    'spec',
-    'plan',
-    'cook',
+    'cook-unified',
+    'single entrypoint',
     'Memory Sync inventory',
     'memory-sync',
     'source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data',
@@ -145,15 +132,15 @@ Test-FileContains 'AGENTS.md' @(
     'harness-telemetry',
     'harness-tools',
     'memory-sync',
+    'cook-unified',
     'memory sync explicit',
     'marks the related spec `implemented`'
 )
 
 Test-FileContains 'docs/_memory/source/harness-architecture.md' @(
     'Workflow Harness Contract',
-    'spec',
-    'plan',
-    'cook',
+    'cook-unified',
+    'single entrypoint',
     'Memory Sync inventory',
     'memory-sync',
     'source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data',
@@ -163,6 +150,7 @@ Test-FileContains 'docs/_memory/source/harness-architecture.md' @(
 
 
 Test-FileContains 'docs/_memory/source/harness-operational-policies.md' @(
+    'cook-unified',
     'Memory Sync inventory',
     'related spec is marked `implemented`',
     'every affected long-term memory and harness contract surface is current',
@@ -171,6 +159,7 @@ Test-FileContains 'docs/_memory/source/harness-operational-policies.md' @(
 
 Test-FileContains 'docs/_memory/mocs/harness-memory.md' @(
     'Workflow memory sync',
+    'cook-unified',
     'plans include a `memory-sync` inventory',
     'completed specs implemented'
 )
@@ -204,6 +193,8 @@ Test-FileContains 'docs/_memory/specs/README.md' @(
     'source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data'
 )
 Test-FileContains 'harness/orchestrator/routing.json' @(
+    'cook-unified',
+    'canonicalSkill',
     'requiresMemorySync',
     'requiresMemorySyncTable',
     'requiresMemorySyncGate',
@@ -213,6 +204,7 @@ Test-FileContains 'harness/orchestrator/routing.json' @(
 )
 
 Test-FileContains 'README.md' @(
+    'cook-unified',
     'Harness Impact and `memory-sync` inventory',
     'mark spec implemented',
     'refresh all affected long-term memory and harness contract surfaces'
@@ -239,6 +231,7 @@ Test-FileContains 'docs/_memory/source/harness-operational-policies.md' @(
 )
 
 Test-FileContains 'scripts/agent/Get-HarnessStatus.ps1' @(
+    'defaultWorkflow must be cook-unified',
     'memorySyncSkill must be memory-sync',
     'Missing memory-sync skill'
 )

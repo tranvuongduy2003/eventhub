@@ -116,6 +116,17 @@ if ($null -ne $manifest) {
 }
 
 if ($null -ne $routing) {
+    if ($routing.defaultWorkflow -ne 'cook-unified') {
+        Add-Error "harness/orchestrator/routing.json defaultWorkflow must be cook-unified"
+    }
+
+    if ($routing.canonicalSkill -ne 'cook') {
+        Add-Error "harness/orchestrator/routing.json canonicalSkill must be cook"
+    }
+    elseif (-not (Test-Path -LiteralPath (Join-Path $repoRoot '.agents\skills\cook\SKILL.md') -PathType Leaf)) {
+        Add-Error "Missing cook skill: .agents/skills/cook/SKILL.md"
+    }
+
     if ($routing.memorySyncSkill -ne 'memory-sync') {
         Add-Error "harness/orchestrator/routing.json memorySyncSkill must be memory-sync"
     }
@@ -138,9 +149,21 @@ if ($null -ne $routing) {
 }
 
 if ($null -ne $taskSpecSchema) {
-    foreach ($required in @('id', 'objective', 'workflow', 'harnessImpact', 'stopConditions')) {
+    foreach ($required in @('id', 'objective', 'workflow', 'phase', 'harnessImpact', 'stopConditions')) {
         if (@($taskSpecSchema.required) -notcontains $required) {
             Add-Error "task-spec.schema.json missing required field: $required"
+        }
+    }
+
+    foreach ($workflow in @($taskSpecSchema.properties.workflow.enum)) {
+        if ($workflow -ne 'cook' -and $workflow -ne 'harness') {
+            Add-Error "task-spec.schema.json workflow enum contains unsupported workflow: $workflow"
+        }
+    }
+
+    foreach ($phase in @('spec', 'plan', 'implement', 'verify', 'handoff')) {
+        if (@($taskSpecSchema.properties.phase.enum) -notcontains $phase) {
+            Add-Error "task-spec.schema.json phase enum missing cook phase: $phase"
         }
     }
 }

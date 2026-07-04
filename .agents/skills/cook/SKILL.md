@@ -1,166 +1,177 @@
 ---
 name: cook
-description: Execute an implementation plan through the evaluator-optimizer loop until checks pass. Use when you have a prepared plan file and need to implement it safely.
+description: End-to-end EventHub delivery workflow. Use for product specs, engineering plans, implementation, verification, and repair loops through one harness-owned entrypoint.
 ---
 
-# Build
+# Cook
 
-Execute the ephemeral plan using the evaluator-optimizer loop: generate -> verify with real tests/types -> refine until objective checks pass. Harness stop-gate enforces this — self-declared done does not count.
+`cook` is the single EventHub feature-delivery skill with one phased workflow:
 
-> PLAN SYNC: Deviations -> update plan immediately. Mark [x] after each task passes verification.
+`intake -> spec -> plan -> checkpoint loop -> verify -> memory sync -> handoff`
 
-> EPHEMERAL PLAN: `.codex/plans/` only. Never commit. Delete when all tasks complete.
+The harness owns orchestration, state, validation, approvals, and stop conditions. The working tree, shell, and subagents are execution surfaces only.
 
-## Pattern: evaluator-optimizer
+> PLAN SYNC: Deviations update the current artifact immediately. Mark tasks done only after objective checks pass.
 
-| Phase | Action |
-|-------|--------|
-| Generate | Minimal code for current task |
-| Evaluate | affected tests + type-check |
-| Optimize | Fix only what failed; repeat until green |
-
-> Layer 5 topology: You alone write production code. Subagents are readonly scouts except `build-test-writer` (tests only, sequential — never parallel with other writers).
+> EPHEMERAL PLAN: `.codex/plans/` only. Never commit. Delete only when the run completes and all required memory sync is done.
 
 ## Step 0: Read context
 
-`docs/CONSTITUTION.md` · `docs/_memory/source/domain-model-specification.md` · `docs/_memory/source/technical-design.md` · `docs/_memory/source/harness-architecture.md` · `docs/_memory/source/harness-operational-policies.md` · spec from plan `related_spec` · the current task notes.
+Read the smallest relevant set:
+
+`docs/CONSTITUTION.md` · `docs/_memory/source/product-requirements.md` · `docs/_memory/source/feature-specification.md` · `docs/_memory/source/domain-model-specification.md` · `docs/_memory/source/technical-design.md` · `docs/_memory/source/harness-architecture.md` · `docs/_memory/source/harness-operational-policies.md` · existing related spec or plan · current task notes.
+
+When sources conflict: Constitution -> source memory -> harness source docs -> scoped rule -> this skill.
 
 ## Step 1: Parse input
 
 | Input | Action |
 |-------|--------|
-| `.codex/plans/<file>.md` | Use that plan |
-| `docs/_memory/specs/<file>.md` | Use paired `.codex/plans/<same-filename>.md` |
-| Newest in `.codex/plans/` | If no path |
-| `task N` | Start at task N |
-| `#123` | Context only |
+| Feature/user request | Run from intake through done unless the user asks for a stop phase |
+| `.codex/plans/<file>.md` | Resume from the plan phase and implement |
+| `docs/_memory/specs/<file>.md` | Use that spec and create or resume the paired plan |
+| `task N` | Resume at task N |
+| Newest `.codex/plans/` | Use only when no path or feature request is provided |
 
-Branch: `feature/<slug>` from plan frontmatter; create from `main` if missing.
+Use the full workflow by default. Stop after an intermediate artifact only when the user explicitly asks for a spec-only or plan-only outcome.
 
-If all tasks checked -> delete plan -> report done.
+Branch: `feature/<slug>` from the spec or plan. Do not create or switch branches unless the user asked for branch work.
 
-## Step 1b: Harness Impact Gate
+## Step 2: Artifact Contract
 
-Before editing code, read the plan's `## Harness Impact` section and mirror it into `progress.md` Decisions.
+Produce artifacts in the existing repository locations:
 
-For each non-`N/A` lane, keep the work visible as its own task or subtask:
+| Artifact | Location | Commit? |
+|----------|----------|---------|
+| Spec Markdown | `docs/_memory/specs/<timestamp>-<slug>.md` | yes |
+| Plan Markdown | `.codex/plans/<same-filename>.md` | no |
+| Progress notes | `.codex/notes/progress.md` | no |
+| Harness runtime state | `.codex/state/` | no |
+| Eval evidence | `harness/evals/results/` | no |
 
-| Lane | Required handling |
-|------|-------------------|
-| `harness/evals/` | Add or update deterministic/manual cases before relying on new harness behavior |
-| `harness/orchestrator/` | Keep runtime routing, handoff, retry, approval, and stop-condition changes isolated from product code |
-| `.codex/policies/`, `harness/policies/` | Update guardrail/permission/approval policy and matching eval coverage together |
-| `harness/telemetry/` | Record trace/log/metric/evidence changes and how they feed the improvement loop |
-| `harness/tools/` | Document tool adapter, MCP, CLI, or hosted-tool contract changes |
-| Workflow surfaces | Update `.agents/skills/`, `.codex/hooks/`, `scripts/agent/`, `.graph/`, or AGENTS.md with matching verification |
+Specs and plans must be structured enough for the harness to parse their status, Harness Impact, Memory Sync inventory, tasks, and validation commands. The runtime schema for machine-readable task shape lives in `harness/orchestrator/task-spec.schema.json`.
 
-If the plan has no `## Harness Impact` section, stop and update the plan before implementation. If a harness impact appears during implementation, update the plan immediately instead of burying it in the final summary.
+## Step 3: Spec Phase
 
-## Step 2: Context retrieval (parallel readonly — then you write)
+Write one implementation-ready product spec in `docs/_memory/specs/` when the request does not already provide one.
 
-Before each task, launch parallel readonly subagents in one message (summaries only — keep main window clean):
+The spec is product-driven: user value, observable behavior, domain rules, edge cases, and acceptance criteria. Do not put code-level file paths, class names, or framework details in the spec.
+
+Required sections:
+
+- Problem and solution
+- Acceptance criteria
+- Domain and business rules
+- UI behavior or API contract
+- Data, real-time, security, edge cases, dependencies, assumptions, out of scope
+- `## 7. Harness Impact`
+
+`## 7. Harness Impact` is mandatory. It must state impacts for `harness/evals/`, `harness/orchestrator/`, `.codex/policies/` or `harness/policies/`, `harness/telemetry/`, `harness/tools/`, and workflow surfaces such as `.agents/skills/`, `.codex/hooks/`, `scripts/agent/`, `.graph/`, or `AGENTS.md`. Use `N/A - product slice only; no harness behavior changes.` only when all are unaffected.
+
+If the user asked to stop after spec, run docs-memory checks for changed durable memory, report the spec path, and stop.
+
+## Step 4: Plan Phase
+
+Create or update `.codex/plans/<same-filename-as-spec>.md`.
+
+Every plan must include these sections before tasks:
+
+```markdown
+## Harness Impact
+
+| Lane | Impact | Files | Validation |
+|------|--------|-------|------------|
+| evals | N/A or ... | `harness/evals/...` | `powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness` |
+| orchestrator | N/A or ... | `harness/orchestrator/...` | ... |
+| policies | N/A or ... | `.codex/policies/...` / `harness/policies/...` | ... |
+| telemetry | N/A or ... | `harness/telemetry/...` | ... |
+| tools | N/A or ... | `harness/tools/...` | ... |
+| workflow | N/A or ... | `.agents/skills/...` / `.codex/hooks/...` / `scripts/agent/...` / `.graph/...` / `AGENTS.md` | ... |
+
+## Memory Sync Inventory
+
+| Surface | Status | Notes |
+|---------|--------|-------|
+| Related spec | planned/N/A | ... |
+| Source docs | planned/N/A | ... |
+| MOCs/glossaries/retrieval guides | planned/N/A | ... |
+| README/index files | planned/N/A | ... |
+| Harness contracts and graph/routing | planned/N/A | ... |
+| External tracking | planned/N/A | ... |
+```
+
+Then write 3-8 concrete tasks. Map every acceptance criterion to at least one task. Include paths, notes, and validation commands. Harness changes must be visible as their own task or subtask, not hidden inside product work.
+
+If the user asked to stop after plan, report the plan path and stop.
+
+## Step 5: Context Retrieval
+
+Before each implementation task, use parallel read-only scouts when useful:
 
 | Agent | When |
 |-------|------|
-| `@agent-graph-impact-analyst` | Blast radius, callers (neo4j-graphrag MCP) |
-| `@agent-codebase-explorer` | Locate files/symbols for the task topic |
-| `@agent-test-impact-analyzer` | If prior commits/diff exist — tests to run + gaps |
+| `@agent-graph-impact-analyst` | Blast radius and callers |
+| `@agent-codebase-explorer` | Locate files and symbols |
+| `@agent-test-impact-analyzer` | Determine focused checks for the current diff |
+| `@agent-plan-domain-researcher` | Domain-heavy task |
+| `@agent-plan-application-researcher` | CQRS/Application task |
+| `@agent-plan-infrastructure-researcher` | Persistence, API, contract, or integration task |
+| `@agent-plan-web-researcher` | Frontend task |
 
-Example:
+Subagents are read-only except explicit test-writer agents for red tests. The parent agent owns production code edits.
 
-```text
-@agent-graph-impact-analyst F-... / files: ... / spec: ...
-@agent-codebase-explorer Find handlers and tests for ...
-```
-
-Merge summaries into the current task notes Decisions. Do not let subagents edit code.
-
-Fallback (MCP down): `Grep` + docs — note `degraded: no graph`.
-
-## Step 3: Mandatory task loop (evaluator-optimizer)
+## Step 6: Checkpoint Loop
 
 For each unchecked task:
 
-### 3a. If bug fix -> red test first (sequential writer)
+1. For bug fixes, add a focused red test first when feasible.
+2. Implement the smallest change in layer order: Domain -> Application -> Infrastructure -> Api -> web -> harness workflow.
+3. Run affected checks.
+4. Fix only verified failures.
+5. Mark the task complete only when checks pass.
+6. Update the plan and `.codex/notes/progress.md` when new harness impact, memory drift, or blockers appear.
 
-Delegate to `@agent-build-test-writer` alone — not in parallel with other writers:
+Use `node scripts/affected-tests.mjs <path>` for changed files and run the returned checks.
 
-```text
-@agent-build-test-writer Bug: ... / repro: ... / layer: Domain|Integration
-```
-
-Confirm red once. Then you implement the minimal production fix (single writer).
-
-### 3b. Implement — minimal diff
-
-Domain -> Application -> Infrastructure -> Api -> web. Match existing patterns; no drive-by refactors.
-
-### 3c. Evaluate — affected checks (objective only)
-
-Run commands yourself or delegate `@agent-test-impact-analyzer` (readonly) for scope — you run dotnet/yarn and interpret exit codes.
-
-For each file you changed in this iteration:
-
-```powershell
-node scripts/affected-tests.mjs <path>
-```
-
-Run the returned steps (EventHub stack — not npm):
-
-| Step kind | Command |
-|-----------|---------|
-| `dotnet-test` | `dotnet test <project> [--filter ...]` |
-| `dotnet-build` | `dotnet build <project> -v q` |
-| `dotnet-format` | `dotnet format EventHub.slnx --verify-no-changes --include <path>` |
-| `eslint` | `yarn --cwd web eslint <file> --max-warnings 0` |
-
-If web `.ts/.tsx` changed: `yarn --cwd web exec tsc -b --noEmit`.
-
-If any harness lane changed, also run:
+Run these additional checks when relevant:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer graph
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1
 ```
 
-If `.graph/index.json` or `scripts/affected-tests.mjs` changed, also run:
+## Step 7: Stop Conditions
+
+Complete only when all apply:
+
+- Required acceptance criteria are satisfied.
+- Changed-code verification passes.
+- Harness lane validation passes when any harness lane changed.
+- Docs-memory validation passes after durable memory changes.
+- Related spec status and affected long-term memory surfaces are synchronized.
+- No high-severity review finding, policy denial, or unresolved approval remains.
+
+Blocked states must record the policy denial, missing external state, repeated verifier failure, or required human decision.
+
+## Step 8: Memory Sync And Handoff
+
+Use `memory-sync` before final handoff for spec-backed or workflow changes.
+
+For completed spec-backed work, mark the related spec `implemented` only after objective checks pass and Memory Sync is complete. Update source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data, and handoff evidence when they describe the changed behavior.
+
+Final verification:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer graph
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1
 ```
 
-### 3d. Optimize — loop until green
+For substantial work, run or record why you skipped an evidence-based code review.
 
-Still red -> return to 3b. Do not mark task done. Do not declare session complete.
+## Do Not
 
-Only when all steps exit 0:
-
-- Mark task `[x]` in plan
-- Update `progress.md` (`Status`, `Decisions`, `Next`) with any harness lane touched
-
-### 3e. Continue
-
-Next task without per-task confirmation unless blocked.
-
-If blocked: `[SKIP]` + reason in plan; stop unless user says continue.
-
-## Step 4: Finish
-
-- Full sweep: `dotnet test EventHub.slnx`; `yarn --cwd web api:verify` if Api/Contracts changed; `yarn --cwd web lint`; `yarn --cwd web build` if UI touched
-- Optional Reflexion: invoke `@agent-code-reviewer` on the diff
-- Delete plan file when all tasks succeed
-- Do not commit unless user asks; do not update GitHub issues
-
-## Examples
-
-| Command | Action |
-|---------|--------|
-| `build .codex/plans/20260614143000-place-order.md` | Full plan |
-| `build docs/_memory/specs/20260614143000-place-order.md` | Resolves paired plan |
-| `build ... task 2` | Task 2 onward |
-
-## DO NOT
-
-- Self-grade completion without green tests/type-check
-- Commit or stage `.codex/plans/**`
-- Stop after one task unless blocked
-- Edit `web/src/generated/` by hand
+- Create a parallel `harness/cook/` architecture outside the existing harness contracts.
+- Add a root `evals/` tree.
+- Hide harness changes inside product tasks.
+- Commit `.codex/plans/**`, `.codex/notes/**`, `.codex/state/**`, or `harness/evals/results/**`.
+- Edit protected generated files such as `web/src/generated/` or `contracts/openapi/.build/`.
