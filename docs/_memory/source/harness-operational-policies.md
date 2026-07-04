@@ -99,11 +99,14 @@ When the harness fails or blocks incorrectly:
 
 ## Spec Plan Cook Contract
 
-Harness impact is part of normal delivery, not an afterthought:
+Harness impact and long-term memory sync are part of normal delivery, not afterthoughts:
 
 - `spec` must include a Harness Impact section and state `N/A` only when evals, orchestrator, policies, telemetry, tools, hooks, skills, scripts, graph, and AGENTS.md are unaffected.
+- `spec` must update the relevant memory indexes so the new durable spec is discoverable before planning starts. Feature specs normally update `docs/_memory/mocs/feature-roadmap.md`; other specs may require source maps, MOCs, glossaries, retrieval guides, README/index files, or harness memory.
 - `plan` must include a Harness Impact table with each lane resolved to files and validation, or `N/A`.
-- `cook` must update the plan when implementation discovers harness impact and must run `harness/evals/run.ps1 -Layer harness` after harness changes.
+- `plan` must include a Memory Sync inventory owned by `memory-sync` covering related spec status, source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data, related issues or handoff evidence when applicable, and `scripts/agent/Test-DocsMemory.ps1` validation.
+- `cook` must update the plan when implementation discovers harness impact or memory drift and must run `harness/evals/run.ps1 -Layer harness` after harness changes.
+- `cook` must not delete the plan or declare done until the related spec is marked `implemented`, every affected long-term memory and harness contract surface is current or explicitly `N/A`, docs-memory validation passes, and changed-code verification passes.
 
 The only committed eval tree is `harness/evals/`. Store runtime-orchestration eval cases there and do not create a root `evals/` tree.
 
@@ -116,6 +119,7 @@ Dedicated lane skills keep harness work explicit:
 - `harness-policies` for guardrails, permissions, approvals, protected paths, and policy evals.
 - `harness-telemetry` for traces, logs, metrics, sanitized run evidence, and improvement-loop records.
 - `harness-tools` for hosted tool, MCP, and local CLI adapter contracts.
+- `memory-sync` for completion audits across source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data, and handoff evidence. It is a workflow skill, not a runtime lane.
 
 When adding another harness lane, create the repo-local skill with:
 
