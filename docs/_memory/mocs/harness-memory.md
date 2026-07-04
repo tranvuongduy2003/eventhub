@@ -39,6 +39,10 @@ It is not a pile of prompt examples or product implementation code.
 - Task memory: `.codex/plans/`, `.codex/notes/`, eval outputs, handoff text.
 - Long-term knowledge memory: this Obsidian vault under `docs/`, validated by `scripts/agent/Test-DocsMemory.ps1` and routed by `.graph/index.json`.
 
+## Workflow memory sync
+
+The `spec` -> `plan` -> `cook` path must keep long-term docs memory current: new durable specs are discoverable from the relevant indexes, plans include a `memory-sync` inventory, and cook marks completed specs implemented only after checks pass while refreshing every affected source doc, MOC, glossary, retrieval guide, README/index, harness contract, graph/routing entry, and handoff evidence surface.
+
 ## Improvement loop
 
 When the harness fails:
