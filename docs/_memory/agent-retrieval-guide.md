@@ -38,4 +38,4 @@ Use this guide when an agent needs durable EventHub context.
 
 ## Memory update rule
 
-When a task creates a durable decision, add it to the proper source document first. Add or adjust memory notes only to improve retrieval.
+When a task creates or completes durable knowledge, use `memory-sync`; update the proper source document first, then every affected retrieval surface: specs, MOCs, glossaries, source maps, README/index files, harness contracts, graph/routing data, and handoff evidence when applicable. Add or adjust memory notes only to improve retrieval, and mark irrelevant surfaces `N/A` in the plan/handoff.

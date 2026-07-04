@@ -1,23 +1,27 @@
 {
   "schemaVersion": 1,
   "defaultWorkflow": "spec-plan-cook",
+  "memorySyncSkill": "memory-sync",
   "workflows": {
     "spec-plan-cook": {
       "steps": [
         {
           "name": "spec",
           "skill": "spec",
-          "requiresHarnessImpact": true
+          "requiresHarnessImpact": true,
+          "requiresMemorySync": true
         },
         {
           "name": "plan",
           "skill": "plan",
-          "requiresHarnessImpactTable": true
+          "requiresHarnessImpactTable": true,
+          "requiresMemorySyncTable": true
         },
         {
           "name": "cook",
           "skill": "cook",
-          "requiresHarnessImpactGate": true
+          "requiresHarnessImpactGate": true,
+          "requiresMemorySyncGate": true
         }
       ]
     },
@@ -38,7 +42,9 @@
   "stopConditions": {
     "complete": [
       "changed-code verification passed",
-      "harness lane validation passed when a harness lane changed"
+      "harness lane validation passed when a harness lane changed",
+      "docs memory validation passed after spec or long-term memory changes",
+      "related spec status and all affected memory surfaces synchronized before handoff"
     ],
     "blocked": [
       "policy denied required action",

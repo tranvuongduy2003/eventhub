@@ -59,14 +59,18 @@ Monitoring is evidence for improvement, not decoration. `harness/evals/results/l
 
 ## Workflow Harness Contract
 
-The `spec` -> `plan` -> `cook` workflow must keep harness impact explicit:
+The `spec` -> `plan` -> `cook` workflow must keep harness impact and long-term memory sync explicit:
 
-- `spec` records whether the feature touches evals, orchestrator, policies, telemetry, tools, or workflow surfaces.
-- `plan` translates every non-`N/A` harness impact into concrete files, tasks, and validation commands.
-- `cook` stops on missing harness-impact planning, updates the plan when new harness impact appears, and runs harness evals for harness changes.
+- `spec` records whether the feature touches evals, orchestrator, policies, telemetry, tools, or workflow surfaces, and makes the new spec discoverable from the relevant long-term memory surfaces. For feature specs this includes `docs/_memory/mocs/feature-roadmap.md`; for other durable knowledge it may include source maps, MOCs, glossaries, retrieval guides, or README/index files.
+- `plan` translates every non-`N/A` harness impact into concrete files, tasks, and validation commands, and includes a Memory Sync inventory owned by `memory-sync` for spec status, source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data, and docs-memory validation.
+- `cook` stops on missing harness-impact or Memory Sync planning, updates the plan when new impact or memory drift appears, runs harness evals for harness changes, marks the related spec implemented only after objective checks pass, refreshes every affected long-term memory and harness contract surface, and runs docs-memory plus changed-code verification before handoff.
 
 Harness changes must not be hidden inside product implementation tasks. Changes to `harness/evals/`, `harness/orchestrator/`, `.codex/policies/`, `harness/policies/`, `harness/telemetry/`, `harness/tools/`, `.agents/skills/`, `.codex/hooks/`, `scripts/agent/`, `.graph/`, or AGENTS.md require visible plan entries and objective verification.
 
+
+## Workflow Skills
+
+`memory-sync` owns durable docs-memory completion audits for spec-backed implementation and workflow changes. Use it after `/cook` implementation checks pass and before final handoff or PR creation. It is a workflow skill, not a runtime harness lane; runtime lane skills remain listed below.
 ## Harness Lane Skills
 
 Each harness lane has a dedicated repo-local skill with a standard professional format:

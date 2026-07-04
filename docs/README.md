@@ -52,3 +52,4 @@ The source memory documents in [[_memory/source/README|Authoritative Source Memo
 - When a memory note conflicts with a source document, fix the memory note. The precedence is [[CONSTITUTION]] first, then product/domain/technical source memory, then harness source memory, then memory notes.
 - Use stable IDs in titles and links where they exist: `DEC-*`, `QG-*`, `EP-*`, `F-*`, `BC-*`, `AGG-*`, `INV-*`, `EVT-*`.
 - New implementation specs belong in `docs/_memory/specs/`. Memory summaries can point to them, but should not replace them.
+- When a spec-backed feature or workflow is completed, refresh every affected long-term memory surface, not only the most obvious MOC: source docs, MOCs, glossaries, retrieval guides, indexes, README files, and harness contracts all count when they describe the changed behavior.

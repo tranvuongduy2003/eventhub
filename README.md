@@ -16,7 +16,7 @@ Local-first event management and ticketing platform. .NET backend (Clean Archite
 
 Open the repo in Codex; agents read `AGENTS.md` and **`docs/CONSTITUTION.md`** plus companion docs before changing code.
 
-**Agent workflow:** `/spec` (spec in `docs/_memory/specs/` + one GitHub issue) → `/plan` (agent skills manage implementation) → `/cook` (implement, then delete plan if one was created).
+**Agent workflow:** `/spec` (spec in `docs/_memory/specs/`, memory indexes, + one GitHub issue) -> `/plan` (implementation plan with Harness Impact and `memory-sync` inventory) -> `/cook` (implement, verify, mark spec implemented, refresh all affected long-term memory and harness contract surfaces, then delete the plan if one was created).
 
 ### Stack highlights
 
