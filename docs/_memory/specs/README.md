@@ -23,6 +23,10 @@ Specs are durable long-term knowledge memory. They bridge source memory and engi
 
 Use `<YYYYMMDDHHmmss>-<feature-kebab>.md`.
 
+
+## Completion Sync
+
+When a spec-backed implementation completes, use `memory-sync` to update the spec status and every affected long-term memory surface before handoff. At minimum, feature specs must remain discoverable from [[_memory/mocs/feature-roadmap]]. Also check source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data, and external handoff evidence when relevant.
 ## Agent Contract
 
 Agents should read the relevant spec here after the constitution and source memory, then create or consume paired plans under `.codex/plans/`.
