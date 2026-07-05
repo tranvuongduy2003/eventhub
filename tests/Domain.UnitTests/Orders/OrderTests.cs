@@ -8,6 +8,7 @@ namespace EventHub.Domain.UnitTests.Orders;
 public sealed class OrderTests
 {
     private static readonly DateTimeOffset PlacedAt = new(2026, 7, 1, 12, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset HoldExpiresAt = PlacedAt.AddMinutes(15);
     private static readonly EventId TestEventId = EventId.From(1);
 
     // --- Order.Place ---
@@ -127,6 +128,19 @@ public sealed class OrderTests
         var order = Order.Place(TestEventId, CreateContact(), lines, PlacedAt);
 
         order.PlacedAt.Should().Be(PlacedAt);
+    }
+
+    [Fact]
+    public void Place_SetsHoldExpiry()
+    {
+        var lines = new List<OrderLine>
+        {
+            OrderLine.Create(TicketTypeId.From(1), 1, Money.Create(50m, "VND")),
+        };
+
+        var order = Order.Place(TestEventId, CreateContact(), lines, PlacedAt, holdExpiresAt: HoldExpiresAt);
+
+        order.ExpiresAt.Should().Be(HoldExpiresAt);
     }
 
     [Fact]

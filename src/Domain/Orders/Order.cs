@@ -47,7 +47,9 @@ public sealed class Order : AggregateRoot<OrderId>
         List<OrderLine> lines,
         DateTimeOffset placedAt,
         DiscountCodeId? discountCodeId = null,
-        Money? discountAmount = null)
+        Money? discountAmount = null,
+        DateTimeOffset? holdExpiresAt = null,
+        OrderId? id = null)
     {
         if (lines.Count == 0)
         {
@@ -70,6 +72,7 @@ public sealed class Order : AggregateRoot<OrderId>
 
         var order = new Order
         {
+            Id = id ?? default,
             EventId = eventId,
             Contact = contact,
             Status = OrderStatus.Pending,
@@ -79,7 +82,7 @@ public sealed class Order : AggregateRoot<OrderId>
             DiscountAmount = effectiveDiscount,
             PlacedAt = placedAt,
             ConfirmedAt = null,
-            ExpiresAt = null,
+            ExpiresAt = holdExpiresAt,
             CancelledAt = null,
             RowVersion = 1,
         };
@@ -175,6 +178,11 @@ public sealed class Order : AggregateRoot<OrderId>
     public void SetReservationId(ReservationId reservationId)
     {
         ReservationId = reservationId;
+    }
+
+    public void ClearReservationId()
+    {
+        ReservationId = null;
     }
 
     public void LoadLines(List<OrderLine> lines)
