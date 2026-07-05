@@ -329,6 +329,12 @@ function AcceptedOrder({
             <p>Your guest details were accepted for this order.</p>
             <Link
               className="text-primary font-medium underline underline-offset-4"
+              to={`/orders/${order.orderId}`}
+            >
+              View order status
+            </Link>
+            <Link
+              className="text-muted-foreground hover:text-foreground font-medium underline underline-offset-4"
               to={`/events/${eventSlug}`}
             >
               Back to event

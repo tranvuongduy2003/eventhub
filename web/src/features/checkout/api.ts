@@ -63,6 +63,8 @@ export type PlaceOrderResponse = {
   discountAmount: number | null
 }
 
+export type OrderStatusResponse = PlaceOrderResponse
+
 export function startCheckout(slug: string, request: StartCheckoutRequest, signal?: AbortSignal) {
   return apiClient.post<StartCheckoutResponse>(`/api/events/${slug}/checkout/start`, request, {
     signal,
@@ -72,6 +74,13 @@ export function startCheckout(slug: string, request: StartCheckoutRequest, signa
 
 export function placeOrder(eventId: number, request: PlaceOrderRequest, signal?: AbortSignal) {
   return apiClient.post<PlaceOrderResponse>(`/api/events/${eventId}/orders`, request, {
+    signal,
+    suppressErrorToast: true,
+  })
+}
+
+export function getOrderStatus(orderId: number, signal?: AbortSignal) {
+  return apiClient.get<OrderStatusResponse>(`/api/orders/${orderId}`, {
     signal,
     suppressErrorToast: true,
   })
