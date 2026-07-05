@@ -8,10 +8,11 @@ public interface IPaymentGateway
 }
 
 public sealed record PaymentInitiationRequest(
-    Guid OrderId,
+    int OrderId,
     decimal Amount,
     string Currency,
     string SuccessUrl,
-    string CancelUrl);
+    string CancelUrl,
+    string? ExistingProviderReference);
 
 public sealed record PaymentInitiationResult(string RedirectUrl, string ProviderReference);

@@ -9,5 +9,5 @@ public sealed class NoOpPaymentGateway : IPaymentGateway
         CancellationToken cancellationToken) =>
         Task.FromResult(new PaymentInitiationResult(
             RedirectUrl: request.SuccessUrl,
-            ProviderReference: "noop-provider-reference"));
+            ProviderReference: request.ExistingProviderReference ?? $"noop-{request.OrderId}-{Guid.NewGuid():N}"));
 }
