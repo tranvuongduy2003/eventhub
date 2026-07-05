@@ -29,6 +29,7 @@ public sealed record PlaceOrderResult(
 public sealed record PlaceOrderLineResult(
     int OrderLineId,
     int TicketTypeId,
+    string TicketTypeName,
     int Quantity,
     decimal UnitPriceAmount,
     string UnitPriceCurrency,

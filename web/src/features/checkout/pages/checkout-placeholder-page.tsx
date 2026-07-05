@@ -181,15 +181,26 @@ export function CheckoutPlaceholderPage() {
     unitPrice: line.unitPriceAmount,
     currency: line.unitPriceCurrency,
     quantity: line.quantity,
+    lineTotal: line.lineTotalAmount,
   }))
 
   if (placedOrder) {
+    const placedLineItems: OrderLineItem[] = placedOrder.lines.map((line) => ({
+      ticketTypeName: line.ticketTypeName,
+      unitPrice: line.unitPriceAmount,
+      currency: line.unitPriceCurrency,
+      quantity: line.quantity,
+      lineTotal: line.lineTotalAmount,
+    }))
+
     return (
       <AcceptedOrder
         eventTitle={checkout.eventTitle}
         eventSlug={checkout.eventSlug}
         order={placedOrder}
-        lineItems={lineItems}
+        lineItems={placedLineItems}
+        totalAmount={placedOrder.totalAmount}
+        totalCurrency={placedOrder.totalCurrency}
       />
     )
   }
@@ -284,9 +295,18 @@ interface AcceptedOrderProps {
   eventSlug: string
   order: PlaceOrderResponse
   lineItems: OrderLineItem[]
+  totalAmount: number
+  totalCurrency: string
 }
 
-function AcceptedOrder({ eventTitle, eventSlug, order, lineItems }: AcceptedOrderProps) {
+function AcceptedOrder({
+  eventTitle,
+  eventSlug,
+  order,
+  lineItems,
+  totalAmount,
+  totalCurrency,
+}: AcceptedOrderProps) {
   const statusLabel = order.status.charAt(0).toUpperCase() + order.status.slice(1)
 
   return (
@@ -318,6 +338,8 @@ function AcceptedOrder({ eventTitle, eventSlug, order, lineItems }: AcceptedOrde
 
         <OrderSummary
           lineItems={lineItems}
+          totalAmount={totalAmount}
+          totalCurrency={totalCurrency}
           discount={
             order.discountCode && order.discountAmount
               ? { code: order.discountCode, amount: order.discountAmount }

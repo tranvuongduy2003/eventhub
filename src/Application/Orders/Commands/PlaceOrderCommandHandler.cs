@@ -13,6 +13,7 @@ public sealed class PlaceOrderCommandHandler(
     IEventRepository eventRepository,
     IOrderRepository orderRepository,
     IOrderIdGenerator orderIdGenerator,
+    IReservationIdGenerator reservationIdGenerator,
     IDiscountCodeRepository discountCodeRepository,
     IClock clock,
     IPendingDomainEventsCollector pendingDomainEventsCollector)
@@ -159,12 +160,14 @@ public sealed class PlaceOrderCommandHandler(
             {
                 try
                 {
+                    var reservationId = await reservationIdGenerator.NextIdAsync(cancellationToken);
                     var reservation = eventAggregate.Reserve(
                         line.Key,
                         line.Value,
                         order.Id,
                         expiresAt,
-                        now);
+                        now,
+                        reservationId);
 
                     reservations.Add(reservation);
                 }
@@ -222,6 +225,7 @@ public sealed class PlaceOrderCommandHandler(
                 order.Lines.Select(l => new PlaceOrderLineResult(
                     l.Id.Value,
                     l.TicketTypeId.Value,
+                    ticketTypeLookup[l.TicketTypeId].Name.Value,
                     l.Quantity,
                     l.UnitPriceSnapshot.Amount,
                     l.UnitPriceSnapshot.Currency,

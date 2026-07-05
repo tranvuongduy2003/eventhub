@@ -8,6 +8,7 @@ namespace EventHub.Application.Orders.Queries;
 
 public sealed class GetOrderStatusQueryHandler(
     IOrderRepository orderRepository,
+    IEventRepository eventRepository,
     IDiscountCodeRepository discountCodeRepository)
     : QueryHandler<GetOrderStatusQuery, GetOrderStatusResult>
 {
@@ -31,6 +32,11 @@ public sealed class GetOrderStatusQueryHandler(
             discountCode = dc?.Code;
         }
 
+        var eventAggregate = await eventRepository.GetByIdAsync(order.EventId, cancellationToken);
+        var ticketTypeNameById = eventAggregate?.TicketTypes.ToDictionary(
+            ticketType => ticketType.Id,
+            ticketType => ticketType.Name.Value) ?? [];
+
         return new GetOrderStatusResult(
             order.Id.Value,
             order.Status.ToString().ToLowerInvariant(),
@@ -42,6 +48,9 @@ public sealed class GetOrderStatusQueryHandler(
             order.Lines.Select(l => new GetOrderStatusLineResult(
                 l.Id.Value,
                 l.TicketTypeId.Value,
+                ticketTypeNameById.TryGetValue(l.TicketTypeId, out var ticketTypeName)
+                    ? ticketTypeName
+                    : $"Ticket type {l.TicketTypeId.Value}",
                 l.Quantity,
                 l.UnitPriceSnapshot.Amount,
                 l.UnitPriceSnapshot.Currency,

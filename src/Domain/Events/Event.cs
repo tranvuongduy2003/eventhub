@@ -458,7 +458,8 @@ public sealed class Event : AggregateRoot<EventId>
         int quantity,
         OrderId orderId,
         DateTimeOffset expiresAt,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        ReservationId? reservationId = null)
     {
         // INV-14: event must be published
         if (Status is not EventStatus.Published)
@@ -485,9 +486,9 @@ public sealed class Event : AggregateRoot<EventId>
 
         ticketType.Reserve(quantity);
 
-        var nextId = _reservations.Count > 0
+        var nextId = reservationId ?? (_reservations.Count > 0
             ? ReservationId.From(_reservations.Max(r => r.Id.Value) + 1)
-            : ReservationId.From(1);
+            : ReservationId.From(1));
 
         var reservation = Reservation.Create(
             nextId,

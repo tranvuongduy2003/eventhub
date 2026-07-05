@@ -83,6 +83,50 @@ public sealed class GuestCheckoutTests(IntegrationTestFixture fixture)
     }
 
     [Fact]
+    public async Task GetOrderStatus_AfterTicketPriceChanges_ReturnsFinalSummaryFromOrderSnapshot()
+    {
+        var data = await SeedPublishedEventAsync(capacity: 5, priceAmount: 50m);
+        var request = new PlaceOrderRequest(
+            "Jane Attendee",
+            "jane@example.com",
+            [new PlaceOrderLineRequest(data.TicketTypeId, 2)]);
+
+        using var placeResponse = await _guestClient.PostAsJsonAsync(
+            $"/api/events/{data.EventId}/orders",
+            request);
+
+        placeResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var placedOrder = await placeResponse.Content.ReadFromJsonAsync<PlaceOrderResponse>();
+        placedOrder.Should().NotBeNull();
+        placedOrder!.TotalAmount.Should().Be(100m);
+        placedOrder.Lines.Should().ContainSingle(line =>
+            line.TicketTypeName == "General Admission"
+            && line.Quantity == 2
+            && line.UnitPriceAmount == 50m
+            && line.LineTotalAmount == 100m);
+
+        await using (var scope = fixture.Factory.Services.CreateAsyncScope())
+        {
+            var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
+            var ticketType = await databaseContext.TicketTypes.SingleAsync(ticketType => ticketType.Id == data.TicketTypeId);
+            ticketType.PriceAmount = 75m;
+            await databaseContext.SaveChangesAsync();
+        }
+
+        using var statusResponse = await _guestClient.GetAsync($"/api/orders/{placedOrder.OrderId}");
+
+        statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var status = await statusResponse.Content.ReadFromJsonAsync<OrderStatusResponse>();
+        status.Should().NotBeNull();
+        status!.TotalAmount.Should().Be(100m);
+        status.Lines.Should().ContainSingle(line =>
+            line.TicketTypeName == "General Admission"
+            && line.Quantity == 2
+            && line.UnitPriceAmount == 50m
+            && line.LineTotalAmount == 100m);
+    }
+
+    [Fact]
     public async Task PlaceOrder_MissingGuestName_Returns422()
     {
         var data = await SeedPublishedEventAsync();

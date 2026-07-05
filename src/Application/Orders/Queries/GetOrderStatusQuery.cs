@@ -20,6 +20,7 @@ public sealed record GetOrderStatusResult(
 public sealed record GetOrderStatusLineResult(
     int OrderLineId,
     int TicketTypeId,
+    string TicketTypeName,
     int Quantity,
     decimal UnitPriceAmount,
     string UnitPriceCurrency,
