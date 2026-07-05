@@ -8,5 +8,9 @@ public interface IOrderRepository
 
     Task<Order?> GetByIdAsync(OrderId orderId, CancellationToken cancellationToken = default);
 
+    Task<List<Order>> GetPendingExpiredBeforeAsync(
+        DateTimeOffset expiresBefore,
+        CancellationToken cancellationToken = default);
+
     Task Update(Order domain, CancellationToken cancellationToken = default);
 }
