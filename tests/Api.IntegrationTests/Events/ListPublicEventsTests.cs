@@ -341,9 +341,9 @@ public sealed class ListPublicEventsTests(IntegrationTestFixture fixture)
     {
         var userId = await RegisterOrganizerAsync();
 
-        // Event soon (within a few days) — guaranteed to be in the future
+        // Event soon and still within the current Monday-Sunday week.
         var thisWeekTitle = $"ThisWeek_{Guid.NewGuid():N}";
-        var thisWeekId = await SeedDraftEventAsync(userId, startsAt: DateTimeOffset.UtcNow.AddDays(1), title: thisWeekTitle);
+        var thisWeekId = await SeedDraftEventAsync(userId, startsAt: GetFutureInstantInCurrentWeek(), title: thisWeekTitle);
         await SeedTicketTypeAsync(thisWeekId, "General", 50m, 100);
         var thisWeekSlug = await PublishEventAsync(thisWeekId);
 
@@ -366,7 +366,7 @@ public sealed class ListPublicEventsTests(IntegrationTestFixture fixture)
 
         var result = await response.Content.ReadFromJsonAsync<PublicEventListingResponse>(JsonOptions);
         result.Should().NotBeNull();
-        result!.Items.Should().Contain(e => e.Slug == thisWeekSlug, "event 1 day from now should be within this-week");
+        result!.Items.Should().Contain(e => e.Slug == thisWeekSlug, "future event within the current week should match this-week");
         result.Items.Should().NotContain(e => e.Title.StartsWith("FarFuture_"));
     }
 
@@ -510,6 +510,18 @@ public sealed class ListPublicEventsTests(IntegrationTestFixture fixture)
         var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
         var user = databaseContext.Users.OrderByDescending(u => u.CreatedAt).First();
         return user.Id;
+    }
+
+    private static DateTimeOffset GetFutureInstantInCurrentWeek()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var daysUntilSunday = ((int)DayOfWeek.Sunday - (int)now.DayOfWeek + 7) % 7;
+        var endOfWeek = now.Date.AddDays(daysUntilSunday + 1).AddTicks(-1);
+        var oneDayFromNow = now.AddDays(1);
+
+        return oneDayFromNow <= endOfWeek
+            ? oneDayFromNow
+            : now.AddTicks(Math.Max(1, (endOfWeek - now).Ticks / 2));
     }
 
     private async Task<int> SeedDraftEventAsync(

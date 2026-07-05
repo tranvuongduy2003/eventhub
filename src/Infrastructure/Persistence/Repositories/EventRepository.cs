@@ -206,6 +206,7 @@ internal sealed class EventRepository(ApplicationDatabaseContext databaseContext
                 existing.VenueName = occurrence.VenueName;
                 existing.Address = occurrence.Address;
                 existing.UpdatedAt = occurrence.UpdatedAt;
+                databaseContext.Occurrences.Update(existing);
             }
             else
             {
@@ -241,6 +242,7 @@ internal sealed class EventRepository(ApplicationDatabaseContext databaseContext
                 existing.Sold = ticketType.Sold;
                 existing.Reserved = ticketType.Reserved;
                 existing.UpdatedAt = ticketType.UpdatedAt;
+                databaseContext.TicketTypes.Update(existing);
             }
             else
             {
@@ -273,6 +275,7 @@ internal sealed class EventRepository(ApplicationDatabaseContext databaseContext
                 existing.Quantity = reservation.Quantity;
                 existing.OrderId = reservation.OrderId.Value;
                 existing.ExpiresAt = reservation.ExpiresAt;
+                databaseContext.Reservations.Update(existing);
             }
             else
             {

@@ -17,7 +17,7 @@ namespace EventHub.Api.IntegrationTests.Orders;
 [Collection(IntegrationTestCollection.Name)]
 public sealed class GuestCheckoutTests(IntegrationTestFixture fixture)
 {
-    private sealed record EventData(int EventId, int TicketTypeId);
+    private sealed record EventData(string Slug, int EventId, int TicketTypeId);
 
     private readonly HttpClient _organizerClient = fixture.Factory.CreateClient(
         new WebApplicationFactoryClientOptions { HandleCookies = true });
@@ -44,6 +44,42 @@ public sealed class GuestCheckoutTests(IntegrationTestFixture fixture)
         var order = await databaseContext.Orders.SingleAsync(order => order.EventId == data.EventId);
         order.ContactName.Should().Be("Jane Attendee");
         order.ContactEmail.Should().Be("jane@example.com");
+    }
+
+    [Fact]
+    public async Task PlaceOrder_PaidOrder_CreatesPendingOrderAndInventoryHold()
+    {
+        var data = await SeedPublishedEventAsync(capacity: 3, priceAmount: 50m);
+        var request = new PlaceOrderRequest(
+            "Jane Attendee",
+            "jane@example.com",
+            [new PlaceOrderLineRequest(data.TicketTypeId, 2)]);
+
+        using var response = await _guestClient.PostAsJsonAsync(
+            $"/api/events/{data.EventId}/orders",
+            request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await using var scope = fixture.Factory.Services.CreateAsyncScope();
+        var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
+        var order = await databaseContext.Orders.SingleAsync(order => order.EventId == data.EventId);
+        var reservation = await databaseContext.Reservations.SingleAsync(reservation => reservation.EventId == data.EventId);
+        var ticketType = await databaseContext.TicketTypes.SingleAsync(ticketType => ticketType.Id == data.TicketTypeId);
+
+        order.Status.Should().Be("Pending");
+        order.ExpiresAt.Should().NotBeNull();
+        order.ExpiresAt.Should().Be(reservation.ExpiresAt);
+        reservation.Quantity.Should().Be(2);
+        reservation.OrderId.Should().Be(order.Id);
+        ticketType.Reserved.Should().Be(2);
+
+        var nextBuyerRequest = new StartCheckoutRequest([new StartCheckoutLineRequest(data.TicketTypeId, 2)]);
+        using var nextBuyerResponse = await _guestClient.PostAsJsonAsync(
+            $"/api/events/{data.Slug}/checkout/start",
+            nextBuyerRequest);
+
+        nextBuyerResponse.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
 
     [Fact]
@@ -104,7 +140,7 @@ public sealed class GuestCheckoutTests(IntegrationTestFixture fixture)
         return user.Id;
     }
 
-    private async Task<EventData> SeedPublishedEventAsync()
+    private async Task<EventData> SeedPublishedEventAsync(int capacity = 10, decimal priceAmount = 0m)
     {
         var organizerId = await RegisterOrganizerAsync();
 
@@ -134,9 +170,9 @@ public sealed class GuestCheckoutTests(IntegrationTestFixture fixture)
         {
             EventId = eventRecord.Id,
             Name = "General Admission",
-            PriceAmount = 0m,
+            PriceAmount = priceAmount,
             PriceCurrency = "VND",
-            Capacity = 10,
+            Capacity = capacity,
             MaxPerOrder = 4,
             Sold = 0,
             Reserved = 0,
@@ -147,6 +183,6 @@ public sealed class GuestCheckoutTests(IntegrationTestFixture fixture)
         databaseContext.TicketTypes.Add(ticketTypeRecord);
         await databaseContext.SaveChangesAsync();
 
-        return new EventData(eventRecord.Id, ticketTypeRecord.Id);
+        return new EventData(eventRecord.Slug, eventRecord.Id, ticketTypeRecord.Id);
     }
 }

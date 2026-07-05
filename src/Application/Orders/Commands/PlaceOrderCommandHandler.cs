@@ -12,6 +12,7 @@ namespace EventHub.Application.Orders.Commands;
 public sealed class PlaceOrderCommandHandler(
     IEventRepository eventRepository,
     IOrderRepository orderRepository,
+    IOrderIdGenerator orderIdGenerator,
     IDiscountCodeRepository discountCodeRepository,
     IClock clock,
     IPendingDomainEventsCollector pendingDomainEventsCollector)
@@ -139,10 +140,19 @@ public sealed class PlaceOrderCommandHandler(
                 discountCodeId = discountCode.Id;
             }
 
-            var order = Order.Place(eventId, contact, orderLines, now, discountCodeId, discountAmount);
+            var expiresAt = now.AddMinutes(HoldDurationMinutes);
+            var orderId = await orderIdGenerator.NextIdAsync(cancellationToken);
+            var order = Order.Place(
+                eventId,
+                contact,
+                orderLines,
+                now,
+                holdExpiresAt: expiresAt,
+                discountCodeId: discountCodeId,
+                discountAmount: discountAmount,
+                id: orderId);
 
             // Reserve inventory for each ticket type line
-            var expiresAt = now.AddMinutes(HoldDurationMinutes);
             var reservations = new List<Reservation>();
 
             foreach (var line in quantityByType)
@@ -181,6 +191,8 @@ public sealed class PlaceOrderCommandHandler(
                 {
                     eventAggregate.CommitReservation(reservation.Id, now);
                 }
+
+                order.ClearReservationId();
             }
 
             // Mark discount code as used (same transaction — atomic)
@@ -190,6 +202,7 @@ public sealed class PlaceOrderCommandHandler(
                 await discountCodeRepository.Update(discountCode, cancellationToken);
             }
 
+            await eventRepository.Update(eventAggregate, cancellationToken);
             await orderRepository.AddAsync(order, cancellationToken);
 
             // Collect domain events from both aggregates
