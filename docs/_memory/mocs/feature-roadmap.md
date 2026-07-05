@@ -64,6 +64,7 @@ Authoritative source: [[_memory/source/feature-specification|feature specificati
 - `F-5.2` [[_memory/specs/20260704174907-guest-checkout|Guest checkout]] - implemented
 - `F-5.3` [[_memory/specs/20260704203404-create-order-hold-inventory|Create order and hold inventory]] - implemented
 - `F-5.4` [[_memory/specs/20260705160617-final-price-summary|Final price summary]] - implemented
+- `F-5.5` [[_memory/specs/20260705173000-hold-expiry-and-release|Hold expiry and release]] - implemented
 
 ### EP-6 through EP-11
 
