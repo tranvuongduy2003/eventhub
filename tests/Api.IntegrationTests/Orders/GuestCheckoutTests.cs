@@ -126,6 +126,63 @@ public sealed class GuestCheckoutTests(IntegrationTestFixture fixture)
             && line.LineTotalAmount == 100m);
     }
 
+    [Theory]
+    [InlineData("Pending", "pending")]
+    [InlineData("Confirmed", "confirmed")]
+    [InlineData("Expired", "expired")]
+    [InlineData("Cancelled", "cancelled")]
+    public async Task GetOrderStatus_AnonymousBuyer_ReturnsOrderLifecycleStatus(
+        string storedStatus,
+        string expectedStatus)
+    {
+        var data = await SeedPublishedEventAsync(capacity: 5, priceAmount: 50m);
+        var request = new PlaceOrderRequest(
+            "Jane Attendee",
+            "jane@example.com",
+            [new PlaceOrderLineRequest(data.TicketTypeId, 1)]);
+
+        using var placeResponse = await _guestClient.PostAsJsonAsync(
+            $"/api/events/{data.EventId}/orders",
+            request);
+
+        placeResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var placedOrder = await placeResponse.Content.ReadFromJsonAsync<PlaceOrderResponse>();
+        placedOrder.Should().NotBeNull();
+
+        await using (var scope = fixture.Factory.Services.CreateAsyncScope())
+        {
+            var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
+            await databaseContext.Database.ExecuteSqlInterpolatedAsync(
+                $"""
+                UPDATE app.orders
+                SET status = {storedStatus},
+                    confirmed_at = {(storedStatus == "Confirmed" ? DateTimeOffset.UtcNow : null)},
+                    cancelled_at = {(storedStatus == "Cancelled" ? DateTimeOffset.UtcNow : null)}
+                WHERE id = {placedOrder!.OrderId}
+                """);
+        }
+
+        using var statusResponse = await _guestClient.GetAsync($"/api/orders/{placedOrder!.OrderId}");
+
+        statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var status = await statusResponse.Content.ReadFromJsonAsync<OrderStatusResponse>();
+        status.Should().NotBeNull();
+        status!.Status.Should().Be(expectedStatus);
+        status.Lines.Should().ContainSingle(line =>
+            line.TicketTypeName == "General Admission"
+            && line.Quantity == 1
+            && line.UnitPriceAmount == 50m
+            && line.LineTotalAmount == 50m);
+    }
+
+    [Fact]
+    public async Task GetOrderStatus_UnknownOrder_Returns404()
+    {
+        using var statusResponse = await _guestClient.GetAsync("/api/orders/999999");
+
+        statusResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     [Fact]
     public async Task PlaceOrder_MissingGuestName_Returns422()
     {
