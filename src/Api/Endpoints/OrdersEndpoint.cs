@@ -113,6 +113,7 @@ internal sealed class OrdersEndpoint : IEndpoint
                 order.Lines.Select(l => new OrderLineResponse(
                     l.OrderLineId,
                     l.TicketTypeId,
+                    l.TicketTypeName,
                     l.Quantity,
                     l.UnitPriceAmount,
                     l.UnitPriceCurrency,
@@ -149,6 +150,7 @@ internal sealed class OrdersEndpoint : IEndpoint
                 order.Lines.Select(l => new OrderLineResponse(
                     l.OrderLineId,
                     l.TicketTypeId,
+                    l.TicketTypeName,
                     l.Quantity,
                     l.UnitPriceAmount,
                     l.UnitPriceCurrency,

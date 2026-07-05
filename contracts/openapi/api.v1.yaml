@@ -783,6 +783,8 @@ components:
           type:
             - integer
             - string
+        ticketTypeName:
+          type: string
         unitPriceAmount:
           format: double
           pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
@@ -794,6 +796,7 @@ components:
       required:
         - orderLineId
         - ticketTypeId
+        - ticketTypeName
         - quantity
         - unitPriceAmount
         - unitPriceCurrency

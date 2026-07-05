@@ -42,6 +42,7 @@ export type PlaceOrderRequest = {
 export type OrderLineResponse = {
   orderLineId: number
   ticketTypeId: number
+  ticketTypeName: string
   quantity: number
   unitPriceAmount: number
   unitPriceCurrency: string

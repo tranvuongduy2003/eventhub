@@ -63,6 +63,7 @@ Authoritative source: [[_memory/source/feature-specification|feature specificati
 - `F-5.1` [[_memory/specs/20260703003908-select-tickets-and-start-checkout|Select tickets and start checkout]] - implemented
 - `F-5.2` [[_memory/specs/20260704174907-guest-checkout|Guest checkout]] - implemented
 - `F-5.3` [[_memory/specs/20260704203404-create-order-hold-inventory|Create order and hold inventory]] - implemented
+- `F-5.4` [[_memory/specs/20260705160617-final-price-summary|Final price summary]] - implemented
 
 ### EP-6 through EP-11
 

@@ -8,6 +8,7 @@ export interface OrderLineItem {
   unitPrice: number
   currency: string
   quantity: number
+  lineTotal: number
 }
 
 export interface DiscountInfo {
@@ -18,13 +19,20 @@ export interface DiscountInfo {
 interface OrderSummaryProps {
   lineItems: OrderLineItem[]
   discount?: DiscountInfo | null
+  totalAmount?: number
+  totalCurrency?: string
 }
 
-export function OrderSummary({ lineItems, discount }: OrderSummaryProps) {
-  const subtotal = lineItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
+export function OrderSummary({
+  lineItems,
+  discount,
+  totalAmount,
+  totalCurrency,
+}: OrderSummaryProps) {
+  const subtotal = lineItems.reduce((sum, item) => sum + item.lineTotal, 0)
   const discountAmount = discount?.amount ?? 0
-  const total = Math.max(0, subtotal - discountAmount)
-  const currency = lineItems[0]?.currency ?? 'VND'
+  const total = totalAmount ?? Math.max(0, subtotal - discountAmount)
+  const currency = totalCurrency ?? lineItems[0]?.currency ?? 'VND'
 
   return (
     <Card>
@@ -37,18 +45,26 @@ export function OrderSummary({ lineItems, discount }: OrderSummaryProps) {
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        <div className="text-muted-foreground grid grid-cols-[1fr_auto_auto] gap-x-4 text-sm">
+        <div className="text-muted-foreground grid grid-cols-[minmax(0,1fr)_auto_auto] gap-x-4 text-sm">
           <span className="font-medium">Item</span>
           <span className="font-medium">Qty</span>
-          <span className="text-right font-medium">Price</span>
+          <span className="text-right font-medium">Line total</span>
         </div>
         <Separator />
         {lineItems.map((item) => (
-          <div key={item.ticketTypeName} className="grid grid-cols-[1fr_auto_auto] gap-x-4 text-sm">
-            <span>{item.ticketTypeName}</span>
+          <div
+            key={item.ticketTypeName}
+            className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-x-4 text-sm"
+          >
+            <span className="min-w-0">
+              <span className="block truncate">{item.ticketTypeName}</span>
+              <span className="text-muted-foreground block text-xs">
+                {formatPrice(item.unitPrice, item.currency)} each
+              </span>
+            </span>
             <span className="text-muted-foreground">{item.quantity}</span>
             <span className="text-right font-medium">
-              {formatPrice(item.unitPrice * item.quantity, item.currency)}
+              {formatPrice(item.lineTotal, item.currency)}
             </span>
           </div>
         ))}

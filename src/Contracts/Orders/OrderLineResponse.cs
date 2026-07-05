@@ -3,6 +3,7 @@ namespace EventHub.Contracts.Orders;
 public sealed record OrderLineResponse(
     int OrderLineId,
     int TicketTypeId,
+    string TicketTypeName,
     int Quantity,
     decimal UnitPriceAmount,
     string UnitPriceCurrency,
