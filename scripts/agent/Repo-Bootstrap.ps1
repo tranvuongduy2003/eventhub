@@ -93,7 +93,7 @@ $requiredPaths = @(
     'src/AppHost',
     'src/ServiceDefaults',
     'web/package.json',
-    'scripts/affected-tests.mjs',
+    'scripts/affected-tests.ps1',
     'harness/manifest.json',
     '.codex/policies/harness-policy.json'
 )

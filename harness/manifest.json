@@ -7,6 +7,7 @@
   "repoGuidance": "AGENTS.md",
   "stateDirectory": ".codex/state",
   "singleEvalTree": "harness/evals/",
+  "verificationGraph": "harness/graph/index.json",
   "foundationSkills": {
     "repoBootstrap": ".agents/skills/repo-bootstrap/SKILL.md",
     "verifyChangedCode": ".agents/skills/verify-changed-code/SKILL.md",

@@ -31,6 +31,54 @@
       "notes": "Update harness memory when workflow contract changes."
     }
   ],
+  "surfaceCompletenessReview": [
+    {
+      "surface": "Backend/API",
+      "impact": "N/A",
+      "action": "No product backend change.",
+      "validation": []
+    },
+    {
+      "surface": "Frontend/web",
+      "impact": "N/A",
+      "action": "No user-facing route or component change.",
+      "validation": []
+    },
+    {
+      "surface": "OpenAPI/codegen",
+      "impact": "N/A",
+      "action": "No endpoint or contract shape change.",
+      "validation": []
+    },
+    {
+      "surface": "E2E/Playwright",
+      "impact": "N/A",
+      "action": "No browser workflow change.",
+      "validation": []
+    },
+    {
+      "surface": "DevOps/Aspire",
+      "impact": "N/A",
+      "action": "No topology, config, or runtime dependency change.",
+      "validation": []
+    },
+    {
+      "surface": "Docs/memory",
+      "impact": "planned",
+      "action": "Update harness memory for workflow contract changes.",
+      "validation": [
+        "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1"
+      ]
+    },
+    {
+      "surface": "Harness/workflow",
+      "impact": "planned",
+      "action": "Update cook validator and eval fixture.",
+      "validation": [
+        "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness"
+      ]
+    }
+  ],
   "confidence": 0.8,
   "harnessImpact": {
     "evals": {

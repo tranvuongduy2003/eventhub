@@ -1,6 +1,11 @@
 {
   "schemaVersion": 1,
   "tools": {
+    "affected-tests": {
+      "mode": "read-only-plan",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/affected-tests.ps1 <path>",
+      "output": "skip, steps, rel, error"
+    },
     "verify-changed-code": {
       "mode": "read-and-execute-checks",
       "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1",

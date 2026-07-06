@@ -53,7 +53,7 @@ Manual **agent** cases (`mode: manual`) define prompts + post-conditions for Cod
 | `.codex/hooks/**`, `hooks.json` | `.\harness\evals\run.ps1 -Layer harness` |
 | `harness/orchestrator/**`, `harness/policies/**`, `harness/telemetry/**`, `harness/tools/**` | `.\harness\evals\run.ps1 -Layer harness` |
 | `harness/manifest.json`, runtime contract artifacts | `.\harness\evals\run.ps1 -CaseId harness-runtime-status` |
-| `.graph/index.json`, `affected-tests.mjs` | `.\harness\evals\run.ps1 -Layer graph` |
+| `harness/graph/index.json`, `affected-tests.ps1` | `.\harness\evals\run.ps1 -Layer graph` |
 | Rules / prompts / agent defs | full suite + manual agent cases; invoke `code-reviewer` subagent after substantial edits |
 | Before merging harness PR | CI job `agent-evals` |
 
@@ -69,7 +69,7 @@ Manual **agent** cases (`mode: manual`) define prompts + post-conditions for Cod
 | Layer | What it validates |
 |-------|-------------------|
 | **harness** | Hook scripts block/allow correctly |
-| **graph** | `affected-tests.mjs` + `.graph/index.json` mapping |
+| **graph** | `affected-tests.ps1` + `harness/graph/index.json` mapping |
 | **agent** | End-to-end agent behavior (manual or future SDK runner) |
 
 `harness/evals/` is the only committed eval tree. Do not add root `evals/`; runtime-orchestration evals live here so repo-level and runtime-level harness evidence share one runner and result format.

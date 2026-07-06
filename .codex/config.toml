@@ -12,18 +12,6 @@ args = ["agent", "mcp"]
 command = "npx"
 args = ["-y", "@modelcontextprotocol/server-postgres", "postgresql://postgres:postgres@localhost:5432/app?sslmode=disable"]
 
-[mcp_servers.neo4j-graphrag]
-command = "python"
-args = ["-c", "from mcp_neo4j_graphrag import main; main()"]
-
-[mcp_servers.neo4j-graphrag.env]
-NEO4J_URI = "bolt://localhost:7687"
-NEO4J_USERNAME = "neo4j"
-NEO4J_PASSWORD = "neo4j"
-NEO4J_DATABASE = "neo4j"
-OPENAI_API_KEY = ""
-EMBEDDING_MODEL = "text-embedding-3-small"
-
 [mcp_servers.playwright]
 command = "npx"
 args = ["@playwright/mcp@latest"]

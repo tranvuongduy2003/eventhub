@@ -32,11 +32,11 @@ It is not a random collection of prompt notes, CLI examples, or product implemen
 |---|---|---|
 | Repo guidance | `AGENTS.md` | Short working agreement, source-of-truth routing, non-negotiable rules |
 | Runtime manifest | `harness/manifest.json` | Canonical lane registry, foundation command list, state directory, and future-runtime summary |
+| Verification graph | `harness/graph/index.json` | Path-to-check mapping for changed files |
 | Policy | `.codex/policies/harness-policy.json` | Protected paths, blocked shell commands, verify-gate behavior |
 | Hooks | `.codex/hooks/` | Lifecycle interception: pre-tool, pre-shell, post-edit, stop |
 | Skills | `.agents/skills/` | Reusable workflows loaded only when relevant |
-| Execution scripts | `scripts/agent/` and `scripts/affected-tests.mjs` | Stable, agent-friendly command surface |
-| Verification graph | `.graph/index.json` | Path-to-check mapping for changed files |
+| Execution scripts | `scripts/agent/` and `scripts/affected-tests.ps1` | Stable, agent-friendly command surface |
 | State | `.codex/state/` | Runtime artifacts such as verify gate state; gitignored |
 | Evals | `harness/evals/` | Harness-owned eval surface for deterministic regression checks across hooks, graph, agent behavior, and future runtime behavior |
 | Runtime contract | `harness/` | Machine-readable orchestration, policy, telemetry, and tool contracts; no EventHub product logic |
@@ -54,7 +54,7 @@ Memory has four lanes:
 - long-term knowledge memory: `docs/` as an Obsidian vault, including source docs, MOCs, glossaries, and retrieval guides
 - runtime state: `.codex/state/`, always rebuildable or temporary
 
-Long-term memory is validated through `scripts/agent/Test-DocsMemory.ps1` and mapped in `.graph/index.json` for `docs/README.md`, `docs/.obsidian/`, and `docs/_memory/`.
+Long-term memory is validated through `scripts/agent/Test-DocsMemory.ps1` and mapped in `harness/graph/index.json` for `docs/README.md`, `docs/.obsidian/`, and `docs/_memory/`.
 
 Monitoring is evidence for improvement, not decoration. `harness/evals/results/latest.json`, hook outcomes, and command exit codes are the first observability layer.
 
@@ -67,11 +67,11 @@ Cook also supports an audit/dry-run path for harness evaluation prompts such as 
 The workflow must keep harness impact and long-term memory sync explicit:
 
 - The spec phase records whether the feature touches evals, orchestrator, policies, telemetry, tools, or workflow surfaces, and makes the new spec discoverable from the relevant long-term memory surfaces. For feature specs this includes `docs/_memory/mocs/feature-roadmap.md`; for other durable knowledge it may include source maps, MOCs, glossaries, retrieval guides, or README/index files.
-- The plan phase translates every non-`N/A` harness impact into concrete files, tasks, and validation commands, includes an Adjacent Feature Boundary for feature-id runs, includes a Memory Sync inventory owned by `memory-sync` for spec status, source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data, and docs-memory validation, and includes a Done Criteria Ledger.
+- The plan phase translates every non-`N/A` harness impact into concrete files, tasks, and validation commands, includes an Adjacent Feature Boundary for feature-id runs, includes a Memory Sync inventory owned by `memory-sync` for spec status, source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data, and docs-memory validation, includes a Surface Completeness Review for Backend/API, Frontend/web, OpenAPI/codegen, E2E/Playwright, DevOps/Aspire, Docs/memory, and Harness/workflow, and includes a Done Criteria Ledger.
 - Before implementation starts, cook plans are validated with `scripts/agent/Test-CookPlan.ps1` and mirrored into an ignored TaskSpec sidecar under `.codex/state/cook/` that follows `harness/orchestrator/task-spec.schema.json`.
-- The implementation phase stops on missing harness-impact, Memory Sync planning, TaskSpec sidecar, progress notes, or Done Criteria Ledger, updates the plan when new impact or memory drift appears, runs harness evals for harness changes, marks the related spec implemented only after objective checks pass, refreshes every affected long-term memory and harness contract surface, and runs docs-memory plus changed-code verification before handoff.
+- The implementation phase stops on missing harness-impact, Surface Completeness Review, Memory Sync planning, TaskSpec sidecar, progress notes, or Done Criteria Ledger, updates the plan when new harness impact, product-surface impact, or memory drift appears, runs harness evals for harness changes, marks the related spec implemented only after objective checks pass, refreshes every affected long-term memory and harness contract surface, and runs docs-memory plus changed-code verification before handoff.
 
-Harness changes must not be hidden inside product implementation tasks. Changes to `harness/evals/`, `harness/orchestrator/`, `.codex/policies/`, `harness/policies/`, `harness/telemetry/`, `harness/tools/`, `.agents/skills/`, `.codex/hooks/`, `scripts/agent/`, `.graph/`, or AGENTS.md require visible plan entries and objective verification.
+Harness changes must not be hidden inside product implementation tasks. Changes to `harness/evals/`, `harness/orchestrator/`, `.codex/policies/`, `harness/policies/`, `harness/telemetry/`, `harness/tools/`, `harness/graph/`, `.agents/skills/`, `.codex/hooks/`, `scripts/agent/`, or AGENTS.md require visible plan entries and objective verification.
 
 
 ## Workflow Skills
@@ -110,6 +110,7 @@ The harness must expose real machine-readable artifacts, not placeholder README 
 | Artifact | Purpose |
 |---|---|
 | `harness/manifest.json` | Lane registry, status command, eval command, and artifact inventory |
+| `harness/graph/index.json` | Path-to-check mapping for changed files |
 | `harness/orchestrator/task-spec.schema.json` | TaskSpec and Harness Impact schema |
 | `harness/orchestrator/routing.json` | `cook-unified` routing, phase contract, and lane-skill routing |
 | `harness/policies/runtime-policy.json` | Runtime permission, approval, protected path, and hook enforcement contract |

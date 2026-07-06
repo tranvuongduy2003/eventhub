@@ -11,7 +11,7 @@ Local-first event management and ticketing platform. .NET backend (Clean Archite
 | Piece | Purpose |
 |-------|---------|
 | **Project config** (`.codex/`) | Hooks, permissions, MCP servers, custom agents |
-| **Skills** (`.agents/skills/`) | OpenAPI sync, MCP (Postgres, Neo4j GraphRAG), env setup, git/PR, UI |
+| **Skills** (`.agents/skills/`) | OpenAPI sync, MCP (Postgres), env setup, git/PR, UI |
 | **Custom agents** (`.codex/agents/`) | Read-only subagents and workflow helpers |
 
 Open the repo in Codex; agents read `AGENTS.md` and **`docs/CONSTITUTION.md`** plus companion docs before changing code.
@@ -31,7 +31,6 @@ Open the repo in Codex; agents read `AGENTS.md` and **`docs/CONSTITUTION.md`** p
 - [Aspire CLI](https://aspire.dev) 13.3+
 - [Node.js 22 LTS](https://nodejs.org/) and [Yarn](https://yarnpkg.com/)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- [uv](https://docs.astral.sh/uv/) (optional — for Neo4j GraphRAG MCP via `uvx`)
 
 ## First-time setup
 
@@ -84,12 +83,11 @@ Shared MCP server config lives in [`.codex/config.toml`](.codex/config.toml). Do
 |--------|---------|
 | `aspire` | Aspire dashboard resources, logs |
 | `postgres` | Read-only SQL against local `app` database |
-| `neo4j-graphrag` | Cypher, vector/fulltext search, GraphRAG |
 | `playwright` | Browser automation for e2e diagnostics |
 | `github` | GitHub MCP over HTTP |
 | `shadcn` | shadcn component registry MCP |
 
-See `.agents/skills/postgres-mcp/SKILL.md` and `.agents/skills/neo4j-graphrag/SKILL.md`.
+See `.agents/skills/postgres-mcp/SKILL.md`.
 
 ## Docs
 

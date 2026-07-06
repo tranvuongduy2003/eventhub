@@ -4,7 +4,7 @@
   "description": "Implementation specs are Obsidian memory and run docs memory validation",
   "run": {
     "type": "command",
-    "command": "node scripts/affected-tests.mjs docs/_memory/specs/20260616011034-register-organizer-account.md"
+    "command": "./scripts/affected-tests.ps1 docs/_memory/specs/20260616011034-register-organizer-account.md"
   },
   "assert": {
     "exitCode": 0,

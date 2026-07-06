@@ -60,6 +60,7 @@ function Read-Json {
 
 $forbiddenReadmes = @(
     'evals',
+    '.graph',
     'harness/README.md',
     'harness/orchestrator/README.md',
     'harness/policies/README.md',
@@ -95,6 +96,13 @@ if ($null -ne $manifest) {
 
     if ($manifest.singleEvalTree -ne 'harness/evals/') {
         Add-Error "harness/manifest.json singleEvalTree must be harness/evals/"
+    }
+
+    if ($manifest.verificationGraph -ne 'harness/graph/index.json') {
+        Add-Error "harness/manifest.json verificationGraph must be harness/graph/index.json"
+    }
+    elseif (-not (Test-Path -LiteralPath (Join-Path $repoRoot 'harness\graph\index.json') -PathType Leaf)) {
+        Add-Error "Missing verification graph: harness/graph/index.json"
     }
 
     $expectedFoundationSkills = @{

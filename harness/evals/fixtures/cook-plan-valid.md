@@ -35,6 +35,18 @@ Neighboring features: N/A.
 | Harness contracts and graph/routing | N/A | Product slice only. |
 | External tracking | N/A | No external tracking. |
 
+## Surface Completeness Review
+
+| Surface | Impact | Action | Validation |
+|---------|--------|--------|------------|
+| Backend/API | N/A | No product backend change. | N/A |
+| Frontend/web | N/A | No user-facing route or component change. | N/A |
+| OpenAPI/codegen | N/A | No endpoint or contract shape change. | N/A |
+| E2E/Playwright | N/A | No browser workflow change. | N/A |
+| DevOps/Aspire | N/A | No topology, config, or runtime dependency change. | N/A |
+| Docs/memory | planned | Update harness memory for workflow contract changes. | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1` |
+| Harness/workflow | planned | Update cook validator and eval fixture. | `powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness` |
+
 ## Tasks
 
 - [ ] Add cook workflow validator.
@@ -44,5 +56,6 @@ Neighboring features: N/A.
 ## Done Criteria Ledger
 
 - [ ] Acceptance criteria verified.
+- [ ] Surface completeness review completed.
 - [ ] Memory sync completed.
 - [ ] `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1` passed.

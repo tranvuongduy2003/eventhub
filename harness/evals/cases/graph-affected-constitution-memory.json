@@ -4,7 +4,7 @@
   "description": "Constitution changes validate the docs memory source contract",
   "run": {
     "type": "command",
-    "command": "node scripts/affected-tests.mjs docs/CONSTITUTION.md"
+    "command": "./scripts/affected-tests.ps1 docs/CONSTITUTION.md"
   },
   "assert": {
     "exitCode": 0,

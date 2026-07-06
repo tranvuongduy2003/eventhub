@@ -39,5 +39,5 @@ If lower-level material drifts, fix the lower-level material. Do not weaken the 
 | Domain rule or invariant | [[_memory/source/domain-model-specification]] | [[_memory/source/feature-specification]], relevant spec, [[_memory/source/technical-design]] for mechanics |
 | API or persistence change | [[CONSTITUTION]], [[_memory/source/technical-design]] | Relevant spec, [[_memory/source/domain-model-specification]], OpenAPI contract |
 | Harness or agent workflow | [[_memory/source/harness-architecture]] | [[_memory/source/harness-operational-policies]], `AGENTS.md`, relevant skill |
-| Verification or testing | [[CONSTITUTION]], [[_memory/source/technical-design]] | `.graph/index.json`, relevant skill |
+| Verification or testing | [[CONSTITUTION]], [[_memory/source/technical-design]] | `harness/graph/index.json`, relevant skill |
 | Spec completion or workflow handoff | [[_memory/long-term-memory-operating-model]], [[_memory/source/harness-operational-policies]], `memory-sync` | Related spec, source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data |

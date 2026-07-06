@@ -60,11 +60,11 @@
       "postEditAction": "test",
       "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness"
     },
-    "scripts/affected-tests.mjs": {
+    "scripts/affected-tests.ps1": {
       "postEditAction": "test",
       "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer graph"
     },
-    ".graph/": {
+    "harness/graph/": {
       "postEditAction": "test",
       "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer graph"
     },

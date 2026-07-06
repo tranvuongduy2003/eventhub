@@ -73,7 +73,7 @@ foreach ($path in @(
     '.agents/skills/harness-tools/SKILL.md',
     '.agents/skills/memory-sync/SKILL.md',
     '.codex/policies/harness-policy.json',
-    '.graph/index.json',
+    'harness/graph/index.json',
     'docs/_memory/source/harness-architecture.md',
     'docs/_memory/specs/README.md',
     'harness/manifest.json',
@@ -92,6 +92,7 @@ foreach ($path in @(
 }
 
 Test-PathAbsent 'evals'
+Test-PathAbsent '.graph'
 Test-PathAbsent 'harness/README.md'
 Test-PathAbsent 'harness/orchestrator/README.md'
 Test-PathAbsent 'harness/policies/README.md'
@@ -132,9 +133,9 @@ Test-FileContains 'AGENTS.md' @(
     'harness-telemetry',
     'harness-tools',
     'memory-sync',
-    'cook-unified',
-    'memory sync explicit',
-    'marks the related spec `implemented`'
+    'Workflow details belong to the owning skill and harness source docs',
+    'product-surface completeness',
+    'workflow''s own contract, validator, and eval coverage'
 )
 
 Test-FileContains 'docs/_memory/source/harness-architecture.md' @(
@@ -253,6 +254,8 @@ Test-FileContains 'scripts/agent/Get-HarnessStatus.ps1' @(
 Test-FileContains 'harness/manifest.json' @(
     '"statusCommand"',
     '"evalCommand"',
+    '"verificationGraph"',
+    '"harness/graph/index.json"',
     '"orchestrator"',
     '"policies"',
     '"telemetry"',

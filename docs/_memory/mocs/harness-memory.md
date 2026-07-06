@@ -28,7 +28,7 @@ It is not a pile of prompt examples or product implementation code.
 | Execution scripts | `scripts/agent/` |
 | Policy data | `.codex/policies/harness-policy.json` |
 | Lifecycle hooks | `.codex/hooks/` |
-| Verification graph | `.graph/index.json` |
+| Verification graph | `harness/graph/index.json` |
 | Runtime state | `.codex/state/` |
 | Evals | `harness/evals/` |
 | Runtime scaffold | `harness/` |
@@ -38,7 +38,7 @@ It is not a pile of prompt examples or product implementation code.
 
 - Working memory: active conversation context.
 - Task memory: `.codex/plans/`, `.codex/notes/`, eval outputs, handoff text.
-- Long-term knowledge memory: this Obsidian vault under `docs/`, validated by `scripts/agent/Test-DocsMemory.ps1` and routed by `.graph/index.json`.
+- Long-term knowledge memory: this Obsidian vault under `docs/`, validated by `scripts/agent/Test-DocsMemory.ps1` and routed by `harness/graph/index.json`.
 
 ## Workflow memory sync
 

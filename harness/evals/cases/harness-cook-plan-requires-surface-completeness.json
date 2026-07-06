@@ -1,0 +1,19 @@
+{
+  "id": "harness-cook-plan-requires-surface-completeness",
+  "layer": "harness",
+  "mode": "auto",
+  "description": "Cook plan validator rejects plans that omit product-surface completeness review",
+  "run": {
+    "type": "command",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-CookPlan.ps1 -PlanPath harness/evals/fixtures/cook-plan-missing-surface.md -Json"
+  },
+  "assert": {
+    "exitCode": 1,
+    "jsonStdout": {
+      "status": "failed"
+    },
+    "stdoutContains": [
+      "Surface Completeness Review"
+    ]
+  }
+}

@@ -66,7 +66,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -CaseI
 powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness
 ```
 
-If `.graph/index.json` or `scripts/affected-tests.mjs` changed, also run:
+If `harness/graph/index.json` or `scripts/affected-tests.mjs` changed, also run:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer graph

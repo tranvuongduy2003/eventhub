@@ -70,13 +70,24 @@ function Get-AffectedPlan {
         [string]$ProjectRoot,
         [string]$FilePath
     )
-    $node = Get-Command node -ErrorAction SilentlyContinue
-    if (-not $node) {
-        return $null
+
+    $scriptPath = Join-Path $ProjectRoot 'scripts\affected-tests.ps1'
+    $powerShell = try {
+        (Get-Process -Id $PID).Path
+    }
+    catch {
+        $pwsh = Get-Command pwsh -ErrorAction SilentlyContinue
+        if ($pwsh) { $pwsh.Source } else { (Get-Command powershell -ErrorAction Stop).Source }
     }
 
-    $scriptPath = Join-Path $ProjectRoot 'scripts\affected-tests.mjs'
-    $result = Invoke-VerifyQuiet -FilePath 'node' -ArgumentList @($scriptPath, $FilePath) -WorkingDirectory $ProjectRoot
+    $result = Invoke-VerifyQuiet -FilePath $powerShell -ArgumentList @(
+        '-NoProfile',
+        '-ExecutionPolicy',
+        'Bypass',
+        '-File',
+        $scriptPath,
+        $FilePath
+    ) -WorkingDirectory $ProjectRoot
     if ($result.ExitCode -ne 0) {
         return $null
     }
