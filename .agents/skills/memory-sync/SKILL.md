@@ -31,8 +31,8 @@ Create a Memory Sync inventory in the plan or handoff. Mark each row `updated` o
 | MOCs | Product intent, feature roadmap, domain model, technical architecture, and harness memory are current |
 | Glossaries | Ubiquitous language, decision log, and architecture invariants include new stable terms/decisions/invariants |
 | Retrieval/index docs | Source-of-truth map, agent retrieval guide, docs README, specs README, root README, and AGENTS.md route future agents correctly |
-| Harness contracts | `harness/orchestrator/`, `harness/policies/`, `harness/telemetry/`, `harness/tools/`, `.codex/policies/`, hooks, scripts, skills, `.graph/` |
-| Verification graph | `.graph/index.json` and `scripts/affected-tests.mjs` route changed memory and harness files to checks |
+| Harness contracts | `harness/orchestrator/`, `harness/policies/`, `harness/telemetry/`, `harness/tools/`, `harness/graph/`, `.codex/policies/`, hooks, scripts, skills |
+| Verification graph | `harness/graph/index.json` and `scripts/Affected-Tests.ps1` route changed memory and harness files to checks |
 | External tracking | GitHub issue/PR/project status, labels, or handoff evidence when the current workflow owns them |
 
 Do not stop at the first obvious MOC. The point is to make the next agent find the truth from any normal entry point.
@@ -42,7 +42,7 @@ Do not stop at the first obvious MOC. The point is to make the next agent find t
 1. Read the related spec and current diff.
 2. Identify feature IDs, epics, bounded contexts, PRD decisions, DDD refs, tech refs, and harness lanes affected.
 3. Search for stale references using stable IDs and feature terms:
-   - `rg -n "F-x.y|EP-x|<feature slug>|<old status>|<key domain term>" docs AGENTS.md README.md harness .graph scripts .agents`
+   - `rg -n "F-x.y|EP-x|<feature slug>|<old status>|<key domain term>" docs AGENTS.md README.md harness scripts .agents`
 4. Update only durable surfaces that became stale.
 5. For completed features, mark the related spec implemented only after objective implementation checks pass.
 6. Keep source-of-truth precedence: Constitution -> source memory -> harness source memory -> MOCs/glossaries/retrieval guides -> task artifacts.
@@ -73,13 +73,13 @@ If harness workflow, policy, routing, skill, hook, graph, script, or runtime con
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-HarnessPolicy.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Get-HarnessStatus.ps1 -Json
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness
 ```
 
-If `.graph/index.json` or `scripts/affected-tests.mjs` changed, also run:
+If `harness/graph/index.json` or `scripts/Affected-Tests.ps1` changed, also run:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer graph
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer graph
 ```
 
 ## Handoff Format

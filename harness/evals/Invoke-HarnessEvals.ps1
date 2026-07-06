@@ -8,9 +8,9 @@
   Deterministic cases (harness, graph) run in CI; agent cases with mode=manual are skipped unless -IncludeAgent.
 
 .EXAMPLE
-  .\harness\evals\run.ps1
-  .\harness\evals\run.ps1 -Layer harness
-  .\harness\evals\run.ps1 -CaseId harness-pre-tool-block-generated -Json
+  .\harness\evals\Invoke-HarnessEvals.ps1
+  .\harness\evals\Invoke-HarnessEvals.ps1 -Layer harness
+  .\harness\evals\Invoke-HarnessEvals.ps1 -CaseId harness-pre-tool-block-generated -Json
 #>
 
 param(
@@ -217,6 +217,7 @@ function Invoke-HookCase {
     $psi.CreateNoWindow = $true
     $psi.WorkingDirectory = $repoRoot
     Set-ProcessPowerShellCacheEnvironment -ProcessStartInfo $psi
+    $psi.EnvironmentVariables['EVENTHUB_HOOK_INPUT_JSON'] = $stdin
 
     $proc = [System.Diagnostics.Process]::Start($psi)
     $proc.StandardInput.Write($stdin)

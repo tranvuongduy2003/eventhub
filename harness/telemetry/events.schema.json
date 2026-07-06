@@ -15,7 +15,7 @@
         "status": "passed | failed | skipped",
         "errors": "sanitized error strings"
       },
-      "producer": "harness/evals/run.ps1",
+      "producer": "harness/evals/Invoke-HarnessEvals.ps1",
       "storage": "harness/evals/results/ (gitignored)"
     },
     "harness.policy.decision": {

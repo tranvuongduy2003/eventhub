@@ -42,7 +42,7 @@ docs/      Obsidian knowledge memory, constitution, source memory, specs, harnes
 contracts/ OpenAPI contract and codegen scripts
 .codex/    Codex config, hooks, policies, custom agents
 .agents/   repo-local skills
-.graph/    path-to-verification map
+harness/graph/ path-to-verification map
 harness/evals/ deterministic harness/graph/agent evals
 harness/   future orchestration runtime scaffold
 ```
@@ -54,12 +54,12 @@ Harness means the policy and orchestration layer around agent work, not ad-hoc p
 - Policy data: `.codex/policies/harness-policy.json`
 - Lifecycle hooks: `.codex/hooks/`
 - Runtime state: `.codex/state/` (gitignored)
-- Path-to-check graph: `.graph/index.json`
-- Deterministic evals: `harness/evals/run.ps1` (evals are part of harness; do not add root `evals/`)
+- Path-to-check graph: `harness/graph/index.json`
+- Deterministic evals: `harness/evals/Invoke-HarnessEvals.ps1` (evals are part of harness; do not add root `evals/`)
 - Runtime contract status: `scripts/agent/Get-HarnessStatus.ps1 -Json`
 - Stable agent scripts: `scripts/agent/`
 
-The `cook-unified` workflow is the single feature-delivery entrypoint and must keep harness impact and memory sync explicit. Inside `cook`, the phases are `spec` -> `plan` -> checkpoint implementation -> verify -> memory sync -> handoff. Specs record whether evals, orchestrator, policies, telemetry, tools, or workflow surfaces are affected, and must be discoverable from the relevant long-term memory surfaces when created. Plans map harness lanes plus a Memory Sync inventory to files and validation using `memory-sync`. Cook updates the plan when new harness impact or memory drift appears, runs harness evals after harness changes, then marks the related spec `implemented`, updates every affected long-term memory and harness contract surface, and runs docs-memory plus changed-code verification before handoff.
+Workflow details belong to the owning skill and harness source docs, not duplicated here. For any routed workflow, keep harness impact, product-surface completeness, memory sync, and verification explicit; update the workflow's own contract, validator, and eval coverage when those requirements change.
 
 Default verification:
 
@@ -70,7 +70,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-Changed
 Run after harness or hook changes:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness
 ```
 
 ## Skill Routing
@@ -91,7 +91,6 @@ Use repo docs first. Use a skill only for the procedure it owns.
 | Memory sync after spec/cook or docs drift | `memory-sync` |
 | OpenAPI export/codegen/CI verify | `openapi-contract-sync` |
 | Live DB read-only SQL | `postgres-mcp` |
-| Neo4j graph / GraphRAG | `neo4j-graphrag` |
 | Playwright e2e | `playwright-e2e` |
 | Frontend server state | `tanstack-query` |
 | shadcn / Tailwind UI | `shadcn`, `tailwind-patterns` |

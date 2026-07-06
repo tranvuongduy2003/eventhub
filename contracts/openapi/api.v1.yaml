@@ -861,6 +861,40 @@ components:
         - confirmedAt
         - lines
       type: object
+    PaymentProviderNotificationRequest:
+      properties:
+        providerReference:
+          type: string
+      required:
+        - providerReference
+      type: object
+    PaymentProviderNotificationResponse:
+      properties:
+        applied:
+          type: boolean
+        orderId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        orderStatus:
+          type: string
+        paymentId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        paymentStatus:
+          type: string
+      required:
+        - paymentId
+        - orderId
+        - paymentStatus
+        - orderStatus
+        - applied
+      type: object
     PlaceOrderLineRequest:
       properties:
         quantity:
@@ -1427,6 +1461,50 @@ components:
         - totalAmount
         - totalCurrency
         - lines
+      type: object
+    StartPaymentRequest:
+      properties:
+        cancelUrl:
+          type: string
+        successUrl:
+          type: string
+      required:
+        - successUrl
+        - cancelUrl
+      type: object
+    StartPaymentResponse:
+      properties:
+        amount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        currency:
+          type: string
+        orderId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        paymentId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        providerReference:
+          type: string
+        redirectUrl:
+          type: string
+      required:
+        - paymentId
+        - orderId
+        - amount
+        - currency
+        - providerReference
+        - redirectUrl
       type: object
     UpdateDiscountCodeRequest:
       properties:
@@ -3416,6 +3494,142 @@ paths:
           description: Internal Server Error
       tags:
         - Orders
+  /api/orders/{orderId}/payments:
+    post:
+      operationId: StartPayment
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartPaymentRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StartPaymentResponse"
+          description: Created
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Bad Request
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Payments
+  /api/payments/provider-notifications/failed:
+    post:
+      operationId: FailPayment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentProviderNotificationRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentProviderNotificationResponse"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Bad Request
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Payments
+  /api/payments/provider-notifications/succeeded:
+    post:
+      operationId: ConfirmPayment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentProviderNotificationRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentProviderNotificationResponse"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Bad Request
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Payments
   /api/users:
     post:
       operationId: RegisterUser
@@ -3541,6 +3755,7 @@ tags:
   - name: EventRoles
   - name: Occurrences
   - name: Orders
+  - name: Payments
   - name: Profile
   - name: TicketTypes
   - name: Users

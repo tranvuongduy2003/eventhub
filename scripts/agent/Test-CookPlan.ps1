@@ -97,7 +97,7 @@ function Get-FeatureBlock {
 function Test-Plan {
     param([string]$Text)
 
-    foreach ($heading in @('Harness Impact', 'Memory Sync Inventory', 'Tasks', 'Done Criteria Ledger')) {
+    foreach ($heading in @('Harness Impact', 'Memory Sync Inventory', 'Surface Completeness Review', 'Tasks', 'Done Criteria Ledger')) {
         Test-Heading -Text $Text -Heading $heading -Label 'Plan'
     }
 
@@ -117,6 +117,12 @@ function Test-Plan {
         }
     }
 
+    foreach ($surface in @('Backend/API', 'Frontend/web', 'OpenAPI/codegen', 'E2E/Playwright', 'DevOps/Aspire', 'Docs/memory', 'Harness/workflow')) {
+        if ($Text -notmatch "(?im)^\|\s*$([regex]::Escape($surface))\s*\|") {
+            Add-Error "Plan Surface Completeness Review missing surface: $surface"
+        }
+    }
+
     if ($Text -notmatch '(?m)^-\s+\[[ xX]\]\s+') {
         Add-Error 'Plan tasks must use markdown checkboxes'
     }
@@ -127,6 +133,10 @@ function Test-Plan {
 
     if ($Text -notmatch 'scripts/agent/Verify-ChangedCode.ps1') {
         Add-Error 'Plan Done Criteria Ledger must include changed-code verification'
+    }
+
+    if ($Text -notmatch '(?i)surface completeness') {
+        Add-Error 'Plan Done Criteria Ledger must include surface completeness review'
     }
 }
 
@@ -160,7 +170,7 @@ function Test-TaskSpec {
         return
     }
 
-    foreach ($field in @('id', 'objective', 'workflow', 'phase', 'harnessImpact', 'memorySyncInventory', 'stopConditions', 'doneCriteriaLedger')) {
+    foreach ($field in @('id', 'objective', 'workflow', 'phase', 'harnessImpact', 'memorySyncInventory', 'surfaceCompletenessReview', 'stopConditions', 'doneCriteriaLedger')) {
         if ($null -eq $task.$field) {
             Add-Error "TaskSpec missing required field: $field"
         }
@@ -169,6 +179,13 @@ function Test-TaskSpec {
     foreach ($lane in @('evals', 'orchestrator', 'policies', 'telemetry', 'tools', 'workflow')) {
         if ($null -eq $task.harnessImpact.$lane) {
             Add-Error "TaskSpec harnessImpact missing lane: $lane"
+        }
+    }
+
+    foreach ($surface in @('Backend/API', 'Frontend/web', 'OpenAPI/codegen', 'E2E/Playwright', 'DevOps/Aspire', 'Docs/memory', 'Harness/workflow')) {
+        $match = @($task.surfaceCompletenessReview | Where-Object { $_.surface -eq $surface })
+        if ($match.Count -eq 0) {
+            Add-Error "TaskSpec surfaceCompletenessReview missing surface: $surface"
         }
     }
 }

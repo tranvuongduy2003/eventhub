@@ -8,6 +8,7 @@
     "phase",
     "harnessImpact",
     "memorySyncInventory",
+    "surfaceCompletenessReview",
     "doneCriteriaLedger",
     "stopConditions"
   ],
@@ -195,6 +196,49 @@
           },
           "notes": {
             "type": "string"
+          }
+        }
+      }
+    },
+    "surfaceCompletenessReview": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "surface",
+          "impact",
+          "action",
+          "validation"
+        ],
+        "properties": {
+          "surface": {
+            "type": "string",
+            "enum": [
+              "Backend/API",
+              "Frontend/web",
+              "OpenAPI/codegen",
+              "E2E/Playwright",
+              "DevOps/Aspire",
+              "Docs/memory",
+              "Harness/workflow"
+            ]
+          },
+          "impact": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "implemented",
+              "N/A"
+            ]
+          },
+          "action": {
+            "type": "string"
+          },
+          "validation": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       }

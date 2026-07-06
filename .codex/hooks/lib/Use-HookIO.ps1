@@ -1,16 +1,34 @@
 # Shared helpers for Codex command hooks (stdin JSON → stdout JSON).
 
 function Read-HookInput {
-    $raw = [Console]::In.ReadToEnd()
-    if ([string]::IsNullOrWhiteSpace($raw)) {
-        return $null
+    param(
+        [object[]]$PipelineInput
+    )
+
+    $candidates = New-Object System.Collections.Generic.List[string]
+    $candidates.Add([Console]::In.ReadToEnd()) | Out-Null
+    if ($PipelineInput -and $PipelineInput.Count -gt 0) {
+        $candidates.Add((@($PipelineInput) -join [Environment]::NewLine)) | Out-Null
     }
-    try {
-        return $raw | ConvertFrom-Json
+    if ($env:EVENTHUB_HOOK_INPUT_JSON) {
+        $candidates.Add($env:EVENTHUB_HOOK_INPUT_JSON) | Out-Null
     }
-    catch {
-        return $null
+
+    foreach ($candidate in $candidates) {
+        if ([string]::IsNullOrWhiteSpace($candidate)) {
+            continue
+        }
+        $raw = $candidate.TrimStart([char]0xFEFF)
+        try {
+            $parsed = $raw | ConvertFrom-Json -ErrorAction Stop
+            return $parsed
+        }
+        catch {
+            continue
+        }
     }
+
+    return $null
 }
 
 function Get-ProjectRoot {

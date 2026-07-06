@@ -17,6 +17,7 @@ import { ApiError } from '@/types/api-problem'
 
 import { placeOrder, startCheckout, type PlaceOrderResponse } from '../api'
 import { OrderSummary, type OrderLineItem } from '../components/order-summary'
+import { PaymentAction } from '../components/payment-action'
 import {
   decodeTicketSelection,
   readStoredSelection,
@@ -308,6 +309,7 @@ function AcceptedOrder({
   totalCurrency,
 }: AcceptedOrderProps) {
   const statusLabel = order.status.charAt(0).toUpperCase() + order.status.slice(1)
+  const requiresPayment = order.status === 'pending' && order.totalAmount > 0
 
   return (
     <div className="flex flex-col gap-6">
@@ -326,7 +328,19 @@ function AcceptedOrder({
             <CardDescription>Status: {statusLabel}</CardDescription>
           </CardHeader>
           <CardContent className="text-muted-foreground flex flex-col gap-3 text-sm">
-            <p>Your guest details were accepted for this order.</p>
+            <p>
+              {requiresPayment
+                ? 'Your guest details were accepted. Complete provider checkout while this order is pending.'
+                : 'Your guest details were accepted for this order.'}
+            </p>
+            {requiresPayment ? (
+              <PaymentAction
+                orderId={order.orderId}
+                totalAmount={order.totalAmount}
+                totalCurrency={order.totalCurrency}
+                buttonLabel="Pay now"
+              />
+            ) : null}
             <Link
               className="text-primary font-medium underline underline-offset-4"
               to={`/orders/${order.orderId}`}

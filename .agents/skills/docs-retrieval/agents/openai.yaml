@@ -1,0 +1,4 @@
+interface:
+  display_name: "Docs Retrieval"
+  short_description: "Retrieve precise EventHub Obsidian docs context."
+  default_prompt: "Use $docs-retrieval to find the smallest authoritative EventHub docs context before answering or editing."

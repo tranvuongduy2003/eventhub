@@ -33,6 +33,8 @@ public sealed class ApplicationDatabaseContext(DbContextOptions<ApplicationDatab
 
     public DbSet<ReservationRecord> Reservations => Set<ReservationRecord>();
 
+    public DbSet<PaymentRecord> Payments => Set<PaymentRecord>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(SchemaName);

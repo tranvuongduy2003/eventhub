@@ -29,10 +29,10 @@ The canonical runtime manifest lives in `harness/manifest.json`.
 
 | Hook | Script | Purpose |
 |---|---|---|
-| PreToolUse | `.codex/hooks/pre-tool-guard.ps1` | Deny protected edits, dangerous shell commands, or gated tools |
-| PreToolUse Bash | `.codex/hooks/before-shell-guard.ps1` | Fast shell-only command guard |
-| PostToolUse | `.codex/hooks/post-edit-verify.ps1` | Run affected checks for edited files and set verify gate on failure |
-| Stop | `.codex/hooks/stop-gate.ps1` | Block final handoff while gate or changed-file checks fail |
+| PreToolUse | `.codex/hooks/Invoke-PreToolGuard.ps1` | Deny protected edits, dangerous shell commands, or gated tools |
+| PreToolUse Bash | `.codex/hooks/Invoke-BeforeShellGuard.ps1` | Fast shell-only command guard |
+| PostToolUse | `.codex/hooks/Invoke-PostEditVerify.ps1` | Run affected checks for edited files and set verify gate on failure |
+| Stop | `.codex/hooks/Invoke-StopGate.ps1` | Block final handoff while gate or changed-file checks fail |
 
 Hooks should stay thin. Move policy data to `.codex/policies/` and reusable command logic to `scripts/agent/` or `.codex/hooks/lib/`.
 
@@ -47,13 +47,13 @@ Use this order:
 For hook, graph, or agent harness changes:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness
 ```
 
-For `.graph/index.json` or `scripts/affected-tests.mjs` changes:
+For `harness/graph/index.json` or `scripts/Get-AffectedTests.ps1` changes:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer graph
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer graph
 ```
 
 ## State And Memory
@@ -109,8 +109,9 @@ Harness impact and long-term memory sync are part of normal delivery, not aftert
 - Feature-id specs and plans must include an Adjacent Feature Boundary that names neighboring features, in-scope behavior, and out-of-scope behavior.
 - The plan phase must include a Harness Impact table with each lane resolved to files and validation, or `N/A`.
 - The plan phase must include a Memory Sync inventory owned by `memory-sync` covering related spec status, source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data, related issues or handoff evidence when applicable, and `scripts/agent/Test-DocsMemory.ps1` validation.
+- The plan phase must include a Surface Completeness Review covering Backend/API, Frontend/web, OpenAPI/codegen, E2E/Playwright, DevOps/Aspire, Docs/memory, and Harness/workflow. Any `N/A` must carry a product or technical rationale. User-visible workflow changes must include frontend work or record why existing UI already satisfies the acceptance criteria; critical browser workflows should include Playwright coverage unless the plan records why narrower checks are sufficient.
 - The plan phase must include a Done Criteria Ledger and must validate the plan, progress note, and TaskSpec sidecar with `scripts/agent/Test-CookPlan.ps1` before implementation starts.
-- The implementation phase must update the plan when it discovers harness impact or memory drift and must run `harness/evals/run.ps1 -Layer harness` after harness changes.
+- The implementation phase must update the plan when it discovers harness impact, product-surface impact, or memory drift and must run `harness/evals/Invoke-HarnessEvals.ps1 -Layer harness` after harness changes.
 - Cook must not delete the plan or declare done until the related spec is marked `implemented`, every affected long-term memory and harness contract surface is current or explicitly `N/A`, the Done Criteria Ledger is complete or explicitly `N/A`, docs-memory validation passes, and changed-code verification passes.
 
 The only committed eval tree is `harness/evals/`. Store runtime-orchestration eval cases there and do not create a root `evals/` tree.

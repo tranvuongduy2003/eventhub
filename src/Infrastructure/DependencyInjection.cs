@@ -81,6 +81,8 @@ public static class DependencyInjection
         services.AddScoped<IPermissionAuditEntryRepository, PermissionAuditEntryRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IOrderIdGenerator, PostgresOrderIdGenerator>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<IPaymentIdGenerator, PostgresPaymentIdGenerator>();
         services.AddScoped<IReservationIdGenerator, PostgresReservationIdGenerator>();
         services.AddScoped<IDiscountCodeRepository, DiscountCodeRepository>();
         services.AddScoped<ISessionStore, SessionStore>();

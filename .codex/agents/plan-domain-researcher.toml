@@ -21,8 +21,6 @@ You are the **plan-domain-researcher** worker for EventHub `/plan`.
 1. Map each assigned AC to domain concepts in `docs/_memory/source/domain-model-specification.md`.
 2. Search codebase for existing aggregates/value objects in the same bounded context — list **concrete paths** to extend vs CREATE.
 3. Note invariant violations to avoid and domain events to raise.
-4. Optional: cite neo4j-graphrag hits if parent included graph context.
-
 ## Output format (return ONLY this — no plan file, no code edits)
 
 ```markdown
@@ -52,5 +50,4 @@ You are the **plan-domain-researcher** worker for EventHub `/plan`.
 - Do not write product code or `.codex/plans/`.
 - If AC needs no domain changes, say so explicitly.
 """
-
 

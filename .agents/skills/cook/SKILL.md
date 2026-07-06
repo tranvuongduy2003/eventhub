@@ -70,7 +70,7 @@ Required sections:
 - `## Adjacent Feature Boundary` for every feature-id run. Name dependent or neighboring features, state what is in this slice, and state what remains out of scope.
 - `## 7. Harness Impact`
 
-`## 7. Harness Impact` is mandatory. It must state impacts for `harness/evals/`, `harness/orchestrator/`, `.codex/policies/` or `harness/policies/`, `harness/telemetry/`, `harness/tools/`, and workflow surfaces such as `.agents/skills/`, `.codex/hooks/`, `scripts/agent/`, `.graph/`, or `AGENTS.md`. Use `N/A - product slice only; no harness behavior changes.` only when all are unaffected.
+`## 7. Harness Impact` is mandatory. It must state impacts for `harness/evals/`, `harness/orchestrator/`, `.codex/policies/` or `harness/policies/`, `harness/telemetry/`, `harness/tools/`, and workflow surfaces such as `harness/graph/`, `.agents/skills/`, `.codex/hooks/`, `scripts/agent/`, or `AGENTS.md`. Use `N/A - product slice only; no harness behavior changes.` only when all are unaffected.
 
 If the user asked to stop after spec, run docs-memory checks for changed durable memory, report the spec path, and stop.
 
@@ -87,12 +87,12 @@ Every plan must include these sections before tasks:
 
 | Lane | Impact | Files | Validation |
 |------|--------|-------|------------|
-| evals | N/A or ... | `harness/evals/...` | `powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness` |
+| evals | N/A or ... | `harness/evals/...` | `powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness` |
 | orchestrator | N/A or ... | `harness/orchestrator/...` | ... |
 | policies | N/A or ... | `.codex/policies/...` / `harness/policies/...` | ... |
 | telemetry | N/A or ... | `harness/telemetry/...` | ... |
 | tools | N/A or ... | `harness/tools/...` | ... |
-| workflow | N/A or ... | `.agents/skills/...` / `.codex/hooks/...` / `scripts/agent/...` / `.graph/...` / `AGENTS.md` | ... |
+| workflow | N/A or ... | `harness/graph/...` / `.agents/skills/...` / `.codex/hooks/...` / `scripts/agent/...` / `AGENTS.md` | ... |
 
 ## Memory Sync Inventory
 
@@ -104,14 +104,28 @@ Every plan must include these sections before tasks:
 | README/index files | planned/N/A | ... |
 | Harness contracts and graph/routing | planned/N/A | ... |
 | External tracking | planned/N/A | ... |
+
+## Surface Completeness Review
+
+| Surface | Impact | Action | Validation |
+|---------|--------|--------|------------|
+| Backend/API | planned/N/A | ... | ... |
+| Frontend/web | planned/N/A | ... | ... |
+| OpenAPI/codegen | planned/N/A | ... | ... |
+| E2E/Playwright | planned/N/A | ... | ... |
+| DevOps/Aspire | planned/N/A | ... | ... |
+| Docs/memory | planned/N/A | ... | ... |
+| Harness/workflow | planned/N/A | ... | ... |
 ```
 
-Then write 3-8 concrete tasks. Map every acceptance criterion to at least one task. Include paths, notes, and validation commands. Harness changes must be visible as their own task or subtask, not hidden inside product work.
+Then write 3-8 concrete tasks. Map every acceptance criterion to at least one task and map every impacted surface from the Surface Completeness Review to at least one task or done-criteria item. Include paths, notes, and validation commands. Harness changes must be visible as their own task or subtask, not hidden inside product work.
+
+Surface completeness is mandatory for feature work. Do not mark `Frontend/web`, `E2E/Playwright`, `DevOps/Aspire`, or `OpenAPI/codegen` as `N/A` just because the first implementation path is backend-heavy. Mark a surface `N/A` only with a product/technical rationale, for example "no user-visible route or component changes", "no browser workflow crosses this behavior", "no endpoint or contract shape changed", or "no topology/config/runtime behavior changed". If the feature changes an attendee or organizer workflow, include frontend work or explicitly record why the existing UI already satisfies the acceptance criteria. If the feature changes a critical user journey, add or update Playwright coverage unless a narrower automated check is objectively sufficient and the plan records that rationale. If the feature changes API or Contracts, include OpenAPI export/codegen/verify. If the feature changes local topology, configuration, background services, CI, deployment scripts, or runtime dependencies, include DevOps/Aspire validation.
 
 Every plan must also include:
 
 - `## Adjacent Feature Boundary` for feature-id runs, matching the spec boundary.
-- `## Done Criteria Ledger` with checkboxes for acceptance criteria, memory sync, harness validation when changed, docs-memory validation when changed, changed-code verification, and review/rationale.
+- `## Done Criteria Ledger` with checkboxes for acceptance criteria, surface completeness review, memory sync, harness validation when changed, docs-memory validation when changed, changed-code verification, and review/rationale.
 - A reference to `.codex/notes/progress.md` for long runs.
 
 Before implementation starts, create or update a TaskSpec sidecar under `.codex/state/cook/<task-id>.json` using `harness/orchestrator/task-spec.schema.json`, then validate the markdown plan and progress note:
@@ -152,13 +166,13 @@ For each unchecked task:
 6. Update the plan and `.codex/notes/progress.md` when new harness impact, memory drift, or blockers appear.
 7. Keep the Done Criteria Ledger current; do not leave final criteria to chat memory.
 
-Use `node scripts/affected-tests.mjs <path>` for changed files and run the returned checks.
+Use `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Affected-Tests.ps1 <path>` for changed files and run the returned checks.
 
 Run these additional checks when relevant:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer graph
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer graph
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1
 ```
 

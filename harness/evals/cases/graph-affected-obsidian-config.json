@@ -4,7 +4,7 @@
   "description": "Obsidian vault config changes map to the docs memory lifecycle validator",
   "run": {
     "type": "command",
-    "command": "node scripts/affected-tests.mjs docs/.obsidian/app.json"
+    "command": "./scripts/Get-AffectedTests.ps1 docs/.obsidian/app.json"
   },
   "assert": {
     "exitCode": 0,

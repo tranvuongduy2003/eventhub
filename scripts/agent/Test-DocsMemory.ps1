@@ -173,18 +173,18 @@ function Test-GraphMapping {
         [string]$Prefix,
         [string]$ExpectedCommand
     )
-    $graph = Read-JsonFile '.graph/index.json'
+    $graph = Read-JsonFile 'harness/graph/index.json'
     if ($null -eq $graph) { return }
     $layer = $graph.layers.$Prefix
     if ($null -eq $layer) {
-        Add-Error ".graph/index.json missing layer mapping: $Prefix"
+        Add-Error "harness/graph/index.json missing layer mapping: $Prefix"
         return
     }
     if ($layer.postEditAction -ne 'test') {
-        Add-Error ".graph/index.json layer $Prefix must use postEditAction test"
+        Add-Error "harness/graph/index.json layer $Prefix must use postEditAction test"
     }
     if ($layer.testCommand -ne $ExpectedCommand) {
-        Add-Error ".graph/index.json layer $Prefix testCommand expected '$ExpectedCommand', got '$($layer.testCommand)'"
+        Add-Error "harness/graph/index.json layer $Prefix testCommand expected '$ExpectedCommand', got '$($layer.testCommand)'"
     }
 }
 
@@ -315,7 +315,7 @@ Test-FileContains 'docs/_memory/mocs/harness-memory.md' @(
 )
 
 $docsMemoryCommand = 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1'
-$harnessCommand = 'powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness'
+$harnessCommand = 'powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness'
 Test-GraphMapping 'docs/README.md' $docsMemoryCommand
 Test-GraphMapping 'docs/CONSTITUTION.md' $docsMemoryCommand
 Test-GraphMapping 'docs/.gitignore' $docsMemoryCommand

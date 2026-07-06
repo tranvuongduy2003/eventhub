@@ -1,11 +1,11 @@
 # PreToolUse — hard guards + verify gate (deterministic enforcement layer).
 
 $ErrorActionPreference = 'Stop'
-. "$PSScriptRoot\lib\hook-io.ps1"
-. "$PSScriptRoot\lib\verify-gate.ps1"
-. "$PSScriptRoot\lib\guard-rules.ps1"
+. "$PSScriptRoot\lib\Use-HookIO.ps1"
+. "$PSScriptRoot\lib\Use-VerifyGate.ps1"
+. "$PSScriptRoot\lib\Use-GuardRules.ps1"
 
-$hookInput = Read-HookInput
+$hookInput = Read-HookInput -PipelineInput @($input)
 if ($null -eq $hookInput) {
     Allow-Hook
 }

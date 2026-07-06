@@ -65,6 +65,20 @@ export type PlaceOrderResponse = {
 
 export type OrderStatusResponse = PlaceOrderResponse
 
+export type StartPaymentRequest = {
+  successUrl: string
+  cancelUrl: string
+}
+
+export type StartPaymentResponse = {
+  paymentId: number
+  orderId: number
+  amount: number
+  currency: string
+  providerReference: string
+  redirectUrl: string
+}
+
 export function startCheckout(slug: string, request: StartCheckoutRequest, signal?: AbortSignal) {
   return apiClient.post<StartCheckoutResponse>(`/api/events/${slug}/checkout/start`, request, {
     signal,
@@ -81,6 +95,13 @@ export function placeOrder(eventId: number, request: PlaceOrderRequest, signal?:
 
 export function getOrderStatus(orderId: number, signal?: AbortSignal) {
   return apiClient.get<OrderStatusResponse>(`/api/orders/${orderId}`, {
+    signal,
+    suppressErrorToast: true,
+  })
+}
+
+export function startPayment(orderId: number, request: StartPaymentRequest, signal?: AbortSignal) {
+  return apiClient.post<StartPaymentResponse>(`/api/orders/${orderId}/payments`, request, {
     signal,
     suppressErrorToast: true,
   })

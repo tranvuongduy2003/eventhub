@@ -1,9 +1,9 @@
 # Stop — Reflexion anchor: block "done" until objective checks pass.
 
 $ErrorActionPreference = 'Stop'
-. "$PSScriptRoot\lib\hook-io.ps1"
-. "$PSScriptRoot\lib\verify-gate.ps1"
-. "$PSScriptRoot\lib\verify-runner.ps1"
+. "$PSScriptRoot\lib\Use-HookIO.ps1"
+. "$PSScriptRoot\lib\Use-VerifyGate.ps1"
+. "$PSScriptRoot\lib\Use-VerifyRunner.ps1"
 
 function Send-StopBlock {
     param([string]$Message)
@@ -14,7 +14,7 @@ function Send-StopBlock {
     exit 0
 }
 
-$hookInput = Read-HookInput
+$hookInput = Read-HookInput -PipelineInput @($input)
 $projectRoot = Get-VerifyProjectRoot
 
 $gate = Get-VerifyGate -ProjectRoot $projectRoot
@@ -30,7 +30,7 @@ if ($errors.Count -gt 0) {
     if ($detail.Length -gt 1500) {
         $detail = $detail.Substring(0, 1500) + '...'
     }
-    Send-StopBlock "Stop gate: objective checks failed - not done yet. Fix the issues below, then continue.`n`n- $detail`n`nRun locally: .\harness\evals\run.ps1 -Layer harness; dotnet test; yarn --cwd web exec tsc -b --noEmit"
+    Send-StopBlock "Stop gate: objective checks failed - not done yet. Fix the issues below, then continue.`n`n- $detail`n`nRun locally: .\harness\evals\Invoke-HarnessEvals.ps1 -Layer harness; dotnet test; yarn --cwd web exec tsc -b --noEmit"
 }
 
 Write-HookJson @{

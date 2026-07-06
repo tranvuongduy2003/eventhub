@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { AlertCircle, Clock3, ReceiptText, TicketCheck } from 'lucide-react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +10,7 @@ import { ApiError } from '@/types/api-problem'
 
 import { getOrderStatus } from '../api'
 import { OrderSummary, type OrderLineItem } from '../components/order-summary'
+import { PaymentAction } from '../components/payment-action'
 
 function formatDate(value: string | null) {
   if (!value) {
@@ -40,6 +41,7 @@ function statusVariant(status: string): 'default' | 'secondary' | 'destructive' 
 
 export function OrderStatusPage() {
   const { orderId } = useParams()
+  const [searchParams] = useSearchParams()
   const numericOrderId = Number(orderId)
   const isValidOrderId = Number.isInteger(numericOrderId) && numericOrderId > 0
 
@@ -83,6 +85,8 @@ export function OrderStatusPage() {
 
   const placedAt = formatDate(order.placedAt)
   const confirmedAt = formatDate(order.confirmedAt)
+  const requiresPayment = order.status === 'pending' && order.totalAmount > 0
+  const paymentReturnState = searchParams.get('payment')
 
   return (
     <div className="flex flex-col gap-6">
@@ -96,6 +100,23 @@ export function OrderStatusPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <div className="flex flex-col gap-4">
+          {paymentReturnState === 'returned' && order.status === 'pending' ? (
+            <Alert>
+              <AlertDescription>
+                Payment checkout returned to EventHub. The provider confirmation has not arrived
+                yet, so this order is still pending.
+              </AlertDescription>
+            </Alert>
+          ) : null}
+          {paymentReturnState === 'cancelled' && order.status === 'pending' ? (
+            <Alert>
+              <AlertDescription>
+                Payment checkout was not completed. The hold will expire normally, and you can retry
+                while the order is pending.
+              </AlertDescription>
+            </Alert>
+          ) : null}
+
           <Card className="shadow-sm">
             <CardHeader>
               <div className="bg-primary/10 text-primary mb-2 flex size-10 items-center justify-center rounded-lg">
@@ -117,6 +138,28 @@ export function OrderStatusPage() {
               />
             </CardContent>
           </Card>
+
+          {requiresPayment ? (
+            <Card className="shadow-sm">
+              <CardHeader>
+                <div className="bg-primary/10 text-primary mb-2 flex size-10 items-center justify-center rounded-lg">
+                  <Clock3 className="size-5" aria-hidden />
+                </div>
+                <CardTitle>Payment</CardTitle>
+                <CardDescription>
+                  Complete provider checkout before the inventory hold expires.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PaymentAction
+                  orderId={order.orderId}
+                  totalAmount={order.totalAmount}
+                  totalCurrency={order.totalCurrency}
+                  compact
+                />
+              </CardContent>
+            </Card>
+          ) : null}
 
           <Card className="shadow-sm">
             <CardHeader>

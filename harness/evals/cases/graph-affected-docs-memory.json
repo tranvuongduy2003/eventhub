@@ -4,7 +4,7 @@
   "description": "Long-term memory notes map to the docs memory lifecycle validator",
   "run": {
     "type": "command",
-    "command": "node scripts/affected-tests.mjs docs/_memory/long-term-memory-operating-model.md"
+    "command": "./scripts/Get-AffectedTests.ps1 docs/_memory/long-term-memory-operating-model.md"
   },
   "assert": {
     "exitCode": 0,

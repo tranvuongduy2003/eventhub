@@ -7,6 +7,7 @@
   "repoGuidance": "AGENTS.md",
   "stateDirectory": ".codex/state",
   "singleEvalTree": "harness/evals/",
+  "verificationGraph": "harness/graph/index.json",
   "foundationSkills": {
     "repoBootstrap": ".agents/skills/repo-bootstrap/SKILL.md",
     "verifyChangedCode": ".agents/skills/verify-changed-code/SKILL.md",
@@ -16,10 +17,10 @@
     "bootstrap": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Repo-Bootstrap.ps1",
     "verifyChanged": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1",
     "handoff": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/New-PrHandoff.ps1",
-    "evalHarness": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness"
+    "evalHarness": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness"
   },
   "statusCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Get-HarnessStatus.ps1 -Json",
-  "evalCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness",
+  "evalCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness",
   "futureRuntime": {
     "providerContract": "Responses API",
     "orchestration": "Agents SDK",
@@ -30,7 +31,7 @@
       "skill": "harness-evals",
       "root": "harness/evals/",
       "artifacts": [
-        "harness/evals/run.ps1",
+        "harness/evals/Invoke-HarnessEvals.ps1",
         "harness/evals/cases/",
         "harness/evals/fixtures/"
       ]

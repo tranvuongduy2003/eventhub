@@ -60,6 +60,7 @@ function Read-Json {
 
 $forbiddenReadmes = @(
     'evals',
+    '.graph',
     'harness/README.md',
     'harness/orchestrator/README.md',
     'harness/policies/README.md',
@@ -97,6 +98,13 @@ if ($null -ne $manifest) {
         Add-Error "harness/manifest.json singleEvalTree must be harness/evals/"
     }
 
+    if ($manifest.verificationGraph -ne 'harness/graph/index.json') {
+        Add-Error "harness/manifest.json verificationGraph must be harness/graph/index.json"
+    }
+    elseif (-not (Test-Path -LiteralPath (Join-Path $repoRoot 'harness\graph\index.json') -PathType Leaf)) {
+        Add-Error "Missing verification graph: harness/graph/index.json"
+    }
+
     $expectedFoundationSkills = @{
         repoBootstrap = '.agents/skills/repo-bootstrap/SKILL.md'
         verifyChangedCode = '.agents/skills/verify-changed-code/SKILL.md'
@@ -119,7 +127,7 @@ if ($null -ne $manifest) {
         bootstrap = 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Repo-Bootstrap.ps1'
         verifyChanged = 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1'
         handoff = 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/New-PrHandoff.ps1'
-        evalHarness = 'powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness'
+        evalHarness = 'powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness'
     }
 
     foreach ($entry in $expectedCommands.GetEnumerator()) {
