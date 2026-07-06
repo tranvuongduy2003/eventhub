@@ -14,23 +14,23 @@
   "layers": {
     "AGENTS.md": {
       "postEditAction": "test",
-      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness"
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness"
     },
     ".codex/": {
       "postEditAction": "test",
-      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness"
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness"
     },
     ".agents/": {
       "postEditAction": "test",
-      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness"
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness"
     },
     "harness/evals/": {
       "postEditAction": "test",
-      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness"
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness"
     },
     "scripts/agent/": {
       "postEditAction": "test",
-      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness"
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness"
     },
     "docs/README.md": {
       "postEditAction": "test",
@@ -50,7 +50,7 @@
     },
     "docs/_memory/source/harness-": {
       "postEditAction": "test",
-      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness"
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness"
     },
     "docs/_memory/": {
       "postEditAction": "test",
@@ -58,15 +58,15 @@
     },
     "harness/": {
       "postEditAction": "test",
-      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness"
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness"
     },
-    "scripts/affected-tests.ps1": {
+    "scripts/Get-AffectedTests.ps1": {
       "postEditAction": "test",
-      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer graph"
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer graph"
     },
     "harness/graph/": {
       "postEditAction": "test",
-      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer graph"
+      "testCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer graph"
     },
     "src/Domain/": {
       "postEditAction": "test",

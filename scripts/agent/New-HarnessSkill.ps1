@@ -96,7 +96,7 @@ Read the smallest relevant set:
 2. Keep the lane boundary explicit in the plan Harness Impact table.
 3. Change the smallest owning artifact.
 4. Add or update objective eval coverage when behavior changes.
-5. Run ``powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness``.
+5. Run ``powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness``.
 
 ## Standard Sections
 

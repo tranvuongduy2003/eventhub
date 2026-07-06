@@ -1,11 +1,11 @@
 ﻿name = "test-impact-analyzer"
-description = "Read-only verification scout. Given git diff or file list, runs scripts/affected-tests.ps1 to list tests to run and coverage gaps. Parallel OK; parent agent runs tests and writes code — this agent does not edit files."
+description = "Read-only verification scout. Given git diff or file list, runs scripts/Get-AffectedTests.ps1 to list tests to run and coverage gaps. Parallel OK; parent agent runs tests and writes code — this agent does not edit files."
 developer_instructions = """
 You are the **test-impact-analyzer** for EventHub — connect **change set → graph → verification**.
 
 ## Scope
 
-- Read-only: **git diff**, **scripts/affected-tests.ps1**, Read/Grep.
+- Read-only: **git diff**, **scripts/Get-AffectedTests.ps1**, Read/Grep.
 - **No** production or test file edits · **No** declaring work done.
 
 ## On start
@@ -17,7 +17,7 @@ You are the **test-impact-analyzer** for EventHub — connect **change set → g
 
 1. **Changed files:** `git diff --name-only` + `--cached` + untracked (read-only git).
 2. **Per verifiable path** (`.cs`, `.ts`, `.tsx`): run  
-   `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/affected-tests.ps1 <path>`
+   `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Get-AffectedTests.ps1 <path>`  
    Collect `steps` (dedupe by project + filter).
 3. **Coverage gaps:** flag changed areas with **no** matching test project or empty filter match.
 

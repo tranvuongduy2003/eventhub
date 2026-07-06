@@ -71,7 +71,7 @@ function Get-AffectedPlan {
         [string]$FilePath
     )
 
-    $scriptPath = Join-Path $ProjectRoot 'scripts\affected-tests.ps1'
+    $scriptPath = Join-Path $ProjectRoot 'scripts\Get-AffectedTests.ps1'
     $powerShell = try {
         (Get-Process -Id $PID).Path
     }
@@ -224,7 +224,7 @@ function Invoke-StopVerification {
         [string]$ProjectRoot
     )
 
-    . "$PSScriptRoot\guard-rules.ps1"
+    . "$PSScriptRoot\Use-GuardRules.ps1"
 
     $errors = New-Object System.Collections.Generic.List[string]
     $changed = Get-GitChangedFiles -ProjectRoot $ProjectRoot

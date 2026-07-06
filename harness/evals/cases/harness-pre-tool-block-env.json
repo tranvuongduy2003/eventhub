@@ -4,7 +4,7 @@
   "description": "preToolUse denies edits to .env",
   "run": {
     "type": "hook",
-    "script": ".codex/hooks/pre-tool-guard.ps1",
+    "script": ".codex/hooks/Invoke-PreToolGuard.ps1",
     "stdinFixture": "harness/evals/fixtures/pre-tool-write-env.json"
   },
   "assert": {

@@ -55,7 +55,7 @@ Use these fields or equivalent sections for telemetry schema updates:
 Run:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Get-HarnessStatus.ps1 -Json
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1
 ```

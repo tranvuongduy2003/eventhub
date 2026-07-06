@@ -4,7 +4,7 @@
   "description": "Application layer file maps to dotnet format + build (not full integration test)",
   "run": {
     "type": "command",
-    "command": "./scripts/affected-tests.ps1 src/Application/Users/Commands/RegisterUserCommand.cs"
+    "command": "./scripts/Get-AffectedTests.ps1 src/Application/Users/Commands/RegisterUserCommand.cs"
   },
   "assert": {
     "exitCode": 0,

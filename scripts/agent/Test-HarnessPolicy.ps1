@@ -10,9 +10,9 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-. "$repoRoot\.codex\hooks\lib\hook-io.ps1"
-. "$repoRoot\.codex\hooks\lib\guard-rules.ps1"
-. "$repoRoot\.codex\hooks\lib\verify-runner.ps1"
+. "$repoRoot\.codex\hooks\lib\Use-HookIO.ps1"
+. "$repoRoot\.codex\hooks\lib\Use-GuardRules.ps1"
+. "$repoRoot\.codex\hooks\lib\Use-VerifyRunner.ps1"
 
 $errors = New-Object System.Collections.Generic.List[string]
 
@@ -105,7 +105,7 @@ Test-FileContains '.agents/skills/cook/SKILL.md' @(
     '## Step 4: Plan Phase',
     '## 7. Harness Impact',
     '## Memory Sync Inventory',
-    'harness/evals/run.ps1 -Layer harness',
+    'harness/evals/Invoke-HarnessEvals.ps1 -Layer harness',
     'harness/telemetry/',
     'harness/tools/'
 )

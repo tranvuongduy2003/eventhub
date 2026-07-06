@@ -45,7 +45,7 @@ Neighboring features: N/A.
 | E2E/Playwright | N/A | No browser workflow change. | N/A |
 | DevOps/Aspire | N/A | No topology, config, or runtime dependency change. | N/A |
 | Docs/memory | planned | Update harness memory for workflow contract changes. | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1` |
-| Harness/workflow | planned | Update cook validator and eval fixture. | `powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness` |
+| Harness/workflow | planned | Update cook validator and eval fixture. | `powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness` |
 
 ## Tasks
 

@@ -62,14 +62,14 @@ Use this shape unless an existing nearby case has a stricter pattern:
 Run:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -CaseId <case-id>
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -CaseId <case-id>
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness
 ```
 
-If `harness/graph/index.json` or `scripts/affected-tests.mjs` changed, also run:
+If `harness/graph/index.json` or `scripts/Affected-Tests.ps1` changed, also run:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer graph
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer graph
 ```
 
 ## Do Not

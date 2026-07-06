@@ -4,7 +4,7 @@
   "description": "Domain Users file maps to dotnet format + filtered Domain.UnitTests",
   "run": {
     "type": "command",
-    "command": "./scripts/affected-tests.ps1 src/Domain/Users/User.cs"
+    "command": "./scripts/Get-AffectedTests.ps1 src/Domain/Users/User.cs"
   },
   "assert": {
     "exitCode": 0,

@@ -12,7 +12,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-. "$repoRoot\.codex\hooks\lib\verify-runner.ps1"
+. "$repoRoot\.codex\hooks\lib\Use-VerifyRunner.ps1"
 
 function Convert-StepToCommand {
     param([object]$Step)

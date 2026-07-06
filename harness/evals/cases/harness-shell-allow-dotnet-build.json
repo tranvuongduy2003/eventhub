@@ -4,7 +4,7 @@
   "description": "beforeShellExecution allows dotnet build",
   "run": {
     "type": "hook",
-    "script": ".codex/hooks/before-shell-guard.ps1",
+    "script": ".codex/hooks/Invoke-BeforeShellGuard.ps1",
     "stdinFixture": "harness/evals/fixtures/shell-dotnet-build.json"
   },
   "assert": {

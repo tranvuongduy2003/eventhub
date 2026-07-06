@@ -32,7 +32,7 @@ Create a Memory Sync inventory in the plan or handoff. Mark each row `updated` o
 | Glossaries | Ubiquitous language, decision log, and architecture invariants include new stable terms/decisions/invariants |
 | Retrieval/index docs | Source-of-truth map, agent retrieval guide, docs README, specs README, root README, and AGENTS.md route future agents correctly |
 | Harness contracts | `harness/orchestrator/`, `harness/policies/`, `harness/telemetry/`, `harness/tools/`, `harness/graph/`, `.codex/policies/`, hooks, scripts, skills |
-| Verification graph | `harness/graph/index.json` and `scripts/affected-tests.mjs` route changed memory and harness files to checks |
+| Verification graph | `harness/graph/index.json` and `scripts/Affected-Tests.ps1` route changed memory and harness files to checks |
 | External tracking | GitHub issue/PR/project status, labels, or handoff evidence when the current workflow owns them |
 
 Do not stop at the first obvious MOC. The point is to make the next agent find the truth from any normal entry point.
@@ -73,13 +73,13 @@ If harness workflow, policy, routing, skill, hook, graph, script, or runtime con
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-HarnessPolicy.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Get-HarnessStatus.ps1 -Json
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness
 ```
 
-If `harness/graph/index.json` or `scripts/affected-tests.mjs` changed, also run:
+If `harness/graph/index.json` or `scripts/Affected-Tests.ps1` changed, also run:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer graph
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer graph
 ```
 
 ## Handoff Format

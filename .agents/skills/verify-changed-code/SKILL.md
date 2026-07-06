@@ -32,7 +32,7 @@ Use `-Json` for structured output.
 ## Behavior
 
 - Reads changed, staged, and untracked files.
-- Calls `node scripts/affected-tests.mjs <path>` for each relevant file.
+- Calls `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Affected-Tests.ps1 <path>` for each relevant file.
 - Deduplicates verification steps.
 - Runs web typecheck when web TypeScript or JSX files changed.
 - Uses the same backend/web commands as the hook harness.
@@ -41,7 +41,7 @@ Use `-Json` for structured output.
 
 - Parent agent owns test interpretation and fixes.
 - Do not call this a success unless the script exits 0.
-- If `scripts/affected-tests.mjs` returns no scope for a meaningful source change, flag the coverage gap in the handoff.
+- If `scripts/Affected-Tests.ps1` returns no scope for a meaningful source change, flag the coverage gap in the handoff.
 - Do not edit generated code to satisfy checks.
 
 ## Output Contract
@@ -51,4 +51,3 @@ Summarize:
 - commands planned or run
 - pass/fail status
 - error lines that explain the next fix
-

@@ -127,7 +127,7 @@ if ($null -ne $manifest) {
         bootstrap = 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Repo-Bootstrap.ps1'
         verifyChanged = 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1'
         handoff = 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/New-PrHandoff.ps1'
-        evalHarness = 'powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness'
+        evalHarness = 'powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness'
     }
 
     foreach ($entry in $expectedCommands.GetEnumerator()) {

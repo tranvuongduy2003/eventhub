@@ -4,7 +4,7 @@
   "description": "preToolUse denies npm install in web/ (Yarn only)",
   "run": {
     "type": "hook",
-    "script": ".codex/hooks/pre-tool-guard.ps1",
+    "script": ".codex/hooks/Invoke-PreToolGuard.ps1",
     "stdinFixture": "harness/evals/fixtures/pre-tool-shell-npm.json"
   },
   "assert": {

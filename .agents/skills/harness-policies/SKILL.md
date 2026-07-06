@@ -15,7 +15,7 @@ Read the smallest relevant set:
 2. `docs/_memory/source/harness-architecture.md`
 3. `harness/policies/runtime-policy.json`
 4. `.codex/policies/harness-policy.json`
-5. `.codex/hooks/lib/guard-rules.ps1`
+5. `.codex/hooks/lib/Use-GuardRules.ps1`
 6. `scripts/agent/Test-HarnessPolicy.ps1`
 
 ## Policy Change Format
@@ -44,13 +44,13 @@ Run:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-HarnessPolicy.ps1 -Json
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Get-HarnessStatus.ps1 -Json
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness
 ```
 
 If path-to-check routing changed, also run:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer graph
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer graph
 ```
 
 ## Do Not

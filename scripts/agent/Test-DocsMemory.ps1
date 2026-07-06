@@ -315,7 +315,7 @@ Test-FileContains 'docs/_memory/mocs/harness-memory.md' @(
 )
 
 $docsMemoryCommand = 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1'
-$harnessCommand = 'powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness'
+$harnessCommand = 'powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness'
 Test-GraphMapping 'docs/README.md' $docsMemoryCommand
 Test-GraphMapping 'docs/CONSTITUTION.md' $docsMemoryCommand
 Test-GraphMapping 'docs/.gitignore' $docsMemoryCommand

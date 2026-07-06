@@ -75,7 +75,7 @@
       "impact": "planned",
       "action": "Update cook validator and eval fixture.",
       "validation": [
-        "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness"
+        "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness"
       ]
     }
   ],

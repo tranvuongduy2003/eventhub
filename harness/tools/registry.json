@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "tools": {
-    "affected-tests": {
+    "get-affected-tests": {
       "mode": "read-only-plan",
-      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/affected-tests.ps1 <path>",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Get-AffectedTests.ps1 <path>",
       "output": "skip, steps, rel, error"
     },
     "verify-changed-code": {
@@ -39,7 +39,7 @@
     },
     "eval-runner": {
       "mode": "execute-checks",
-      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness",
       "output": "passed, failed, skipped, cases",
       "sideEffects": [
         "harness/evals/results/latest.json",

@@ -4,7 +4,7 @@
   "description": "Harness source memory maps to harness evals instead of generic docs checks",
   "run": {
     "type": "command",
-    "command": "./scripts/affected-tests.ps1 docs/_memory/source/harness-architecture.md"
+    "command": "./scripts/Get-AffectedTests.ps1 docs/_memory/source/harness-architecture.md"
   },
   "assert": {
     "exitCode": 0,

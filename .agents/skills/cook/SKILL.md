@@ -87,7 +87,7 @@ Every plan must include these sections before tasks:
 
 | Lane | Impact | Files | Validation |
 |------|--------|-------|------------|
-| evals | N/A or ... | `harness/evals/...` | `powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness` |
+| evals | N/A or ... | `harness/evals/...` | `powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness` |
 | orchestrator | N/A or ... | `harness/orchestrator/...` | ... |
 | policies | N/A or ... | `.codex/policies/...` / `harness/policies/...` | ... |
 | telemetry | N/A or ... | `harness/telemetry/...` | ... |
@@ -166,13 +166,13 @@ For each unchecked task:
 6. Update the plan and `.codex/notes/progress.md` when new harness impact, memory drift, or blockers appear.
 7. Keep the Done Criteria Ledger current; do not leave final criteria to chat memory.
 
-Use `node scripts/affected-tests.mjs <path>` for changed files and run the returned checks.
+Use `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Affected-Tests.ps1 <path>` for changed files and run the returned checks.
 
 Run these additional checks when relevant:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer graph
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer graph
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1
 ```
 

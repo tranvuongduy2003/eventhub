@@ -10,8 +10,8 @@
     "exitCode": 0,
     "jsonStdout": {
       "status": "planned",
-      "commands.0": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness",
-      "files.0.steps.0": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness"
+      "commands.0": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness",
+      "files.0.steps.0": "powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness"
     }
   }
 }

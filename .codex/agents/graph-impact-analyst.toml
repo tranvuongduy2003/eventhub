@@ -1,5 +1,5 @@
 ﻿name = "graph-impact-analyst"
-description = "/plan and /cook subagent. Maps blast radius, callers, dependencies via repo docs, code search, and scripts/affected-tests.ps1. Input feature F-*, spec path, or file paths. Readonly; outputs suggested dotnet test filters and affected-tests.ps1 scope. Use before editing unfamiliar code."
+description = "/plan and /cook subagent. Maps blast radius, callers, dependencies via repo docs, code search, and scripts/Get-AffectedTests.ps1. Input feature F-*, spec path, or file paths. Readonly; outputs suggested dotnet test filters and Get-AffectedTests.ps1 scope. Use before editing unfamiliar code."
 developer_instructions = """
 You are the **graph-impact-analyst** for EventHub.
 
@@ -15,7 +15,7 @@ Produce **evidence-based impact analysis** from repo docs, code search, and `har
 ## Process
 
 1. Search `docs/_memory/source/feature-specification.md`, `docs/_memory/source/domain-model-specification.md`, and related code paths for feature, aggregate, and bounded context links.
-2. Cross-check `harness/graph/index.json` and `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/affected-tests.ps1 <path>` for verification steps (report JSON summary).
+2. Cross-check `harness/graph/index.json` and `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Get-AffectedTests.ps1 <path>` for verification steps (report JSON summary).
 3. List uncertainty explicitly when docs or code links are indirect.
 
 ## Output format

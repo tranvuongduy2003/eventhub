@@ -36,7 +36,7 @@ It is not a random collection of prompt notes, CLI examples, or product implemen
 | Policy | `.codex/policies/harness-policy.json` | Protected paths, blocked shell commands, verify-gate behavior |
 | Hooks | `.codex/hooks/` | Lifecycle interception: pre-tool, pre-shell, post-edit, stop |
 | Skills | `.agents/skills/` | Reusable workflows loaded only when relevant |
-| Execution scripts | `scripts/agent/` and `scripts/affected-tests.ps1` | Stable, agent-friendly command surface |
+| Execution scripts | `scripts/agent/` and `scripts/Get-AffectedTests.ps1` | Stable, agent-friendly command surface |
 | State | `.codex/state/` | Runtime artifacts such as verify gate state; gitignored |
 | Evals | `harness/evals/` | Harness-owned eval surface for deterministic regression checks across hooks, graph, agent behavior, and future runtime behavior |
 | Runtime contract | `harness/` | Machine-readable orchestration, policy, telemetry, and tool contracts; no EventHub product logic |
@@ -132,4 +132,4 @@ The repo harness is useful when an agent can:
 - hand off work with explicit files and verification evidence
 - rely on hooks to block protected paths and known-dangerous commands
 - run `scripts/agent/Get-HarnessStatus.ps1 -Json` and get `status: passed`
-- run `harness/evals/run.ps1 -Layer harness` after hook or policy changes
+- run `harness/evals/Invoke-HarnessEvals.ps1 -Layer harness` after hook or policy changes

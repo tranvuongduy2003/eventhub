@@ -55,7 +55,7 @@ Harness means the policy and orchestration layer around agent work, not ad-hoc p
 - Lifecycle hooks: `.codex/hooks/`
 - Runtime state: `.codex/state/` (gitignored)
 - Path-to-check graph: `harness/graph/index.json`
-- Deterministic evals: `harness/evals/run.ps1` (evals are part of harness; do not add root `evals/`)
+- Deterministic evals: `harness/evals/Invoke-HarnessEvals.ps1` (evals are part of harness; do not add root `evals/`)
 - Runtime contract status: `scripts/agent/Get-HarnessStatus.ps1 -Json`
 - Stable agent scripts: `scripts/agent/`
 
@@ -70,7 +70,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-Changed
 Run after harness or hook changes:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/run.ps1 -Layer harness
+powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness
 ```
 
 ## Skill Routing

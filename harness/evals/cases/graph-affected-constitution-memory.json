@@ -4,7 +4,7 @@
   "description": "Constitution changes validate the docs memory source contract",
   "run": {
     "type": "command",
-    "command": "./scripts/affected-tests.ps1 docs/CONSTITUTION.md"
+    "command": "./scripts/Get-AffectedTests.ps1 docs/CONSTITUTION.md"
   },
   "assert": {
     "exitCode": 0,

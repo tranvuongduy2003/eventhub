@@ -18,7 +18,7 @@ Use `-Json` when another tool needs structured output.
 ## Required Inputs
 
 - Current git diff
-- Verification evidence from `verify-changed-code`, `harness/evals/run.ps1`, `dotnet test`, or web checks
+- Verification evidence from `verify-changed-code`, `harness/evals/Invoke-HarnessEvals.ps1`, `dotnet test`, or web checks
 
 ## Rules
 
