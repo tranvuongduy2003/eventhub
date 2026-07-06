@@ -217,6 +217,7 @@ function Invoke-HookCase {
     $psi.CreateNoWindow = $true
     $psi.WorkingDirectory = $repoRoot
     Set-ProcessPowerShellCacheEnvironment -ProcessStartInfo $psi
+    $psi.EnvironmentVariables['EVENTHUB_HOOK_INPUT_JSON'] = $stdin
 
     $proc = [System.Diagnostics.Process]::Start($psi)
     $proc.StandardInput.Write($stdin)

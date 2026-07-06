@@ -6,7 +6,7 @@ $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot\lib\Use-GuardRules.ps1"
 . "$PSScriptRoot\lib\Use-VerifyRunner.ps1"
 
-$hookInput = Read-HookInput
+$hookInput = Read-HookInput -PipelineInput @($input)
 if ($null -eq $hookInput) {
     exit 0
 }

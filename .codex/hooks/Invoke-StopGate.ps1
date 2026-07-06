@@ -14,7 +14,7 @@ function Send-StopBlock {
     exit 0
 }
 
-$hookInput = Read-HookInput
+$hookInput = Read-HookInput -PipelineInput @($input)
 $projectRoot = Get-VerifyProjectRoot
 
 $gate = Get-VerifyGate -ProjectRoot $projectRoot
