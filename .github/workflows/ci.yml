@@ -30,7 +30,7 @@ jobs:
         run: dotnet restore EventHub.slnx
 
       - name: Verify .NET formatting
-        run: dotnet format EventHub.slnx --verify-no-changes
+        run: dotnet format EventHub.slnx --verify-no-changes --no-restore
 
       - name: Build .NET
         run: dotnet build EventHub.slnx --no-restore -c Release
