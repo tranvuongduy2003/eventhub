@@ -35,6 +35,8 @@ public sealed class ApplicationDatabaseContext(DbContextOptions<ApplicationDatab
 
     public DbSet<PaymentRecord> Payments => Set<PaymentRecord>();
 
+    public DbSet<TicketRecord> Tickets => Set<TicketRecord>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(SchemaName);

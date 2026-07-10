@@ -157,6 +157,7 @@ internal sealed class OrdersEndpoint : IEndpoint
                     l.LineTotalAmount,
                     l.LineTotalCurrency)).ToList(),
                 order.DiscountCode,
-                order.DiscountAmount));
+                order.DiscountAmount,
+                order.Status == "confirmed" ? $"/tickets/orders/{order.OrderId}" : null));
     }
 }

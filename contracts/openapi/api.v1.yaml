@@ -718,6 +718,15 @@ components:
         - email
         - role
       type: object
+    MyTicketsResponse:
+      properties:
+        tickets:
+          items:
+            $ref: "#/components/schemas/TicketResponse"
+          type: array
+      required:
+        - tickets
+      type: object
     OccurrenceResponse:
       properties:
         address:
@@ -843,6 +852,10 @@ components:
           type: string
         status:
           type: string
+        ticketUrl:
+          type:
+            - "null"
+            - string
         totalAmount:
           format: double
           pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
@@ -860,6 +873,25 @@ components:
         - placedAt
         - confirmedAt
         - lines
+      type: object
+    OrderTicketsResponse:
+      properties:
+        orderId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        orderStatus:
+          type: string
+        tickets:
+          items:
+            $ref: "#/components/schemas/TicketResponse"
+          type: array
+      required:
+        - orderId
+        - orderStatus
+        - tickets
       type: object
     OrganizerEventListItemResponse:
       properties:
@@ -1355,6 +1387,20 @@ components:
         - address
         - updatedAt
       type: object
+    ResendTicketsRequest:
+      properties:
+        email:
+          type: string
+      required:
+        - email
+      type: object
+    ResendTicketsResponse:
+      properties:
+        accepted:
+          type: boolean
+      required:
+        - accepted
+      type: object
     ScheduleOccurrenceRequest:
       properties:
         address:
@@ -1568,6 +1614,79 @@ components:
         - currency
         - providerReference
         - redirectUrl
+      type: object
+    TicketResponse:
+      properties:
+        code:
+          type: string
+        eventEndsAt:
+          format: date-time
+          type: string
+        eventId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        eventIsOnline:
+          type: boolean
+        eventLocation:
+          type:
+            - "null"
+            - string
+        eventStartsAt:
+          format: date-time
+          type: string
+        eventTimeZoneId:
+          type: string
+        eventTitle:
+          type: string
+        holderEmail:
+          type: string
+        holderName:
+          type: string
+        issuedAt:
+          format: date-time
+          type: string
+        orderId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        status:
+          type: string
+        ticketId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketTypeId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketTypeName:
+          type: string
+      required:
+        - ticketId
+        - eventId
+        - eventTitle
+        - eventStartsAt
+        - eventEndsAt
+        - eventTimeZoneId
+        - eventLocation
+        - eventIsOnline
+        - orderId
+        - ticketTypeId
+        - ticketTypeName
+        - code
+        - holderName
+        - holderEmail
+        - status
+        - issuedAt
       type: object
     TicketTypeResponse:
       properties:
@@ -3633,6 +3752,30 @@ paths:
           description: Internal Server Error
       tags:
         - EventInvitations
+  /api/me/tickets:
+    get:
+      operationId: GetMyTickets
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyTicketsResponse"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Tickets
   /api/orders/{orderId}:
     get:
       operationId: GetOrderStatus
@@ -3719,6 +3862,86 @@ paths:
           description: Internal Server Error
       tags:
         - Payments
+  /api/orders/{orderId}/tickets:
+    get:
+      operationId: GetOrderTickets
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderTicketsResponse"
+          description: OK
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Tickets
+  /api/orders/{orderId}/tickets/resend:
+    post:
+      operationId: ResendTickets
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResendTicketsRequest"
+        required: true
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResendTicketsResponse"
+          description: Accepted
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Bad Request
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Tickets
   /api/organizer/events:
     get:
       operationId: ListOrganizerEvents
@@ -3948,5 +4171,6 @@ tags:
   - name: Orders
   - name: Payments
   - name: Profile
+  - name: Tickets
   - name: TicketTypes
   - name: Users

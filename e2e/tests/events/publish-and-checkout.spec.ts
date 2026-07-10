@@ -65,5 +65,11 @@ test.describe("Published event checkout", () => {
     await expect(page.getByRole("heading", { name: /Order #/ })).toBeVisible();
     await expect(page.locator("span").filter({ hasText: "Confirmed" })).toBeVisible();
     await expect(page.getByText("General Admission")).toBeVisible();
+    await page.getByRole("link", { name: "View tickets" }).click();
+
+    await expect(page.getByRole("heading", { name: /Order #/ })).toBeVisible();
+    await expect(page.getByRole("img", { name: /QR code for ticket/ })).toBeVisible();
+    await expect(page.getByText("General Admission")).toBeVisible();
+    await expect(page.getByText(buyerEmail)).toBeVisible();
   });
 });

@@ -10,4 +10,5 @@ public sealed record OrderStatusResponse(
     DateTimeOffset? ConfirmedAt,
     List<OrderLineResponse> Lines,
     string? DiscountCode = null,
-    decimal? DiscountAmount = null);
+    decimal? DiscountAmount = null,
+    string? TicketUrl = null);

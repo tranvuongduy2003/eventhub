@@ -61,6 +61,7 @@ export type PlaceOrderResponse = {
   lines: OrderLineResponse[]
   discountCode: string | null
   discountAmount: number | null
+  ticketUrl: string | null
 }
 
 export type OrderStatusResponse = PlaceOrderResponse
