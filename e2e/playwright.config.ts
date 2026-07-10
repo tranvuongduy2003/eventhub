@@ -1,6 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.E2E_BASE_URL ?? "https://localhost:5000";
+const appHostCommand =
+  process.env.CI === "true"
+    ? "dotnet run --project ../src/AppHost/EventHub.AppHost.csproj --no-build -c Release"
+    : "dotnet run --project ../src/AppHost/EventHub.AppHost.csproj";
 
 export default defineConfig({
   testDir: "./tests",
@@ -10,10 +14,10 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [["html", { open: "never" }]],
   webServer: {
-    command: "dotnet run --project ../src/AppHost/EventHub.AppHost.csproj",
+    command: appHostCommand,
     url: baseURL,
     reuseExistingServer: true,
-    timeout: 300_000,
+    timeout: process.env.CI === "true" ? 900_000 : 300_000,
     ignoreHTTPSErrors: true,
   },
 
