@@ -654,6 +654,58 @@ components:
         - createdAt
         - updatedAt
       type: object
+    EventAttendeeListResponse:
+      properties:
+        attendees:
+          items:
+            $ref: "#/components/schemas/EventAttendeeResponse"
+          type: array
+      required:
+        - attendees
+      type: object
+    EventAttendeeResponse:
+      properties:
+        checkedIn:
+          type: boolean
+        checkedInAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        email:
+          type: string
+        name:
+          type: string
+        orderId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketTypeId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketTypeName:
+          type: string
+      required:
+        - name
+        - email
+        - ticketTypeId
+        - ticketTypeName
+        - orderId
+        - ticketId
+        - checkedIn
+        - checkedInAt
+      type: object
     EventDetailsResponse:
       properties:
         description:
@@ -704,6 +756,108 @@ components:
         - isOnline
         - status
         - updatedAt
+      type: object
+    EventReminderSettingsRequest:
+      properties:
+        enabled:
+          type: boolean
+        leadTimeMinutes:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+      required:
+        - enabled
+        - leadTimeMinutes
+      type: object
+    EventReminderSettingsResponse:
+      properties:
+        enabled:
+          type: boolean
+        eventId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        lastSentAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        leadTimeMinutes:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - eventId
+        - enabled
+        - leadTimeMinutes
+        - updatedAt
+        - lastSentAt
+      type: object
+    EventResultsResponse:
+      properties:
+        checkInRate:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        checkedInCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        eventId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        eventTitle:
+          type: string
+        issuedCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        noShowCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketsSoldByType:
+          items:
+            $ref: "#/components/schemas/TicketTypeSalesResponse"
+          type: array
+        totalRevenueAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        totalRevenueCurrency:
+          type: string
+      required:
+        - eventId
+        - eventTitle
+        - totalRevenueAmount
+        - totalRevenueCurrency
+        - issuedCount
+        - checkedInCount
+        - noShowCount
+        - checkInRate
+        - ticketsSoldByType
       type: object
     EventRoleAssignmentResponse:
       properties:
@@ -972,6 +1126,20 @@ components:
         - orderStatus
         - tickets
       type: object
+    OrganizerAudienceOverviewResponse:
+      properties:
+        ownedEvents:
+          items:
+            $ref: "#/components/schemas/OwnedEventOverviewResponse"
+          type: array
+        staffEvents:
+          items:
+            $ref: "#/components/schemas/StaffEventOverviewResponse"
+          type: array
+      required:
+        - ownedEvents
+        - staffEvents
+      type: object
     OrganizerEventListItemResponse:
       properties:
         eventId:
@@ -1034,6 +1202,65 @@ components:
           type: array
       required:
         - items
+      type: object
+    OwnedEventOverviewResponse:
+      properties:
+        checkedInCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        eventId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        issuedCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        soldCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        startsAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        status:
+          type: string
+        timeZoneId:
+          type:
+            - "null"
+            - string
+        title:
+          type: string
+        totalRevenueAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        totalRevenueCurrency:
+          type: string
+      required:
+        - eventId
+        - title
+        - status
+        - startsAt
+        - timeZoneId
+        - soldCount
+        - totalRevenueAmount
+        - totalRevenueCurrency
+        - checkedInCount
+        - issuedCount
       type: object
     PaymentProviderNotificationRequest:
       properties:
@@ -1544,6 +1771,27 @@ components:
       required:
         - tickets
       type: object
+    SendAttendeeMessageRequest:
+      properties:
+        body:
+          type: string
+        subject:
+          type: string
+      required:
+        - subject
+        - body
+      type: object
+    SendAttendeeMessageResponse:
+      properties:
+        acceptedRecipientCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+      required:
+        - acceptedRecipientCount
+      type: object
     SendInvitationRequest:
       properties:
         email:
@@ -1558,6 +1806,48 @@ components:
       required:
         - email
         - expiresInDays
+      type: object
+    StaffEventOverviewResponse:
+      properties:
+        checkedInCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        eventId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        issuedCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        startsAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        status:
+          type: string
+        timeZoneId:
+          type:
+            - "null"
+            - string
+        title:
+          type: string
+      required:
+        - eventId
+        - title
+        - status
+        - startsAt
+        - timeZoneId
+        - checkedInCount
+        - issuedCount
       type: object
     StartCheckoutLineRequest:
       properties:
@@ -1844,6 +2134,37 @@ components:
         - sold
         - reserved
         - createdAt
+      type: object
+    TicketTypeSalesResponse:
+      properties:
+        revenueAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        revenueCurrency:
+          type: string
+        soldCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketTypeId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketTypeName:
+          type: string
+      required:
+        - ticketTypeId
+        - ticketTypeName
+        - soldCount
+        - revenueAmount
+        - revenueCurrency
       type: object
     UpdateDiscountCodeRequest:
       properties:
@@ -2262,6 +2583,166 @@ paths:
           description: Internal Server Error
       tags:
         - Events
+  /api/events/{eventId}/audience/attendees:
+    get:
+      operationId: ListEventAttendees
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventAttendeeListResponse"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+      tags:
+        - Reporting
+  /api/events/{eventId}/audience/attendees.csv:
+    get:
+      operationId: ExportEventAttendees
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type: integer
+      responses:
+        "200":
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+      tags:
+        - Reporting
+  /api/events/{eventId}/audience/messages:
+    post:
+      operationId: SendAttendeeMessage
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendAttendeeMessageRequest"
+        required: true
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SendAttendeeMessageResponse"
+          description: Accepted
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+      tags:
+        - Reporting
+  /api/events/{eventId}/audience/reminder:
+    put:
+      operationId: SetEventReminder
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventReminderSettingsRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventReminderSettingsResponse"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+      tags:
+        - Reporting
   /api/events/{eventId}/audit-log:
     get:
       operationId: ListAuditLog
@@ -3527,6 +4008,38 @@ paths:
           description: Internal Server Error
       tags:
         - Events
+  /api/events/{eventId}/results:
+    get:
+      operationId: GetEventResults
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventResultsResponse"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+      tags:
+        - Reporting
   /api/events/{eventId}/roles:
     get:
       operationId: ListEventRoleAssignments
@@ -4246,6 +4759,24 @@ paths:
           description: Internal Server Error
       tags:
         - Tickets
+  /api/organizer/audience/events:
+    get:
+      operationId: GetOrganizerAudienceOverview
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizerAudienceOverviewResponse"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+      tags:
+        - Reporting
   /api/organizer/events:
     get:
       operationId: ListOrganizerEvents
@@ -4475,6 +5006,7 @@ tags:
   - name: Orders
   - name: Payments
   - name: Profile
+  - name: Reporting
   - name: Tickets
   - name: Check-ins
   - name: TicketTypes
