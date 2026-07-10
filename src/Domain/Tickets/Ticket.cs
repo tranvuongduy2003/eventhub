@@ -1,5 +1,6 @@
 using EventHub.Domain.Abstractions;
 using EventHub.Domain.Events;
+using EventHub.Domain.Exceptions;
 using EventHub.Domain.Orders;
 
 namespace EventHub.Domain.Tickets;
@@ -62,6 +63,35 @@ public sealed class Ticket : AggregateRoot<TicketId>
     public void MarkDelivered(DateTimeOffset deliveredAt)
     {
         LastDeliveredAt = deliveredAt;
+    }
+
+    public void CheckIn(EventId eventId, DateTimeOffset checkedInAt)
+    {
+        if (EventId != eventId)
+        {
+            throw new BusinessRuleValidationException(
+                "TICKET_WRONG_EVENT",
+                "This ticket is for a different event.");
+        }
+
+        if (Status == TicketStatus.CheckedIn)
+        {
+            throw new BusinessRuleValidationException(
+                "TICKET_ALREADY_CHECKED_IN",
+                $"This ticket was already checked in at {CheckedInAt:O}.");
+        }
+
+        if (Status != TicketStatus.Valid)
+        {
+            throw new BusinessRuleValidationException(
+                "TICKET_NOT_VALID_FOR_CHECK_IN",
+                "This ticket is not valid for check-in.");
+        }
+
+        Status = TicketStatus.CheckedIn;
+        CheckedInAt = checkedInAt;
+
+        Raise(new TicketCheckedInEvent(Id, EventId, OrderId, Code, checkedInAt, checkedInAt));
     }
 
     public static Ticket FromPersistence(

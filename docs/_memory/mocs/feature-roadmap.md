@@ -75,7 +75,11 @@ Authoritative source: [[_memory/source/feature-specification|feature specificati
 
 - `F-7.1` through `F-7.6` [[_memory/specs/20260705230329-ticket-delivery-attendee-access|Ticket Delivery & Attendee Access]] - implemented
 
-### EP-8 through EP-11
+### EP-8 - Event-Day Check-in
+
+- `F-8.1` through `F-8.4` [[_memory/specs/20260710184016-event-day-check-in|Event-Day Check-in]] - implemented
+
+### EP-9 through EP-11
 
 Specs are not present yet. Use [[_memory/source/feature-specification|feature specification]] for acceptance criteria until implementation specs are written.
 

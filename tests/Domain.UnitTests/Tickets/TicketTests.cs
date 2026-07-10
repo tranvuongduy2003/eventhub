@@ -42,6 +42,48 @@ public sealed class TicketTests
         ticket.Status.Should().Be(TicketStatus.Valid);
     }
 
+    [Fact]
+    public void CheckIn_WhenTicketIsValidForEvent_MarksCheckedInAndRaisesEvent()
+    {
+        var ticket = CreateTicket();
+        var checkedInAt = new DateTimeOffset(2026, 7, 10, 18, 0, 0, TimeSpan.Zero);
+
+        ticket.ClearDomainEvents();
+        ticket.CheckIn(EventId.From(1), checkedInAt);
+
+        ticket.Status.Should().Be(TicketStatus.CheckedIn);
+        ticket.CheckedInAt.Should().Be(checkedInAt);
+        ticket.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<TicketCheckedInEvent>()
+            .Which.CheckedInAt.Should().Be(checkedInAt);
+    }
+
+    [Fact]
+    public void CheckIn_WhenAlreadyCheckedIn_ThrowsWithFirstCheckInTime()
+    {
+        var ticket = CreateTicket();
+        var firstCheckedInAt = new DateTimeOffset(2026, 7, 10, 18, 0, 0, TimeSpan.Zero);
+
+        ticket.CheckIn(EventId.From(1), firstCheckedInAt);
+
+        var act = () => ticket.CheckIn(EventId.From(1), firstCheckedInAt.AddMinutes(1));
+
+        act.Should().Throw<BusinessRuleValidationException>()
+            .Where(exception => exception.Code == "TICKET_ALREADY_CHECKED_IN")
+            .WithMessage($"*{firstCheckedInAt:O}*");
+    }
+
+    [Fact]
+    public void CheckIn_WhenTicketBelongsToDifferentEvent_Throws()
+    {
+        var ticket = CreateTicket();
+
+        var act = () => ticket.CheckIn(EventId.From(99), DateTimeOffset.UtcNow);
+
+        act.Should().Throw<BusinessRuleValidationException>()
+            .Where(exception => exception.Code == "TICKET_WRONG_EVENT");
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("short")]
