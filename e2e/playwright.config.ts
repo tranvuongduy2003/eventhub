@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const baseURL = process.env.E2E_BASE_URL ?? "https://localhost:5000";
+const baseURL =
+  process.env.E2E_BASE_URL ??
+  (process.env.CI === "true" ? "http://localhost:5000" : "https://localhost:5000");
 const appHostCommand =
   process.env.CI === "true"
     ? "dotnet run --project ../src/AppHost/EventHub.AppHost.csproj --no-build -c Release"

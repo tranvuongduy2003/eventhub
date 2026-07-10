@@ -1,4 +1,5 @@
 var builder = DistributedApplication.CreateBuilder(args);
+var isCi = string.Equals(Environment.GetEnvironmentVariable("CI"), "true", StringComparison.OrdinalIgnoreCase);
 
 var postgresPassword = builder.AddParameter("postgres-password");
 
@@ -51,7 +52,6 @@ var api = builder.AddProject<Projects.EventHub_Api>("api", launchProfileName: "h
     });
 #pragma warning restore ASPIRECERTIFICATES001
 
-#pragma warning disable ASPIRECERTIFICATES001 // WithHttpsDeveloperCertificate
 var web = builder.AddViteApp("web", "../../web")
     .WithYarn(installArgs: ["--frozen-lockfile"])
     .WithReference(api)
@@ -60,10 +60,9 @@ var web = builder.AddViteApp("web", "../../web")
     {
         endpoint.Port = 5000;
         endpoint.TargetPort = 5000;
-        endpoint.UriScheme = "https";
+        endpoint.UriScheme = isCi ? "http" : "https";
         endpoint.IsProxied = false;
     })
-    .WithHttpsDeveloperCertificate()
     .WithExternalHttpEndpoints()
     .WithEnvironment("VITE_API_URL", api.GetEndpoint("https"))
     .WithUrls(context =>
@@ -73,12 +72,19 @@ var web = builder.AddViteApp("web", "../../web")
             url.DisplayText = "Frontend";
         }
     });
+
+if (!isCi)
+{
+#pragma warning disable ASPIRECERTIFICATES001 // WithHttpsDeveloperCertificate
+    web.WithHttpsDeveloperCertificate();
 #pragma warning restore ASPIRECERTIFICATES001
+}
 
 var seeder = builder.AddProject<Projects.EventHub_DataSeeder>("seeder")
     .WithReference(applicationDatabase)
     .WaitFor(postgres);
 
 api.WithEnvironment("Cors__AllowedOrigins__0", "https://localhost:5000");
+api.WithEnvironment("Cors__AllowedOrigins__1", "http://localhost:5000");
 
 builder.Build().Run();

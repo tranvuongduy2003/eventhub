@@ -1,3 +1,4 @@
+using System.Net;
 using EventHub.Api.Auth;
 using EventHub.Api.Middleware;
 using EventHub.Api.Options;
@@ -43,7 +44,7 @@ public static class DependencyInjection
                 .GetRequiredService<IOptions<CorsOptions>>()
                 .Value
                 .AllowedOrigins
-                .Where(IsHttpsOrigin)
+                .Where(IsAllowedDevelopmentOrigin)
                 .ToArray();
 
             if (allowedOrigins.Length > 0)
@@ -66,8 +67,30 @@ public static class DependencyInjection
         return application;
     }
 
-    private static bool IsHttpsOrigin(string origin) =>
-        !string.IsNullOrWhiteSpace(origin)
-        && Uri.TryCreate(origin, UriKind.Absolute, out var uri)
-        && string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
+    private static bool IsAllowedDevelopmentOrigin(string origin)
+    {
+        if (string.IsNullOrWhiteSpace(origin)
+            || !Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+        {
+            return false;
+        }
+
+        if (string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (!string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return IPAddress.TryParse(uri.Host, out var address)
+            && IPAddress.IsLoopback(address);
+    }
 }
