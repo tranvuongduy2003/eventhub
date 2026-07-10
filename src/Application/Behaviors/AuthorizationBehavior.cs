@@ -1,4 +1,5 @@
 using EventHub.Application.Abstractions.Auth;
+using EventHub.Application.Abstractions.Persistence;
 using EventHub.Application.Common;
 using EventHub.Domain.Events;
 using MediatR;
@@ -7,7 +8,8 @@ namespace EventHub.Application.Behaviors;
 
 public sealed class AuthorizationBehavior<TRequest, TResponse>(
     ICurrentUserAccessor currentUserAccessor,
-    IPermissionCache permissionCache)
+    IPermissionCache permissionCache,
+    IEventRepository eventRepository)
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IAuthorizeEventOperation
 {
@@ -29,10 +31,18 @@ public sealed class AuthorizationBehavior<TRequest, TResponse>(
 
         if (role is null)
         {
-            return ResultFactory.CreateFailure<TResponse>(
-                Error.Forbidden(
-                    "INSUFFICIENT_PERMISSIONS",
-                    "You do not have the required permissions to perform this operation on this event."));
+            var eventAggregate = await eventRepository.GetByIdAsync(eventId, cancellationToken);
+            if (eventAggregate?.OrganizerId == userId)
+            {
+                role = EventRole.Owner;
+            }
+            else
+            {
+                return ResultFactory.CreateFailure<TResponse>(
+                    Error.Forbidden(
+                        "INSUFFICIENT_PERMISSIONS",
+                        "You do not have the required permissions to perform this operation on this event."));
+            }
         }
 
         var permissions = EventRolePermissions.GetPermissions(role.Value);

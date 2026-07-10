@@ -1,6 +1,7 @@
 using EventHub.Application.Abstractions.Persistence;
 using EventHub.Application.Common;
 using EventHub.Domain.Events;
+using EventHub.Domain.Users;
 using EventHub.Infrastructure.Persistence.Entities;
 using EventHub.Infrastructure.Persistence.Mapping;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +42,25 @@ internal sealed class EventRepository(ApplicationDatabaseContext databaseContext
         }
 
         return await LoadAggregateAsync(record, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Event>> GetByOrganizerAsync(
+        UserId organizerId,
+        CancellationToken cancellationToken = default)
+    {
+        var records = await databaseContext.Events
+            .AsNoTracking()
+            .Where(e => e.OrganizerId == organizerId.Value)
+            .OrderByDescending(e => e.UpdatedAt)
+            .ToListAsync(cancellationToken);
+
+        var events = new List<Event>();
+        foreach (var record in records)
+        {
+            events.Add(await LoadAggregateAsync(record, cancellationToken));
+        }
+
+        return events;
     }
 
     public async Task<PaginatedResult<Event>> GetPublishedUpcomingAsync(

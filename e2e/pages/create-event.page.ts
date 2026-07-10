@@ -22,7 +22,7 @@ export class CreateEventPage {
     this.endDateInput = page.locator("#create-event-end-date");
     this.endTimeInput = page.locator("#create-event-end-time");
     this.timezoneSelect = page.locator("#create-event-timezone");
-    this.isOnlineSwitch = page.locator("#create-event-is-online");
+    this.isOnlineSwitch = page.getByText("Online event");
     this.addressInput = page.locator("#create-event-address");
     this.submitButton = page.getByRole("button", { name: "Create event" });
     this.cancelButton = page.getByRole("button", { name: "Cancel" });
@@ -32,7 +32,7 @@ export class CreateEventPage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto("/events/create");
+    await this.page.goto("/organizer/events/create");
   }
 
   async fillForm(params: {

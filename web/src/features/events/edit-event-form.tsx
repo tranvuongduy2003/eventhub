@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRef, type FormEvent, useMemo } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 
 import { paths } from '@/app/paths'
@@ -114,7 +114,7 @@ export function EditEventForm({ event }: EditEventFormProps) {
     },
   })
 
-  const isOnline = form.watch('isOnline')
+  const isOnline = useWatch({ control: form.control, name: 'isOnline' })
 
   const editMutation = useMutation({
     mutationFn: (values: EditEventFormValues) =>
@@ -156,7 +156,7 @@ export function EditEventForm({ event }: EditEventFormProps) {
   const publishMutation = useMutation({
     mutationFn: () => eventsApi.publishEvent(event.eventId),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['events', event.eventId] })
+      void queryClient.invalidateQueries({ queryKey: ['event', event.eventId] })
       void queryClient.invalidateQueries({ queryKey: ['events'] })
     },
     onError: (error) => {
@@ -173,7 +173,7 @@ export function EditEventForm({ event }: EditEventFormProps) {
   const closeMutation = useMutation({
     mutationFn: () => eventsApi.closeEvent(event.eventId),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['events', event.eventId] })
+      void queryClient.invalidateQueries({ queryKey: ['event', event.eventId] })
       void queryClient.invalidateQueries({ queryKey: ['events'] })
     },
     onError: (error) => {
@@ -190,7 +190,7 @@ export function EditEventForm({ event }: EditEventFormProps) {
   const cancelMutation = useMutation({
     mutationFn: () => eventsApi.cancelEvent(event.eventId),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['events', event.eventId] })
+      void queryClient.invalidateQueries({ queryKey: ['event', event.eventId] })
       void queryClient.invalidateQueries({ queryKey: ['events'] })
     },
     onError: (error) => {

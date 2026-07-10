@@ -12,7 +12,7 @@ export class LoginPage {
     this.emailInput = page.locator("#login-email");
     this.passwordInput = page.locator("#login-password");
     this.submitButton = page.getByRole("button", { name: "Log in" });
-    this.errorAlert = page.locator('[data-slot="alert"][data-variant="destructive"]');
+    this.errorAlert = page.getByRole("alert");
   }
 
   async goto(): Promise<void> {

@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { useRef, type FormEvent, useMemo } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 
 import { paths } from '@/app/paths'
@@ -79,7 +79,7 @@ export function CreateEventForm() {
     },
   })
 
-  const isOnline = form.watch('isOnline')
+  const isOnline = useWatch({ control: form.control, name: 'isOnline' })
 
   const createMutation = useMutation({
     mutationFn: (values: CreateEventFormValues) =>

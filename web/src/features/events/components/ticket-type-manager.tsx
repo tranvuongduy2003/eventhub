@@ -68,7 +68,7 @@ export function TicketTypeManager({ eventId, eventStatus }: TicketTypeManagerPro
 
   const addMutation = useMutation({
     mutationFn: (request: eventsApi.EditTicketTypeRequest) =>
-      eventsApi.editTicketType(eventId, 0, request),
+      eventsApi.addTicketType(eventId, request),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['events', eventId, 'ticket-types'] })
       void queryClient.invalidateQueries({ queryKey: ['events', eventId] })
@@ -382,7 +382,7 @@ function TicketTypeForm({
                   min={0}
                   step={1000}
                   disabled={isSaving || isPublishedEdit}
-                  {...form.register('priceAmount')}
+                  {...form.register('priceAmount', { valueAsNumber: true })}
                 />
                 <FieldError errors={[form.formState.errors.priceAmount]} />
               </Field>
@@ -405,7 +405,7 @@ function TicketTypeForm({
                   type="number"
                   min={1}
                   disabled={isSaving || isPublishedEdit}
-                  {...form.register('capacity')}
+                  {...form.register('capacity', { valueAsNumber: true })}
                 />
                 <FieldError errors={[form.formState.errors.capacity]} />
               </Field>

@@ -22,8 +22,6 @@ export const router = createBrowserRouter([
         element: <AuthLayout />,
         children: authRoutes,
       },
-      ...checkoutRoutes,
-      ...ticketsRoutes,
     ],
   },
   {
@@ -35,6 +33,8 @@ export const router = createBrowserRouter([
       },
     ],
   },
+  ...checkoutRoutes,
+  ...ticketsRoutes,
   { path: paths.events, element: <PublicEventsPage /> },
   { path: '/events/:slug', element: <PublicEventPage /> },
   { path: '*', element: <Navigate to={paths.home} replace /> },

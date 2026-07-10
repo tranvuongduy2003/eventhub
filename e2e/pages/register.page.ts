@@ -16,7 +16,7 @@ export class RegisterPage {
     this.passwordInput = page.locator("#register-password");
     this.confirmPasswordInput = page.locator("#register-confirm-password");
     this.submitButton = page.getByRole("button", { name: "Create account" });
-    this.errorAlert = page.locator('[data-slot="alert"][data-variant="destructive"]');
+    this.errorAlert = page.getByRole("alert");
   }
 
   async goto(): Promise<void> {

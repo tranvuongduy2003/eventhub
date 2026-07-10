@@ -4,7 +4,7 @@ import { alice, SEED_PASSWORD } from "../../fixtures/seed-data";
 
 test.describe("Route guards", () => {
   test.describe("unauthenticated", () => {
-    const protectedRoutes = ["/", "/events", "/check-in"];
+    const protectedRoutes = ["/", "/organizer/events", "/check-in"];
 
     for (const route of protectedRoutes) {
       test(`${route} redirects to login`, async ({ page }) => {
@@ -43,9 +43,9 @@ test.describe("Route guards", () => {
     test("protected routes are accessible", async ({
       authenticatedPage: page,
     }) => {
-      await page.goto("/events");
+      await page.goto("/organizer/events");
 
-      await expect(page).toHaveURL("/events");
+      await expect(page).toHaveURL("/organizer/events");
     });
   });
 });

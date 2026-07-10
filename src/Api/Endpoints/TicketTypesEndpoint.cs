@@ -1,6 +1,7 @@
 using EventHub.Api.Http;
 using EventHub.Api.Mapping;
 using EventHub.Application.Events.Commands;
+using EventHub.Application.Events.Queries;
 using EventHub.Contracts.Events;
 using MediatR;
 
@@ -10,6 +11,15 @@ internal sealed class TicketTypesEndpoint : IEndpoint
 {
     public void Map(IEndpointRouteBuilder endpoints)
     {
+        endpoints.MapGet("/api/events/{eventId}/ticket-types", ListTicketTypes)
+            .WithName("ListTicketTypes")
+            .WithTags("TicketTypes")
+            .RequireAuthorization()
+            .Produces<List<TicketTypeResponse>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         endpoints.MapPost("/api/events/{eventId}/ticket-types", AddTicketType)
             .WithName("AddTicketType")
             .WithTags("TicketTypes")
@@ -46,6 +56,17 @@ internal sealed class TicketTypesEndpoint : IEndpoint
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
+    }
+
+    private static async Task<IResult> ListTicketTypes(
+        int eventId,
+        ISender sender)
+    {
+        var query = new ListTicketTypesQuery(eventId);
+
+        var result = await sender.Send(query);
+
+        return result.ToHttpResult();
     }
 
     private static async Task<IResult> AddTicketType(

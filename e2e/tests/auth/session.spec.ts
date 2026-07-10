@@ -26,7 +26,7 @@ test.describe("Session bootstrap", () => {
   test("protected routes redirect to login with return path", async ({
     page,
   }) => {
-    await page.goto("/events");
+    await page.goto("/organizer/events");
 
     await page.waitForURL(/\/login/);
     await expect(page.locator("#login-email")).toBeVisible();

@@ -1,4 +1,5 @@
 using EventHub.Application.Abstractions.Auth;
+using EventHub.Application.Abstractions.Persistence;
 using EventHub.Application.Behaviors;
 using EventHub.Application.Common;
 using EventHub.Domain.Events;
@@ -101,7 +102,7 @@ public sealed class AuthorizationBehaviorTests
         permissionCache.SetRole(TestEventId, TestUserId, null);
 
         var sut = new AuthorizationBehavior<TestAuthorizeRequest, Result>(
-            currentUserAccessor, permissionCache);
+            currentUserAccessor, permissionCache, new FakeEventRepository());
 
         var result = await sut.Handle(
             new TestAuthorizeRequest(TestEventId, Permission.EventManagement),
@@ -113,13 +114,32 @@ public sealed class AuthorizationBehaviorTests
     }
 
     [Fact]
+    public async Task NoRoleButOrganizerIdMatches_AllowsAsOwner()
+    {
+        var currentUserAccessor = new FakeCurrentUserAccessor(TestUserId);
+        var permissionCache = new FakePermissionCache();
+        var eventRepository = new FakeEventRepository();
+        eventRepository.SetEvent(CreateEventOwnedBy(TestUserId));
+
+        var sut = new AuthorizationBehavior<TestAuthorizeRequest, Result>(
+            currentUserAccessor, permissionCache, eventRepository);
+
+        var result = await sut.Handle(
+            new TestAuthorizeRequest(TestEventId, Permission.EventManagement),
+            _ => Task.FromResult(Result.Success()),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task NotAuthenticated_ReturnsUnauthorized()
     {
         var currentUserAccessor = new FakeCurrentUserAccessor(null);
         var permissionCache = new FakePermissionCache();
 
         var sut = new AuthorizationBehavior<TestAuthorizeRequest, Result>(
-            currentUserAccessor, permissionCache);
+            currentUserAccessor, permissionCache, new FakeEventRepository());
 
         var result = await sut.Handle(
             new TestAuthorizeRequest(TestEventId, Permission.EventManagement),
@@ -140,7 +160,7 @@ public sealed class AuthorizationBehaviorTests
         permissionCache.SetRole(otherEventId, TestUserId, EventRole.Staff);
 
         var sut = new AuthorizationBehavior<TestAuthorizeRequest, Result>(
-            currentUserAccessor, permissionCache);
+            currentUserAccessor, permissionCache, new FakeEventRepository());
 
         // Owner on TestEvent — allowed
         var result1 = await sut.Handle(
@@ -166,7 +186,7 @@ public sealed class AuthorizationBehaviorTests
         permissionCache.SetRole(TestEventId, TestUserId, EventRole.Staff);
 
         var sut = new AuthorizationBehavior<TestAuthorizeRequest, Result<string>>(
-            currentUserAccessor, permissionCache);
+            currentUserAccessor, permissionCache, new FakeEventRepository());
 
         var result = await sut.Handle(
             new TestAuthorizeRequest(TestEventId, Permission.EventManagement),
@@ -186,7 +206,7 @@ public sealed class AuthorizationBehaviorTests
         permissionCache.SetRole(TestEventId, userId, role);
 
         return new AuthorizationBehavior<TestAuthorizeRequest, Result>(
-            currentUserAccessor, permissionCache);
+            currentUserAccessor, permissionCache, new FakeEventRepository());
     }
 
     private sealed record TestAuthorizeRequest(
@@ -217,4 +237,69 @@ public sealed class AuthorizationBehaviorTests
             return Task.FromResult(role);
         }
     }
+
+    private sealed class FakeEventRepository : IEventRepository
+    {
+        private readonly Dictionary<EventId, Event> _events = [];
+
+        public void SetEvent(Event eventAggregate)
+        {
+            _events[eventAggregate.Id] = eventAggregate;
+        }
+
+        public Task AddAsync(Event domain, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<Event?> GetByIdAsync(EventId eventId, CancellationToken cancellationToken = default)
+        {
+            _events.TryGetValue(eventId, out var eventAggregate);
+            return Task.FromResult(eventAggregate);
+        }
+
+        public Task<Event?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyList<Event>> GetByOrganizerAsync(
+            UserId organizerId,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<PaginatedResult<Event>> GetPublishedUpcomingAsync(
+            int page,
+            int pageSize,
+            DateTimeOffset now,
+            EventFilter? filter = null,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<List<string>> GetDistinctLocationsAsync(
+            DateTimeOffset now,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task Update(Event domain, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+    }
+
+    private static Event CreateEventOwnedBy(UserId organizerId) =>
+        Event.FromPersistence(
+            TestEventId,
+            organizerId,
+            EventTitle.Create("Test event"),
+            EventSchedule.Create(
+                new DateTimeOffset(2026, 8, 1, 14, 0, 0, TimeSpan.Zero),
+                new DateTimeOffset(2026, 8, 1, 16, 0, 0, TimeSpan.Zero),
+                "UTC"),
+            EventLocation.Create(null, true),
+            null,
+            EventStatus.Draft,
+            null,
+            null,
+            null,
+            new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero),
+            1);
 }

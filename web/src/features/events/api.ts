@@ -20,6 +20,23 @@ export type PublicEventListingResponse = {
   pageSize: number
 }
 
+export type OrganizerEventListItemResponse = {
+  eventId: number
+  title: string
+  status: string
+  startsAt: string | null
+  timeZoneId: string | null
+  physicalAddress: string | null
+  isOnline: boolean
+  ticketTypeCount: number
+  soldCount: number
+  updatedAt: string
+}
+
+export type OrganizerEventListingResponse = {
+  items: OrganizerEventListItemResponse[]
+}
+
 export type EventFilters = {
   q?: string
   date?: string
@@ -53,6 +70,13 @@ export function getPublicEvents(
 
 export function getEventLocations(signal?: AbortSignal) {
   return apiClient.get<string[]>('/api/events/locations', {
+    signal,
+    suppressErrorToast: true,
+  })
+}
+
+export function getOrganizerEvents(signal?: AbortSignal) {
+  return apiClient.get<OrganizerEventListingResponse>('/api/organizer/events', {
     signal,
     suppressErrorToast: true,
   })
@@ -249,6 +273,21 @@ export type EditTicketTypeRequest = {
   maxPerOrder: number | null
   salesWindowStart: string | null
   salesWindowEnd: string | null
+}
+
+export type AddTicketTypeRequest = EditTicketTypeRequest
+
+export type AddTicketTypeResponse = TicketTypeResponse
+
+export function addTicketType(
+  eventId: number,
+  request: AddTicketTypeRequest,
+  signal?: AbortSignal,
+) {
+  return apiClient.post<AddTicketTypeResponse>(`/api/events/${eventId}/ticket-types`, request, {
+    signal,
+    suppressErrorToast: true,
+  })
 }
 
 export type EditTicketTypeResponse = {

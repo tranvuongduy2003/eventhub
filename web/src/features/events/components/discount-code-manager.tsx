@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 
 import {
@@ -342,8 +342,8 @@ function DiscountCodeForm({ defaultValues, onSubmit, onCancel, isSaving }: Disco
     },
   })
 
-  const watchedType = form.watch('type')
-  const watchedValue = form.watch('value')
+  const watchedType = useWatch({ control: form.control, name: 'type' })
+  const watchedValue = useWatch({ control: form.control, name: 'value' })
   const showPercentageWarning = watchedType === 'Percentage' && watchedValue > 50
 
   return (
@@ -376,7 +376,7 @@ function DiscountCodeForm({ defaultValues, onSubmit, onCancel, isSaving }: Disco
               <Field data-invalid={!!form.formState.errors.type}>
                 <FieldLabel htmlFor="discount-type">Type</FieldLabel>
                 <Select
-                  value={form.watch('type')}
+                  value={watchedType}
                   onValueChange={(value) =>
                     form.setValue('type', value as 'Percentage' | 'FixedAmount')
                   }
