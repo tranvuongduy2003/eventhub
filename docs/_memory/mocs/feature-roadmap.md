@@ -71,7 +71,11 @@ Authoritative source: [[_memory/source/feature-specification|feature specificati
 
 - `F-6.1` through `F-6.5` [[_memory/specs/20260705190000-payment-mvp|Payment MVP]] - implemented
 
-### EP-7 through EP-11
+### EP-7 - Ticket Delivery & Attendee Access
+
+- `F-7.1` through `F-7.6` [[_memory/specs/20260705230329-ticket-delivery-attendee-access|Ticket Delivery & Attendee Access]] - implemented
+
+### EP-8 through EP-11
 
 Specs are not present yet. Use [[_memory/source/feature-specification|feature specification]] for acceptance criteria until implementation specs are written.
 

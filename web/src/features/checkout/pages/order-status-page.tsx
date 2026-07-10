@@ -173,10 +173,20 @@ export function OrderStatusPage() {
               <CardTitle>Tickets</CardTitle>
               <CardDescription>
                 {order.status === 'confirmed'
-                  ? 'Ticket display will appear here after ticket issuance is enabled.'
+                  ? 'Your tickets are ready for mobile display.'
                   : 'Tickets appear here after the order is confirmed.'}
               </CardDescription>
             </CardHeader>
+            {order.status === 'confirmed' ? (
+              <CardContent>
+                <Link
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex min-h-10 items-center justify-center rounded-md px-4 py-2 text-sm font-medium"
+                  to={order.ticketUrl ?? `/tickets/orders/${order.orderId}`}
+                >
+                  View tickets
+                </Link>
+              </CardContent>
+            ) : null}
           </Card>
         </div>
 

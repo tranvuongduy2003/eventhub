@@ -11,6 +11,7 @@ import { PublicEventPage } from '@/features/events/pages/public-event-page'
 import { PublicEventsPage } from '@/features/events/pages/public-events-page'
 import { HomePage } from '@/features/home/pages/home-page'
 import { ticketsRoutes } from '@/features/tickets/routes'
+import { TicketWalletPage } from '@/features/tickets/pages/ticket-wallet-page'
 import { AppLayout } from '@/layouts/app-layout'
 import { AuthLayout } from '@/layouts/auth-layout'
 
@@ -29,7 +30,12 @@ export const router = createBrowserRouter([
     children: [
       {
         element: <AppLayout />,
-        children: [{ index: true, element: <HomePage /> }, ...eventsRoutes, ...checkInRoutes],
+        children: [
+          { index: true, element: <HomePage /> },
+          ...eventsRoutes,
+          ...checkInRoutes,
+          { path: paths.tickets, element: <TicketWalletPage /> },
+        ],
       },
     ],
   },
