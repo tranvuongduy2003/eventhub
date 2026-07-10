@@ -9,6 +9,10 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      APPHOST_WEB_SCHEME: ${{ vars.APPHOST_WEB_SCHEME }}
+      Cors__AllowedOrigins__0: ${{ vars.E2E_BASE_URL }}
+      E2E_BASE_URL: ${{ vars.E2E_BASE_URL }}
 
     steps:
       - name: Checkout
@@ -60,6 +64,15 @@ jobs:
 
       - name: Install Playwright browsers
         run: yarn --cwd e2e playwright install --with-deps chromium
+
+      - name: Verify e2e environment
+        run: |
+          test -n "$E2E_BASE_URL" || (echo "Missing repository variable E2E_BASE_URL" && exit 1)
+          test -n "$APPHOST_WEB_SCHEME" || (echo "Missing repository variable APPHOST_WEB_SCHEME" && exit 1)
+          case "$APPHOST_WEB_SCHEME" in
+            http|https) ;;
+            *) echo "APPHOST_WEB_SCHEME must be 'http' or 'https'"; exit 1 ;;
+          esac
 
       - name: Run e2e tests
         run: yarn --cwd e2e test --reporter=line

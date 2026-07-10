@@ -1,5 +1,6 @@
 var builder = DistributedApplication.CreateBuilder(args);
-var isCi = string.Equals(Environment.GetEnvironmentVariable("CI"), "true", StringComparison.OrdinalIgnoreCase);
+var webScheme = Environment.GetEnvironmentVariable("APPHOST_WEB_SCHEME") ?? "https";
+var isWebHttps = string.Equals(webScheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
 
 var postgresPassword = builder.AddParameter("postgres-password");
 
@@ -60,7 +61,7 @@ var web = builder.AddViteApp("web", "../../web")
     {
         endpoint.Port = 5000;
         endpoint.TargetPort = 5000;
-        endpoint.UriScheme = isCi ? "http" : "https";
+        endpoint.UriScheme = webScheme;
         endpoint.IsProxied = false;
     })
     .WithExternalHttpEndpoints()
@@ -73,7 +74,7 @@ var web = builder.AddViteApp("web", "../../web")
         }
     });
 
-if (!isCi)
+if (isWebHttps)
 {
 #pragma warning disable ASPIRECERTIFICATES001 // WithHttpsDeveloperCertificate
     web.WithHttpsDeveloperCertificate();
@@ -83,8 +84,5 @@ if (!isCi)
 var seeder = builder.AddProject<Projects.EventHub_DataSeeder>("seeder")
     .WithReference(applicationDatabase)
     .WaitFor(postgres);
-
-api.WithEnvironment("Cors__AllowedOrigins__0", "https://localhost:5000");
-api.WithEnvironment("Cors__AllowedOrigins__1", "http://localhost:5000");
 
 builder.Build().Run();
