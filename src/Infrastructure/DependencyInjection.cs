@@ -86,6 +86,7 @@ public static class DependencyInjection
         services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<IPaymentIdGenerator, PostgresPaymentIdGenerator>();
         services.AddScoped<ITicketRepository, TicketRepository>();
+        services.AddScoped<IReportingRepository, ReportingRepository>();
         services.AddSingleton<ITicketCodeGenerator, RandomTicketCodeGenerator>();
         services.AddScoped<IReservationIdGenerator, PostgresReservationIdGenerator>();
         services.AddScoped<IDiscountCodeRepository, DiscountCodeRepository>();
@@ -108,6 +109,7 @@ public static class DependencyInjection
         services.AddSingleton<IPaymentGateway, NoOpPaymentGateway>();
 
         services.AddHostedService<ReservationHoldExpiryJob>();
+        services.AddHostedService<EventReminderDispatchJob>();
 
         return services;
     }

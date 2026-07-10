@@ -79,7 +79,11 @@ Authoritative source: [[_memory/source/feature-specification|feature specificati
 
 - `F-8.1` through `F-8.4` [[_memory/specs/20260710184016-event-day-check-in|Event-Day Check-in]] - implemented
 
-### EP-9 through EP-11
+### EP-9 - Audience & Results
+
+- `F-9.1` through `F-9.6` [[_memory/specs/20260710204440-audience-results|Audience & Results]] - implemented
+
+### EP-10 through EP-11
 
 Specs are not present yet. Use [[_memory/source/feature-specification|feature specification]] for acceptance criteria until implementation specs are written.
 

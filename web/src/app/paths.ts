@@ -6,6 +6,7 @@ export const paths = {
   organizerEvents: '/organizer/events',
   createEvent: '/organizer/events/create',
   editEvent: '/organizer/events/:eventId/edit',
+  organizerEventResults: '/organizer/events/:eventId/results',
   checkout: '/checkout',
   orderStatus: '/orders/:orderId',
   tickets: '/tickets',

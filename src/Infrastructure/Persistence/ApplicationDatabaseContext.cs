@@ -37,6 +37,8 @@ public sealed class ApplicationDatabaseContext(DbContextOptions<ApplicationDatab
 
     public DbSet<TicketRecord> Tickets => Set<TicketRecord>();
 
+    public DbSet<EventReminderRecord> EventReminders => Set<EventReminderRecord>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(SchemaName);
