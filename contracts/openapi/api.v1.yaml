@@ -212,6 +212,67 @@ components:
         - cancelledAt
         - updatedAt
       type: object
+    CheckInTicketRequest:
+      properties:
+        code:
+          type: string
+      required:
+        - code
+      type: object
+    CheckInTicketResponse:
+      properties:
+        checkedInAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        code:
+          type: string
+        eventId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        holderEmail:
+          type: string
+        holderName:
+          type: string
+        issuedAt:
+          format: date-time
+          type: string
+        orderId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        status:
+          type: string
+        ticketId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketTypeId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+      required:
+        - ticketId
+        - eventId
+        - orderId
+        - ticketTypeId
+        - code
+        - holderName
+        - holderEmail
+        - status
+        - issuedAt
+        - checkedInAt
+      type: object
     CloseEventResponse:
       properties:
         status:
@@ -404,6 +465,24 @@ components:
         - discountAmount
         - finalTotal
         - currency
+      type: object
+    DoorCountsResponse:
+      properties:
+        checkedIn:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        totalIssued:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+      required:
+        - checkedIn
+        - totalIssued
       type: object
     DraftEventResponse:
       properties:
@@ -1456,6 +1535,15 @@ components:
         - address
         - createdAt
       type: object
+    SearchCheckInTicketsResponse:
+      properties:
+        tickets:
+          items:
+            $ref: "#/components/schemas/CheckInTicketResponse"
+          type: array
+      required:
+        - tickets
+      type: object
     SendInvitationRequest:
       properties:
         email:
@@ -2308,6 +2396,222 @@ paths:
           description: Internal Server Error
       tags:
         - Events
+  /api/events/{eventId}/check-ins/counts:
+    get:
+      operationId: GetDoorCounts
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DoorCountsResponse"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Check-ins
+  /api/events/{eventId}/check-ins/scan:
+    post:
+      operationId: CheckInTicketByCode
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckInTicketRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckInTicketResponse"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Check-ins
+  /api/events/{eventId}/check-ins/tickets:
+    get:
+      operationId: SearchCheckInTickets
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+        - in: query
+          name: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchCheckInTicketsResponse"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Check-ins
+  /api/events/{eventId}/check-ins/tickets/{ticketId}:
+    post:
+      operationId: CheckInTicketById
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+        - in: path
+          name: ticketId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckInTicketResponse"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Check-ins
   /api/events/{eventId}/close:
     post:
       operationId: CloseEvent
@@ -4172,5 +4476,6 @@ tags:
   - name: Payments
   - name: Profile
   - name: Tickets
+  - name: Check-ins
   - name: TicketTypes
   - name: Users

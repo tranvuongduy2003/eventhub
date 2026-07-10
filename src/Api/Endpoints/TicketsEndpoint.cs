@@ -36,6 +36,50 @@ internal sealed class TicketsEndpoint : IEndpoint
             .Produces<MyTicketsResponse>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        endpoints.MapPost("/api/events/{eventId}/check-ins/scan", CheckInByCode)
+            .WithName("CheckInTicketByCode")
+            .WithTags("Check-ins")
+            .RequireAuthorization()
+            .RequireCompleteJsonBody<CheckInTicketRequest>()
+            .Accepts<CheckInTicketRequest>("application/json")
+            .Produces<CheckInTicketResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        endpoints.MapGet("/api/events/{eventId}/check-ins/tickets", SearchCheckInTickets)
+            .WithName("SearchCheckInTickets")
+            .WithTags("Check-ins")
+            .RequireAuthorization()
+            .Produces<SearchCheckInTicketsResponse>()
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        endpoints.MapPost("/api/events/{eventId}/check-ins/tickets/{ticketId}", CheckInByTicketId)
+            .WithName("CheckInTicketById")
+            .WithTags("Check-ins")
+            .RequireAuthorization()
+            .Produces<CheckInTicketResponse>()
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        endpoints.MapGet("/api/events/{eventId}/check-ins/counts", GetDoorCounts)
+            .WithName("GetDoorCounts")
+            .WithTags("Check-ins")
+            .RequireAuthorization()
+            .Produces<DoorCountsResponse>()
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
     }
 
     private static async Task<IResult> GetOrderTickets(int orderId, ISender sender)
@@ -80,6 +124,46 @@ internal sealed class TicketsEndpoint : IEndpoint
         return Results.Ok(new MyTicketsResponse(result.Value!.Select(ToResponse).ToList()));
     }
 
+    private static async Task<IResult> CheckInByCode(
+        int eventId,
+        CheckInTicketRequest request,
+        ISender sender)
+    {
+        var result = await sender.Send(new CheckInTicketByCodeCommand(eventId, request.Code));
+
+        return result.ToHttpResult(ticket => Results.Ok(ToResponse(ticket)));
+    }
+
+    private static async Task<IResult> SearchCheckInTickets(
+        int eventId,
+        string query,
+        ISender sender)
+    {
+        var result = await sender.Send(new SearchCheckInTicketsQuery(eventId, query));
+
+        return result.ToHttpResult(tickets => Results.Ok(new SearchCheckInTicketsResponse(
+            tickets.Select(ToResponse).ToList())));
+    }
+
+    private static async Task<IResult> CheckInByTicketId(
+        int eventId,
+        int ticketId,
+        ISender sender)
+    {
+        var result = await sender.Send(new CheckInTicketByIdCommand(eventId, ticketId));
+
+        return result.ToHttpResult(ticket => Results.Ok(ToResponse(ticket)));
+    }
+
+    private static async Task<IResult> GetDoorCounts(int eventId, ISender sender)
+    {
+        var result = await sender.Send(new GetDoorCountsQuery(eventId));
+
+        return result.ToHttpResult(counts => Results.Ok(new DoorCountsResponse(
+            counts.CheckedIn,
+            counts.TotalIssued)));
+    }
+
     private static TicketResponse ToResponse(TicketResult ticket) =>
         new(
             ticket.TicketId,
@@ -98,4 +182,17 @@ internal sealed class TicketsEndpoint : IEndpoint
             ticket.HolderEmail,
             ticket.Status,
             ticket.IssuedAt);
+
+    private static CheckInTicketResponse ToResponse(CheckInTicketResult ticket) =>
+        new(
+            ticket.TicketId,
+            ticket.EventId,
+            ticket.OrderId,
+            ticket.TicketTypeId,
+            ticket.Code,
+            ticket.HolderName,
+            ticket.HolderEmail,
+            ticket.Status,
+            ticket.IssuedAt,
+            ticket.CheckedInAt);
 }
