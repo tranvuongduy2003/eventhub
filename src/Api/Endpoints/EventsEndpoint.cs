@@ -34,6 +34,13 @@ internal sealed class EventsEndpoint : IEndpoint
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        endpoints.MapGet("/api/organizer/events", ListOrganizerEvents)
+            .WithName("ListOrganizerEvents")
+            .WithTags("Events")
+            .RequireAuthorization()
+            .Produces<OrganizerEventListingResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
+
         endpoints.MapPut("/api/events/{eventId}", EditEventDetails)
             .WithName("EditEventDetails")
             .WithTags("Events")
@@ -158,6 +165,15 @@ internal sealed class EventsEndpoint : IEndpoint
         ISender sender)
     {
         var query = new GetPublicEventQuery(slug);
+
+        var result = await sender.Send(query);
+
+        return result.ToHttpResult();
+    }
+
+    private static async Task<IResult> ListOrganizerEvents(ISender sender)
+    {
+        var query = new ListOrganizerEventsQuery();
 
         var result = await sender.Send(query);
 

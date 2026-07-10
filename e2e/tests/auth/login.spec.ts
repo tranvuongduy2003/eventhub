@@ -40,11 +40,11 @@ test.describe("Organizer login", () => {
   test("redirects to originally requested page after login", async ({
     page,
   }) => {
-    await page.goto("/events");
+    await page.goto("/organizer/events");
     await page.waitForURL(/\/login/);
 
     await loginPage.login(alice.email, SEED_PASSWORD);
 
-    await page.waitForURL(/\/(events|$)/);
+    await page.waitForURL(/\/(organizer\/events|$)/);
   });
 });

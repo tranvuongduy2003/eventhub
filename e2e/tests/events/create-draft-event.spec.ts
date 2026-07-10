@@ -1,17 +1,18 @@
 import { test, expect } from "../../fixtures/auth.fixture";
 import { CreateEventPage } from "../../pages/create-event.page";
+import type { Page } from "@playwright/test";
 
 test.describe("Create draft event", () => {
-  let createEventPage: CreateEventPage;
-
-  test.beforeEach(async ({ authenticatedPage: page }) => {
-    createEventPage = new CreateEventPage(page);
+  async function openCreateEventPage(page: Page) {
+    const createEventPage = new CreateEventPage(page);
     await createEventPage.goto();
-  });
+    return createEventPage;
+  }
 
   test("organizer creates a draft event and sees events page", async ({
     authenticatedPage: page,
   }) => {
+    const createEventPage = await openCreateEventPage(page);
     const unique = Date.now();
     await createEventPage.createEvent({
       title: `Test Event ${unique}`,
@@ -22,7 +23,7 @@ test.describe("Create draft event", () => {
       address: "123 Conference Ave, City",
     });
 
-    await page.waitForURL("/events");
+    await page.waitForURL("/organizer/events");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "Events",
     );
@@ -31,6 +32,7 @@ test.describe("Create draft event", () => {
   test("organizer creates an online event", async ({
     authenticatedPage: page,
   }) => {
+    const createEventPage = await openCreateEventPage(page);
     const unique = Date.now();
     await createEventPage.createEvent({
       title: `Online Event ${unique}`,
@@ -41,12 +43,13 @@ test.describe("Create draft event", () => {
       isOnline: true,
     });
 
-    await page.waitForURL("/events");
+    await page.waitForURL("/organizer/events");
   });
 
   test("empty title shows validation error", async ({
     authenticatedPage: page,
   }) => {
+    const createEventPage = await openCreateEventPage(page);
     await createEventPage.fillForm({
       title: "",
       startDate: "2026-08-01",
@@ -63,6 +66,7 @@ test.describe("Create draft event", () => {
   test("end before start shows validation error", async ({
     authenticatedPage: page,
   }) => {
+    const createEventPage = await openCreateEventPage(page);
     await createEventPage.fillForm({
       title: "Bad Timing Event",
       startDate: "2026-08-01",
@@ -79,6 +83,7 @@ test.describe("Create draft event", () => {
   test("missing address for in-person event shows validation error", async ({
     authenticatedPage: page,
   }) => {
+    const createEventPage = await openCreateEventPage(page);
     await createEventPage.fillForm({
       title: "No Address Event",
       startDate: "2026-08-01",
@@ -94,7 +99,7 @@ test.describe("Create draft event", () => {
   });
 
   test("unauthenticated user is redirected to login", async ({ page }) => {
-    await page.goto("/events/create");
+    await page.goto("/organizer/events/create");
     await page.waitForURL(/\/login/);
   });
 });

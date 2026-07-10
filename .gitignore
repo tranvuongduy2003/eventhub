@@ -32,6 +32,8 @@ TestResults/
 *.trx
 *.coverage
 *.coveragexml
+e2e/test-results/
+e2e/playwright-report/
 
 # Node / frontend
 node_modules/

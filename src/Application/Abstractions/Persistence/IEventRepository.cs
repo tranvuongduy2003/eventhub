@@ -1,5 +1,6 @@
 using EventHub.Application.Common;
 using EventHub.Domain.Events;
+using EventHub.Domain.Users;
 
 namespace EventHub.Application.Abstractions.Persistence;
 
@@ -10,6 +11,10 @@ public interface IEventRepository
     Task<Event?> GetByIdAsync(EventId eventId, CancellationToken cancellationToken = default);
 
     Task<Event?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<Event>> GetByOrganizerAsync(
+        UserId organizerId,
+        CancellationToken cancellationToken = default);
 
     Task<PaginatedResult<Event>> GetPublishedUpcomingAsync(
         int page,

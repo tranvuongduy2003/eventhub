@@ -5,7 +5,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { paths } from '@/app/paths'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import * as checkoutApi from '@/features/checkout/api'
 import {
@@ -192,7 +192,7 @@ export function PublicEventPage() {
         <Card>
           <CardHeader>
             <div className="flex items-start justify-between gap-2">
-              <CardTitle className="text-xl md:text-2xl">{event.title}</CardTitle>
+              <h1 className="text-xl leading-snug font-medium md:text-2xl">{event.title}</h1>
               {event.status === 'Cancelled' && <Badge variant="destructive">Cancelled</Badge>}
               {event.status === 'Closed' && <Badge variant="secondary">Sales closed</Badge>}
             </div>

@@ -1,13 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.E2E_BASE_URL ?? "https://localhost:5000";
+const appHostCommand =
+  process.env.CI === "true"
+    ? "dotnet run --project ../src/AppHost/EventHub.AppHost.csproj --no-build -c Release"
+    : "dotnet run --project ../src/AppHost/EventHub.AppHost.csproj";
 
-/**
- * Playwright config for EventHub e2e tests.
- *
- * Prerequisites: Aspire AppHost must be running (full stack).
- * Run:  cd e2e && npx playwright test
- */
 export default defineConfig({
   testDir: "./tests",
   fullyParallel: true,
@@ -15,6 +13,13 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: [["html", { open: "never" }]],
+  webServer: {
+    command: appHostCommand,
+    url: baseURL,
+    reuseExistingServer: true,
+    timeout: process.env.CI === "true" ? 900_000 : 300_000,
+    ignoreHTTPSErrors: true,
+  },
 
   use: {
     baseURL,

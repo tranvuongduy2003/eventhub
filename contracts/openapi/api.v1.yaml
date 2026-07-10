@@ -861,6 +861,69 @@ components:
         - confirmedAt
         - lines
       type: object
+    OrganizerEventListItemResponse:
+      properties:
+        eventId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        isOnline:
+          type: boolean
+        physicalAddress:
+          type:
+            - "null"
+            - string
+        soldCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        startsAt:
+          format: date-time
+          type:
+            - "null"
+            - string
+        status:
+          type: string
+        ticketTypeCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        timeZoneId:
+          type:
+            - "null"
+            - string
+        title:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - eventId
+        - title
+        - status
+        - startsAt
+        - timeZoneId
+        - physicalAddress
+        - isOnline
+        - ticketTypeCount
+        - soldCount
+        - updatedAt
+      type: object
+    OrganizerEventListingResponse:
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/OrganizerEventListItemResponse"
+          type: array
+      required:
+        - items
+      type: object
     PaymentProviderNotificationRequest:
       properties:
         providerReference:
@@ -1505,6 +1568,75 @@ components:
         - currency
         - providerReference
         - redirectUrl
+      type: object
+    TicketTypeResponse:
+      properties:
+        capacity:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        createdAt:
+          format: date-time
+          type: string
+        maxPerOrder:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - "null"
+            - integer
+            - string
+        name:
+          type: string
+        priceAmount:
+          format: double
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+        priceCurrency:
+          type: string
+        reserved:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        salesWindowEnd:
+          format: date-time
+          type:
+            - "null"
+            - string
+        salesWindowStart:
+          format: date-time
+          type:
+            - "null"
+            - string
+        sold:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketTypeId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+      required:
+        - ticketTypeId
+        - name
+        - priceAmount
+        - priceCurrency
+        - capacity
+        - maxPerOrder
+        - salesWindowStart
+        - salesWindowEnd
+        - sold
+        - reserved
+        - createdAt
       type: object
     UpdateDiscountCodeRequest:
       properties:
@@ -3138,6 +3270,47 @@ paths:
       tags:
         - EventRoles
   /api/events/{eventId}/ticket-types:
+    get:
+      operationId: ListTicketTypes
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/TicketTypeResponse"
+                type: array
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
+      tags:
+        - TicketTypes
     post:
       operationId: AddTicketType
       parameters:
@@ -3546,6 +3719,24 @@ paths:
           description: Internal Server Error
       tags:
         - Payments
+  /api/organizer/events:
+    get:
+      operationId: ListOrganizerEvents
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizerEventListingResponse"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+      tags:
+        - Events
   /api/payments/provider-notifications/failed:
     post:
       operationId: FailPayment

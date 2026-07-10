@@ -1,5 +1,7 @@
 import { test, expect } from "../../fixtures/auth.fixture";
 
+const apiUrl = process.env.E2E_API_URL ?? "https://localhost:8000";
+
 test.describe("Logout", () => {
   test("logout clears session and redirects to login", async ({
     authenticatedPage: page,
@@ -8,7 +10,7 @@ test.describe("Logout", () => {
       page.getByRole("heading", { level: 1 }),
     ).toContainText("Welcome back");
 
-    const response = await page.request.post("/api/auth/logout");
+    const response = await page.request.post(`${apiUrl}/api/auth/logout`);
     expect(response.status()).toBe(204);
 
     await page.goto("/");
@@ -18,9 +20,9 @@ test.describe("Logout", () => {
   test("session cookie is deleted after logout", async ({
     authenticatedPage: page,
   }) => {
-    await page.request.post("/api/auth/logout");
+    await page.request.post(`${apiUrl}/api/auth/logout`);
 
-    const meResponse = await page.request.get("/api/auth/me");
+    const meResponse = await page.request.get(`${apiUrl}/api/auth/me`);
     expect(meResponse.status()).toBe(401);
   });
 });

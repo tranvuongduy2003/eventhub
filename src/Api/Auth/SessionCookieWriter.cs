@@ -24,7 +24,7 @@ internal static class SessionCookieWriter
             {
                 HttpOnly = true,
                 Secure = httpContext.Request.IsHttps,
-                SameSite = SameSiteMode.Lax,
+                SameSite = ResolveSameSiteMode(httpContext),
                 MaxAge = maxAge,
                 Path = "/",
             });
@@ -38,8 +38,11 @@ internal static class SessionCookieWriter
             {
                 HttpOnly = true,
                 Secure = httpContext.Request.IsHttps,
-                SameSite = SameSiteMode.Lax,
+                SameSite = ResolveSameSiteMode(httpContext),
                 Path = "/",
             });
     }
+
+    private static SameSiteMode ResolveSameSiteMode(HttpContext httpContext) =>
+        httpContext.Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax;
 }
