@@ -94,6 +94,42 @@ public sealed class Ticket : AggregateRoot<TicketId>
         Raise(new TicketCheckedInEvent(Id, EventId, OrderId, Code, checkedInAt, checkedInAt));
     }
 
+    public Ticket Transfer(
+        Contact recipient,
+        TicketCode replacementCode,
+        DateTimeOffset transferredAt,
+        TicketId? replacementTicketId = null)
+    {
+        if (Status == TicketStatus.CheckedIn)
+        {
+            throw new BusinessRuleValidationException(
+                "TICKET_ALREADY_CHECKED_IN",
+                "A checked-in ticket cannot be transferred.");
+        }
+
+        if (Status != TicketStatus.Valid)
+        {
+            throw new BusinessRuleValidationException(
+                "TICKET_NOT_VALID_FOR_TRANSFER",
+                "This ticket is not valid for transfer.");
+        }
+
+        Status = TicketStatus.Transferred;
+
+        var replacementTicket = Issue(
+            EventId,
+            OrderId,
+            TicketTypeId,
+            recipient,
+            replacementCode,
+            transferredAt,
+            replacementTicketId);
+
+        Raise(new TicketTransferredEvent(Id, replacementTicket.Id, EventId, OrderId, Code, replacementCode, transferredAt));
+
+        return replacementTicket;
+    }
+
     public static Ticket FromPersistence(
         TicketId id,
         EventId eventId,

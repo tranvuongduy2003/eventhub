@@ -609,7 +609,7 @@ An optional reminder before the event.
 **Builds on previous:** acts on the tickets from EP-7 and, for returns, the inventory from EP-3 and refunds from EP-6. Realizes `product.md` DEC-2.
 
 #### F-10.1 — Transfer a ticket at face value
-`Next · delivery planned · serves PER-A1, PER-A2 · depends on F-7.1`
+`Next · delivery implemented · serves PER-A1, PER-A2 · depends on F-7.1`
 A holder gives a ticket to someone else, with no markup.
 - *Story:* As an attendee who can no longer attend, I want to pass my ticket to a friend so that it is not wasted.
 - **Acceptance criteria**
@@ -617,7 +617,7 @@ A holder gives a ticket to someone else, with no markup.
   - No money is collected by EventHub for a transfer, and there is no way to set a price — transfers are face value only (`product.md` DEC-2).
 
 #### F-10.2 — Transfer safeguards
-`Next · delivery planned · serves PER-A1, PER-O1 · depends on F-10.1, F-8.1`
+`Next · delivery implemented · serves PER-A1, PER-O1 · depends on F-10.1, F-8.1`
 Transfers cannot be abused for entry.
 - **Acceptance criteria**
   - A checked-in ticket cannot be transferred.
