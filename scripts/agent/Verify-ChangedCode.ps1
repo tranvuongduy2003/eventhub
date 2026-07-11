@@ -13,6 +13,9 @@ param(
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 Set-Location -LiteralPath $repoRoot
+$powerShellExecutable = if (Get-Command pwsh -ErrorAction SilentlyContinue) { 'pwsh' } else { 'powershell' }
+$testDocsMemoryCommand = "$powerShellExecutable -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1"
+$testHarnessPolicyCommand = "$powerShellExecutable -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-HarnessPolicy.ps1"
 
 function ConvertTo-RelativePath {
     param([string]$Value)
@@ -103,8 +106,8 @@ foreach ($file in $files) {
 
     if ($file -match '(^|/)AGENTS\.md$' -or $file -match '^(docs/|\.codex/config\.toml$|\.codex/agents/|\.codex/hooks/|\.codex/hooks\.json$|\.agents/skills/|scripts/agent/)') {
         $docsOrHarnessChanged = $true
-        $steps.Add('powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1') | Out-Null
-        $steps.Add('powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-HarnessPolicy.ps1') | Out-Null
+        $steps.Add($testDocsMemoryCommand) | Out-Null
+        $steps.Add($testHarnessPolicyCommand) | Out-Null
     }
 
     foreach ($step in $steps) {
@@ -131,8 +134,8 @@ if ($contractChanged) {
     Add-Command -Commands $commands -Seen $seen -Command 'yarn --cwd web api:verify'
 }
 if ($docsOrHarnessChanged) {
-    Add-Command -Commands $commands -Seen $seen -Command 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1'
-    Add-Command -Commands $commands -Seen $seen -Command 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-HarnessPolicy.ps1'
+    Add-Command -Commands $commands -Seen $seen -Command $testDocsMemoryCommand
+    Add-Command -Commands $commands -Seen $seen -Command $testHarnessPolicyCommand
 }
 
 $errors = [System.Collections.Generic.List[string]]::new()
@@ -141,7 +144,7 @@ if (-not $PlanOnly) {
         $previousErrorActionPreference = $ErrorActionPreference
         $ErrorActionPreference = 'Continue'
         try {
-            $output = & powershell -NoProfile -ExecutionPolicy Bypass -Command $command 2>&1
+            $output = & $powerShellExecutable -NoProfile -ExecutionPolicy Bypass -Command $command 2>&1
             $exitCode = $LASTEXITCODE
         }
         finally {

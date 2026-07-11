@@ -11,6 +11,8 @@ param(
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $errors = [System.Collections.Generic.List[string]]::new()
+$powerShellExecutable = if (Get-Command pwsh -ErrorAction SilentlyContinue) { 'pwsh' } else { 'powershell' }
+$testHarnessPolicyCommand = "$powerShellExecutable -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-HarnessPolicy.ps1"
 
 function Add-Error {
     param([string]$Message)
@@ -74,7 +76,7 @@ function Invoke-Hook {
     )
     $path = Join-Path $repoRoot ($RelativePath -replace '/', '\')
     if (-not (Test-RequiredFile $RelativePath)) { return $null }
-    $output = $Payload | powershell -NoProfile -ExecutionPolicy Bypass -File $path 2>&1
+    $output = $Payload | & $powerShellExecutable -NoProfile -ExecutionPolicy Bypass -File $path 2>&1
     $exitCode = $LASTEXITCODE
     return [pscustomobject]@{
         Output = $output
@@ -88,7 +90,7 @@ function Invoke-VerifyChangedCodePlan {
     $scriptPath = Join-Path $repoRoot 'scripts\agent\Verify-ChangedCode.ps1'
     if (-not (Test-RequiredFile 'scripts/agent/Verify-ChangedCode.ps1')) { return $null }
 
-    $output = powershell -NoProfile -ExecutionPolicy Bypass -File $scriptPath -Path $Path -PlanOnly -Json 2>&1
+    $output = & $powerShellExecutable -NoProfile -ExecutionPolicy Bypass -File $scriptPath -Path $Path -PlanOnly -Json 2>&1
     $exitCode = $LASTEXITCODE
     return [pscustomobject]@{
         Output = $output
@@ -138,7 +140,7 @@ function Test-VerifyPlanIncludesHarnessPolicy {
     }
 
     $commands = @($json.commands)
-    if (-not ($commands -contains 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-HarnessPolicy.ps1')) {
+    if (-not ($commands -contains $testHarnessPolicyCommand)) {
         Add-Error "$Label verify plan does not include Test-HarnessPolicy.ps1"
     }
 }
