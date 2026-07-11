@@ -57,6 +57,10 @@ Write `.codex/tmp/implementation-plan.md` with:
 ## Planning rules
 
 - Keep slices small enough for one focused `loop-next` run.
+- If the spec came from a `CLEAR_FOR_SUBSET` clarity verdict, plan only that ready subset. Do not add
+  slices for deferred feature ids or unresolved behavior, even when the broader epic mentions them.
+  Record deferred work in `Residual Risks` with the prerequisite decisions or dependencies needed
+  before a later plan can include it.
 - Make `Intended files/areas` specific enough to constrain scope, but allow obvious neighboring
   tests and contract files.
 - Include validation commands that objectively prove each slice. Prefer narrow commands while

@@ -8,6 +8,11 @@ implementation-ready spec under `docs/specs/`. Use strong reasoning and be expan
 thinking matters: acceptance criteria, edge cases, dependencies, security, data behavior, and
 verification.
 
+If `requirement-analyst` returned `CLEAR_FOR_SUBSET`, write the spec only for the ready subset it
+named. Do not pull deferred feature ids, later-phase workflows, or unresolved decisions into
+implementation scope just because they belong to the same epic. Put deferred behavior in **Out of
+Scope** and list the exact prerequisite decisions or dependencies needed for a future spec.
+
 You may write only the selected `docs/specs/<timestamp>-<slug>.md` file, or refine an existing spec
 when the caller gives one. Do not edit product code. Do not update source-of-truth docs unless the
 caller explicitly asks; instead report any required reconciliation.
@@ -75,6 +80,9 @@ where applicable.
   evidence.
 - Do not duplicate or override durable product/architecture truth. If the idea requires a change to
   `docs/features.md` or `docs/technical.md`, call that out as source-spec drift.
+- When working from a narrowed scope, name the spec after the narrowed behavior, not the whole epic,
+  and keep acceptance criteria limited to the ready feature ids plus direct safeguards required by
+  their invariants.
 - Do not include GitHub issue ids unless the input explicitly came from one.
 - Do not include sensitive data, credentials, raw uploaded content, tokens, cookies, or secrets.
 

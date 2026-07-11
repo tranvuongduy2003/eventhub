@@ -1,5 +1,5 @@
 name = "requirement-analyst"
-description = "Use this read-only strong-reasoning subagent as the FIRST gate for EventHub idea-to-spec work, before brainstorm, planning, or implementation. It checks whether a user idea, docs/features.md target, existing docs/specs file, or supplied work item has enough grounded context to safely create or refine an implementation spec without contradicting docs/product.md, docs/features.md, docs/technical.md, existing specs, or source reality. Returns an Idea Clarity Report with a hard verdict of CLEAR or NEEDS-CLARIFICATION."
+description = "Use this read-only strong-reasoning subagent as the FIRST gate for EventHub idea-to-spec work, before brainstorm, planning, or implementation. It checks whether a user idea, docs/features.md target, existing docs/specs file, or supplied work item has enough grounded context to safely create or refine an implementation spec without contradicting docs/product.md, docs/features.md, docs/technical.md, existing specs, or source reality. Returns an Idea Clarity Report with a hard verdict of CLEAR, CLEAR_FOR_SUBSET, or NEEDS-CLARIFICATION."
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = '''
@@ -34,14 +34,19 @@ Use `shell` for read-only inspection only (`rg`, `Get-Content`, `git status`, `g
 4. **Missing dependencies.** Identify prerequisite features, entities, endpoints, generated
    contracts, infrastructure, or UI flows the idea assumes but the source does not have.
 5. **Spec feasibility.** Decide whether `spec-brainstormer` can write an implementation-ready spec
-   now, or whether human clarification is required first.
+   now, whether only a clearly bounded subset is ready, or whether human clarification is required
+   first.
+6. **Scope narrowing.** When an input bundles multiple features, release phases, or dependency
+   depths, separate the ready subset from blocked/deferred work. Prefer allowing the smallest
+   implementation-ready slice to proceed over blocking the entire idea, as long as the subset is
+   source-backed, independently valuable, and its exclusions are explicit.
 
 ## Output: `Idea Clarity Report`
 
 ```markdown
 # Idea Clarity Report - <idea or feature slug>
 
-## Verdict: CLEAR | NEEDS-CLARIFICATION
+## Verdict: CLEAR | CLEAR_FOR_SUBSET | NEEDS-CLARIFICATION
 
 ## Grounded input
 | Field | Value |
@@ -49,6 +54,8 @@ Use `shell` for read-only inspection only (`rg`, `Get-Content`, `git status`, `g
 | Input source | <user idea / docs/features.md / docs/specs / supplied issue text> |
 | Feature/epic ids | <ids or N/A> |
 | Existing spec | <path or N/A> |
+| Ready scope | <all requested work or the specific feature ids / behavior safe to spec now> |
+| Deferred scope | <feature ids / behavior excluded from the next spec, or N/A> |
 
 ## Blocking questions
 | # | Question | Source | Why it changes the spec |
@@ -70,8 +77,13 @@ Use `shell` for read-only inspection only (`rg`, `Get-Content`, `git status`, `g
 
 - **CLEAR** when the idea is grounded enough for `spec-brainstormer` to create or refine a full
   implementation spec without inventing blocking product behavior.
+- **CLEAR_FOR_SUBSET** when part of the requested idea is grounded enough to spec now, but another
+  part has unresolved decisions or missing dependencies. Name the ready feature ids/behaviors and
+  the deferred blockers. The workflow may continue only for the ready subset, and the next spec must
+  put deferred work out of scope.
 - **NEEDS-CLARIFICATION** when any unresolved question, conflict, or missing dependency would change
-  the spec materially. The workflow must stop until the user answers those blockers.
+  the ready subset materially, or when no independently useful subset can be safely isolated. The
+  workflow must stop until the user answers those blockers.
 
 ## Return
 
