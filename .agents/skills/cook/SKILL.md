@@ -43,6 +43,7 @@ not-confirmed feature with the clearest dependency chain. Do not require an issu
 $cook <idea-or-feature>
   -> source grounding
   -> requirement-analyst clarity gate
+  -> scope narrowing when only a subset is ready
   -> spec-brainstormer writes/refines docs/specs/<timestamp>-<slug>.md
   -> implementation-planner writes .codex/tmp/implementation-plan.md
   -> branch
@@ -73,7 +74,16 @@ conflicts with `docs/`.
 - **NEEDS-CLARIFICATION** -> write the report to `.codex/tmp/<slug>-clarify.md` and stop. Ask the
   user only the blocking questions whose answers would change product behavior, security,
   architecture, data shape, or scope.
+- **CLEAR_FOR_SUBSET** -> continue only for the ready subset named by `requirement-analyst`. Record
+  the excluded feature ids/behaviors in the idea brief passed to `spec-brainstormer`, and require
+  the spec to put them in **Out of Scope** or **Risks and Follow-up Decisions**. Do not create a
+  branch yet; the scoped spec still comes first.
 - **CLEAR** -> continue. Do not create a branch yet; the spec comes first.
+
+When a target epic mixes `Next` and `Later` features, implemented and planned dependencies, or
+independent workflows with different missing decisions, prefer a scoped first spec over blocking the
+whole epic. The scope is valid only when it is source-backed, independently valuable, and its
+deferred behavior does not need to be invented to implement the ready behavior.
 
 ## Step 3 - Brainstorm and write the implementation spec
 
@@ -100,6 +110,11 @@ product guessing. It should include, as applicable:
 If an existing spec is stale or thin, refine it rather than creating a competing spec. Do not make
 `docs/specs/` a second source of truth: reconcile durable behavior back to `docs/features.md` or
 `docs/technical.md` when the brainstorm reveals source-spec drift.
+
+For a `CLEAR_FOR_SUBSET` input, create or refine exactly one spec for the ready subset. Name the
+spec after that subset rather than the whole epic, keep deferred features out of implementation
+scope, and include the prerequisite questions that must be answered before a later spec can cover
+the excluded work.
 
 ## Step 4 - Plan from the spec
 

@@ -29,6 +29,17 @@ internal sealed class TicketsEndpoint : IEndpoint
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
+        endpoints.MapPost("/api/orders/{orderId}/tickets/{ticketId}/transfer", TransferTicket)
+            .WithName("TransferTicket")
+            .WithTags("Tickets")
+            .RequireCompleteJsonBody<TransferTicketRequest>()
+            .Accepts<TransferTicketRequest>("application/json")
+            .Produces<TicketResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+
         endpoints.MapGet("/api/me/tickets", GetMyTickets)
             .WithName("GetMyTickets")
             .WithTags("Tickets")
@@ -111,6 +122,21 @@ internal sealed class TicketsEndpoint : IEndpoint
         return Results.Json(
             new ResendTicketsResponse(result.Value!.Accepted),
             statusCode: StatusCodes.Status202Accepted);
+    }
+
+    private static async Task<IResult> TransferTicket(
+        int orderId,
+        int ticketId,
+        TransferTicketRequest request,
+        ISender sender)
+    {
+        var result = await sender.Send(new TransferTicketCommand(
+            orderId,
+            ticketId,
+            request.RecipientName,
+            request.RecipientEmail));
+
+        return result.ToHttpResult(ticket => Results.Ok(ToResponse(ticket)));
     }
 
     private static async Task<IResult> GetMyTickets(ISender sender)

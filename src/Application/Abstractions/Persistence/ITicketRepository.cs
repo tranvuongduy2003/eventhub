@@ -12,6 +12,8 @@ public interface ITicketRepository
 
     Task<Ticket?> GetByCodeAsync(TicketCode code, CancellationToken cancellationToken = default);
 
+    Task<Ticket?> GetByIdAsync(TicketId ticketId, CancellationToken cancellationToken = default);
+
     Task<Ticket?> GetByIdForEventAsync(
         TicketId ticketId,
         EventId eventId,

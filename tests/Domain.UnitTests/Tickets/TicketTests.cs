@@ -84,6 +84,80 @@ public sealed class TicketTests
             .Where(exception => exception.Code == "TICKET_WRONG_EVENT");
     }
 
+    [Fact]
+    public void Transfer_WhenTicketIsValid_TransfersSourceAndIssuesReplacement()
+    {
+        var ticket = CreateTicket();
+        var transferredAt = new DateTimeOffset(2026, 7, 11, 10, 0, 0, TimeSpan.Zero);
+        var recipient = Contact.Create("Recipient Friend", "Recipient@Example.com");
+        var replacementCode = TicketCode.Create("tk_bcdefghijklmnopqrstuvwxyz1234567");
+
+        ticket.ClearDomainEvents();
+        var replacement = ticket.Transfer(recipient, replacementCode, transferredAt, TicketId.From(5));
+
+        ticket.Status.Should().Be(TicketStatus.Transferred);
+        replacement.Status.Should().Be(TicketStatus.Valid);
+        replacement.Id.Should().Be(TicketId.From(5));
+        replacement.EventId.Should().Be(ticket.EventId);
+        replacement.OrderId.Should().Be(ticket.OrderId);
+        replacement.TicketTypeId.Should().Be(ticket.TicketTypeId);
+        replacement.Code.Should().Be(replacementCode);
+        replacement.Holder.Email.Should().Be("recipient@example.com");
+        ticket.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<TicketTransferredEvent>()
+            .Which.ReplacementCode.Should().Be(replacementCode);
+        replacement.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<TicketIssuedEvent>();
+    }
+
+    [Fact]
+    public void Transfer_WhenTicketIsCheckedIn_Throws()
+    {
+        var ticket = CreateTicket();
+        ticket.CheckIn(EventId.From(1), new DateTimeOffset(2026, 7, 10, 18, 0, 0, TimeSpan.Zero));
+
+        var act = () => ticket.Transfer(
+            Contact.Create("Recipient Friend", "recipient@example.com"),
+            TicketCode.Create("tk_bcdefghijklmnopqrstuvwxyz1234567"),
+            DateTimeOffset.UtcNow);
+
+        act.Should().Throw<BusinessRuleValidationException>()
+            .Where(exception => exception.Code == "TICKET_ALREADY_CHECKED_IN");
+    }
+
+    [Fact]
+    public void Transfer_WhenTicketAlreadyTransferred_Throws()
+    {
+        var ticket = CreateTicket();
+        ticket.Transfer(
+            Contact.Create("Recipient Friend", "recipient@example.com"),
+            TicketCode.Create("tk_bcdefghijklmnopqrstuvwxyz1234567"),
+            new DateTimeOffset(2026, 7, 11, 10, 0, 0, TimeSpan.Zero));
+
+        var act = () => ticket.Transfer(
+            Contact.Create("Second Recipient", "second@example.com"),
+            TicketCode.Create("tk_cdefghijklmnopqrstuvwxyz12345678"),
+            DateTimeOffset.UtcNow);
+
+        act.Should().Throw<BusinessRuleValidationException>()
+            .Where(exception => exception.Code == "TICKET_NOT_VALID_FOR_TRANSFER");
+    }
+
+    [Fact]
+    public void CheckIn_WhenTicketIsTransferred_Throws()
+    {
+        var ticket = CreateTicket();
+        ticket.Transfer(
+            Contact.Create("Recipient Friend", "recipient@example.com"),
+            TicketCode.Create("tk_bcdefghijklmnopqrstuvwxyz1234567"),
+            new DateTimeOffset(2026, 7, 11, 10, 0, 0, TimeSpan.Zero));
+
+        var act = () => ticket.CheckIn(EventId.From(1), DateTimeOffset.UtcNow);
+
+        act.Should().Throw<BusinessRuleValidationException>()
+            .Where(exception => exception.Code == "TICKET_NOT_VALID_FOR_CHECK_IN");
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("short")]

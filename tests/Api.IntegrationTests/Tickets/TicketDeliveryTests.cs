@@ -145,6 +145,112 @@ public sealed class TicketDeliveryTests(IntegrationTestFixture fixture)
     }
 
     [Fact]
+    public async Task TransferTicket_ValidTicket_InvalidatesOldCodeAndIssuesFreshRecipientTicket()
+    {
+        var emailSender = new RecordingEmailSender();
+        await using var factory = CreateFactory(emailSender);
+        await ClearTicketDataAsync(factory);
+        var guestClient = factory.CreateClient();
+        var organizerClient = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true });
+        var staffClient = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true });
+
+        var staffId = await RegisterStaffAsync(staffClient);
+        var data = await SeedPublishedEventAsync(factory, organizerClient, capacity: 5, priceAmount: 0m);
+        await SeedStaffRoleAsync(factory, data.EventId, staffId);
+        var order = await PlaceOrderAsync(guestClient, data.EventId, data.TicketTypeId, quantity: 1, "jane@example.com");
+
+        await using var beforeScope = factory.Services.CreateAsyncScope();
+        var beforeDatabaseContext = beforeScope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
+        var originalTicket = await beforeDatabaseContext.Tickets.SingleAsync(ticket => ticket.OrderId == order.OrderId);
+        var originalCode = originalTicket.Code;
+
+        typeof(TransferTicketRequest).GetProperties()
+            .Select(property => property.Name)
+            .Should().BeEquivalentTo(["RecipientName", "RecipientEmail"]);
+
+        using var transferResponse = await guestClient.PostAsJsonAsync(
+            $"/api/orders/{order.OrderId}/tickets/{originalTicket.Id}/transfer",
+            new TransferTicketRequest("Recipient Friend", "Recipient@Example.com"));
+
+        transferResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var transfer = await transferResponse.Content.ReadFromJsonAsync<TicketResponse>();
+        transfer.Should().NotBeNull();
+        transfer!.HolderEmail.Should().Be("recipient@example.com");
+        transfer.Code.Should().NotBe(originalCode);
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
+        var tickets = await databaseContext.Tickets
+            .Where(ticket => ticket.OrderId == order.OrderId)
+            .OrderBy(ticket => ticket.Id)
+            .ToListAsync();
+
+        tickets.Should().HaveCount(2);
+        tickets[0].Status.Should().Be("Transferred");
+        tickets[0].Code.Should().Be(originalCode);
+        tickets[1].Status.Should().Be("Valid");
+        tickets[1].Code.Should().NotBe(originalCode);
+        tickets[1].HolderName.Should().Be("Recipient Friend");
+        tickets[1].HolderEmail.Should().Be("recipient@example.com");
+        emailSender.Messages.Should().Contain(message => message.Recipient == "recipient@example.com");
+
+        using var oldCodeResponse = await staffClient.PostAsJsonAsync(
+            $"/api/events/{data.EventId}/check-ins/scan",
+            new CheckInTicketRequest(originalCode));
+        using var newCodeResponse = await staffClient.PostAsJsonAsync(
+            $"/api/events/{data.EventId}/check-ins/scan",
+            new CheckInTicketRequest(tickets[1].Code));
+
+        oldCodeResponse.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        var oldCodeProblem = await oldCodeResponse.Content.ReadFromJsonAsync<EventHub.Api.Common.ApiProblemDetails>();
+        oldCodeProblem.Should().NotBeNull();
+        oldCodeProblem!.Code.Should().Be("TICKET_NOT_VALID_FOR_CHECK_IN");
+
+        newCodeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var checkedIn = await newCodeResponse.Content.ReadFromJsonAsync<CheckInTicketResponse>();
+        checkedIn.Should().NotBeNull();
+        checkedIn!.HolderEmail.Should().Be("recipient@example.com");
+    }
+
+    [Fact]
+    public async Task TransferTicket_CheckedInTicket_Returns422WithoutReplacement()
+    {
+        var emailSender = new RecordingEmailSender();
+        await using var factory = CreateFactory(emailSender);
+        await ClearTicketDataAsync(factory);
+        var guestClient = factory.CreateClient();
+        var organizerClient = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true });
+        var staffClient = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true });
+
+        var staffId = await RegisterStaffAsync(staffClient);
+        var data = await SeedPublishedEventAsync(factory, organizerClient, capacity: 5, priceAmount: 0m);
+        await SeedStaffRoleAsync(factory, data.EventId, staffId);
+        var order = await PlaceOrderAsync(guestClient, data.EventId, data.TicketTypeId, quantity: 1, "jane@example.com");
+
+        await using var beforeScope = factory.Services.CreateAsyncScope();
+        var beforeDatabaseContext = beforeScope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
+        var originalTicket = await beforeDatabaseContext.Tickets.SingleAsync(ticket => ticket.OrderId == order.OrderId);
+
+        using var checkInResponse = await staffClient.PostAsJsonAsync(
+            $"/api/events/{data.EventId}/check-ins/scan",
+            new CheckInTicketRequest(originalTicket.Code));
+        checkInResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var transferResponse = await guestClient.PostAsJsonAsync(
+            $"/api/orders/{order.OrderId}/tickets/{originalTicket.Id}/transfer",
+            new TransferTicketRequest("Recipient Friend", "recipient@example.com"));
+
+        transferResponse.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        var problem = await transferResponse.Content.ReadFromJsonAsync<EventHub.Api.Common.ApiProblemDetails>();
+        problem.Should().NotBeNull();
+        problem!.Code.Should().Be("TICKET_ALREADY_CHECKED_IN");
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
+        (await databaseContext.Tickets.CountAsync(ticket => ticket.OrderId == order.OrderId)).Should().Be(1);
+    }
+
+    [Fact]
     public async Task GetMyTickets_AttendeeSession_ReturnsTicketsForAccountEmail()
     {
         var emailSender = new RecordingEmailSender();
@@ -298,6 +404,36 @@ public sealed class TicketDeliveryTests(IntegrationTestFixture fixture)
             new RegisterUserRequest("Wallet Attendee", email, "SecurePass1!"));
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    private static async Task<Guid> RegisterStaffAsync(HttpClient staffClient)
+    {
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        using var response = await staffClient.PostAsJsonAsync(
+            "/api/users",
+            new RegisterUserRequest($"Staff {suffix}", $"staff_{suffix}@example.com", "SecurePass1!"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var body = await response.Content.ReadFromJsonAsync<UserRegistrationResponse>();
+        body.Should().NotBeNull();
+        return body!.UserId;
+    }
+
+    private static async Task SeedStaffRoleAsync(
+        IntegrationTestWebApplicationFactory factory,
+        int eventId,
+        Guid staffId)
+    {
+        await using var scope = factory.Services.CreateAsyncScope();
+        var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
+        databaseContext.EventUserRoles.Add(new EventUserRoleRecord
+        {
+            EventId = eventId,
+            UserId = staffId,
+            Role = EventRole.Staff,
+            CreatedAt = Start,
+        });
+        await databaseContext.SaveChangesAsync();
     }
 
     private sealed record EventData(int EventId, int TicketTypeId, string EventTitle);

@@ -27,6 +27,15 @@ internal sealed class TicketRepository(ApplicationDatabaseContext databaseContex
         return record is null ? null : TicketPersistenceMapper.ToDomain(record);
     }
 
+    public async Task<Ticket?> GetByIdAsync(TicketId ticketId, CancellationToken cancellationToken = default)
+    {
+        var record = await databaseContext.Tickets
+            .AsNoTracking()
+            .FirstOrDefaultAsync(ticket => ticket.Id == ticketId.Value, cancellationToken);
+
+        return record is null ? null : TicketPersistenceMapper.ToDomain(record);
+    }
+
     public async Task<Ticket?> GetByIdForEventAsync(
         TicketId ticketId,
         EventId eventId,

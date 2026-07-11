@@ -246,6 +246,30 @@ Test-FileContains 'AGENTS.md' @(
     'scripts/agent/Verify-ChangedCode.ps1'
 )
 
+Test-FileContains '.agents/skills/cook/SKILL.md' @(
+    'CLEAR_FOR_SUBSET',
+    'scope narrowing',
+    'ready subset'
+)
+
+Test-FileContains '.codex/agents/requirement-analyst.toml' @(
+    'CLEAR_FOR_SUBSET',
+    'Scope narrowing',
+    'ready subset'
+)
+
+Test-FileContains '.codex/agents/spec-brainstormer.toml' @(
+    'CLEAR_FOR_SUBSET',
+    'Out of Scope',
+    'ready subset'
+)
+
+Test-FileContains '.codex/agents/implementation-planner.toml' @(
+    'CLEAR_FOR_SUBSET',
+    'Residual Risks',
+    'deferred feature ids'
+)
+
 foreach ($agent in @(
     '.codex/agents/requirement-analyst.toml',
     '.codex/agents/spec-brainstormer.toml',
