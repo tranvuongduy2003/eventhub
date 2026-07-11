@@ -75,6 +75,7 @@ pnpm-debug.log*
 
 # Harness runtime state (verify gate, traces, temporary task artifacts)
 .codex/state/
+.codex/tmp/
 
 # Harness eval run output (cases/fixtures are committed)
 
