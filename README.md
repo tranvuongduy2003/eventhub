@@ -1,40 +1,41 @@
 # EventHub
 
-Local-first event management and ticketing platform. .NET backend (Clean Architecture + CQRS + DDD) and React frontend. Orchestrated by [.NET Aspire](https://aspire.dev).
+EventHub is a small event management and ticketing platform. It uses a .NET Clean Architecture + CQRS + DDD backend, a React + TypeScript + Vite frontend, and .NET Aspire for the local topology.
 
 ## About
 
-**EventHub** connects organizers and attendees for small events — transparent pricing, valid tickets, check-in, and basic results. Built as a pet project with Codex agent configuration.
+EventHub connects organizers and attendees for small events: transparent pricing, valid tickets, check-in, and basic results. It is a pet project focused on a complete, maintainable end-to-end product rather than large-scale ticketing.
 
-### Codex agent setup (`.codex/`)
+## Codex Agent Setup
 
 | Piece | Purpose |
-|-------|---------|
-| **Project config** (`.codex/`) | Hooks, permissions, MCP servers, custom agents |
-| **Skills** (`.agents/skills/`) | OpenAPI sync, MCP (Postgres), env setup, git/PR, UI |
-| **Custom agents** (`.codex/agents/`) | Read-only subagents and workflow helpers |
+| --- | --- |
+| `AGENTS.md` and nested `AGENTS.md` files | Repository and path-scoped working rules |
+| `.agents/skills/` | Reusable workflows for backend, frontend, E2E, OpenAPI, MCP, and harness work |
+| `.codex/agents/` | Focused subagent prompts for review, security, acceptance, implementation, and harness diagnosis |
+| `.codex/hooks.json` and `.codex/hooks/` | Guard, formatting, telemetry, and stop-verification hooks |
+| `scripts/agent/` | Current validation sensors: changed-code, docs, and harness policy |
 
-Open the repo in Codex; agents read `AGENTS.md` and **`docs/CONSTITUTION.md`** plus companion docs before changing code.
+Agents should read the smallest relevant set of `docs/product.md`, `docs/features.md`, and `docs/technical.md`, then the applicable `AGENTS.md` files and skill instructions before changing code.
 
-**Agent workflow:** `cook-unified` is the single entrypoint. `cook` runs the internal phases `spec` (spec in `docs/_memory/specs/`) -> `plan` (implementation plan with Harness Impact and `memory-sync` inventory in `.codex/plans/`) -> implement -> verify -> memory sync and handoff. Completion means mark spec implemented, refresh all affected long-term memory and harness contract surfaces, then delete the plan if one was created.
+## Stack Highlights
 
-### Stack highlights
-
-- **Modular monolith** — bounded contexts in [`docs/_memory/source/domain-model-specification.md`](docs/_memory/source/domain-model-specification.md)
-- **PostgreSQL** (authoritative) + **Redis** (cache) + **MinIO** (images) + **RabbitMQ** (integration events)
-- **React 19 + Vite** frontend with OpenAPI → TypeScript codegen
-- **.NET Aspire** AppHost — no hand-authored `docker-compose`
+- Modular monolith with bounded contexts and invariants in `docs/technical.md`.
+- PostgreSQL is authoritative; Redis is rebuildable cache; MinIO stores binary assets.
+- RabbitMQ is the integration-event broker for asynchronous bounded-context work.
+- React 19 + Vite frontend consumes generated OpenAPI types.
+- .NET Aspire AppHost is the local topology source of truth. Do not add hand-authored Docker Compose.
 
 ## Prerequisites
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
-- [Aspire CLI](https://aspire.dev) 13.3+
-- [Node.js 22 LTS](https://nodejs.org/) and [Yarn](https://yarnpkg.com/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- .NET 10 SDK
+- Aspire CLI 13.3+
+- Node.js 22 LTS and Yarn
+- Docker Desktop or a compatible container runtime
 
-## First-time setup
+## First-Time Setup
 
-From the repository root (Windows PowerShell):
+From the repository root:
 
 ```powershell
 .\scripts\Setup-Environments.ps1
@@ -42,71 +43,63 @@ From the repository root (Windows PowerShell):
 
 Or manually:
 
-```bash
+```powershell
 dotnet restore EventHub.slnx
 yarn --cwd web install
-
-cp .env.example .env
-cp web/.env.example web/.env
-
 dotnet dev-certs https
 dotnet dev-certs https --trust
 ```
 
-## Run locally
+Create local `.env` files from the examples when needed. Do not commit secrets or machine-specific environment files.
 
-```bash
+## Run Locally
+
+```powershell
 dotnet run --project src/AppHost/EventHub.AppHost.csproj
 ```
 
-Or:
+Aspire exposes the API, web app, PostgreSQL, Redis, MinIO, RabbitMQ, Seq, and seeder resources through the dashboard.
 
-```bash
-aspire run --project src/AppHost/EventHub.AppHost.csproj
-```
+## MCP Servers
 
-| Service | URL / port |
-|---------|------------|
-| Web (Vite) | `https://localhost:5000` |
-| API (HTTPS) | `https://localhost:8000` |
-| PostgreSQL | `localhost:5432` |
-| Redis | `localhost:6379` |
-| MinIO | Aspire dashboard (resource `storage`) |
-| RabbitMQ | Aspire dashboard (resource `messaging`) |
-| Seq | Aspire dashboard (resource `seq`) |
-
-## MCP servers
-
-Shared MCP server config lives in [`.codex/config.toml`](.codex/config.toml). Do not use `.mcp.json` as a repository standard; it is local-only and may contain machine-specific secrets.
+Shared MCP server config lives in `.codex/config.toml`.
 
 | Server | Purpose |
-|--------|---------|
-| `aspire` | Aspire dashboard resources, logs |
-| `postgres` | Read-only SQL against local `app` database |
-| `playwright` | Browser automation for e2e diagnostics |
-| `github` | GitHub MCP over HTTP |
+| --- | --- |
+| `aspire` | Inspect running Aspire resources, logs, and endpoints |
+| `postgres` | Read-only SQL diagnostics against local `app` database |
+| `playwright` | Browser automation for E2E diagnostics |
+| `github` | GitHub repository, PR, and issue automation |
 | `shadcn` | shadcn component registry MCP |
-
-See `.agents/skills/postgres-mcp/SKILL.md`.
 
 ## Docs
 
 | Document | Role |
-|----------|------|
-| [`docs/CONSTITUTION.md`](docs/CONSTITUTION.md) | Immutable principles |
-| [`docs/_memory/source/product-requirements.md`](docs/_memory/source/product-requirements.md) | Product intent and decisions |
-| [`docs/_memory/source/feature-specification.md`](docs/_memory/source/feature-specification.md) | Epics, features, acceptance criteria |
-| [`docs/_memory/source/domain-model-specification.md`](docs/_memory/source/domain-model-specification.md) | Domain model |
-| [`docs/_memory/source/technical-design.md`](docs/_memory/source/technical-design.md) | Architecture and infrastructure |
-| [`docs/_memory/specs/`](docs/_memory/specs/) | Product specs (committed) |
+| --- | --- |
+| `docs/product.md` | Product intent, scope, decisions, guardrails |
+| `docs/features.md` | Epics, features, acceptance criteria, delivery status |
+| `docs/technical.md` | Architecture, domain model, invariants, runtime, verification |
+| `docs/specs/` | Committed implementation specs |
+| `docs/harness/` | Codex harness operating notes |
 
-Ephemeral plans live in `.codex/plans/` (gitignored; deleted after completed `cook` runs).
+Ephemeral plans, state, and telemetry live under ignored `.codex/` scratch paths.
 
-## API contract
+## Common Verification
 
-```bash
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1
+dotnet build EventHub.slnx -c Release
+dotnet test EventHub.slnx -c Release
+yarn --cwd web api:verify
+yarn --cwd web build
+yarn --cwd e2e test
+```
+
+## API Contract
+
+```powershell
 yarn --cwd web api:export
 yarn --cwd web api:codegen
 ```
 
-See [`contracts/openapi/README.md`](contracts/openapi/README.md).
+See `contracts/openapi/README.md`.

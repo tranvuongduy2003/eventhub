@@ -1,4 +1,0 @@
-interface:
-  display_name: "Harness Policies"
-  short_description: "Maintain EventHub harness policy and guardrail rules."
-  default_prompt: "Use harness-policies to update EventHub permission, approval, guardrail, or protected-path policy."

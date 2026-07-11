@@ -1,4 +1,4 @@
-﻿---
+---
 name: tanstack-query
 description: Powerful asynchronous state management, server-state utilities, and data fetching for TS/JS, React, Vue, Solid, Svelte & Angular.
 ---

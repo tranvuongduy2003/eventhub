@@ -1,16 +1,16 @@
-# Issue body template (`/spec` Step 3)
+# Issue Body Template
 
-Skeleton for **`gh issue create --body-file`** when running `/spec`.
+Skeleton for `gh issue create --body-file` when creating a feature-spec tracking issue.
 
-**One issue per spec** — not epic + per-story issues.
+Use one issue per spec; do not split one feature spec into epic plus per-story issues.
 
 | File | Use |
-|------|-----|
+| --- | --- |
 | `spec.template.md` | Single tracking issue for the whole feature spec |
 
-**Workflow**
+## Workflow
 
 1. Copy `spec.template.md` to a temp path.
-2. Fill from `docs/_memory/specs/<YYYYMMDDHHmmss>-<feature>.md` (problem, AC list, links).
-3. `gh issue create --title "Spec: …" --label "spec,enhancement" --body-file $path`
-4. Set spec frontmatter `github_issue: <number>`.
+2. Fill from `docs/specs/<YYYYMMDDHHmmss>-<feature>.md` with problem, acceptance criteria, and links.
+3. Run `gh issue create --title "Spec: ..." --label "spec,enhancement" --body-file <path>` when GitHub work is explicitly requested.
+4. If the spec tracks GitHub metadata, record the issue number in the spec.

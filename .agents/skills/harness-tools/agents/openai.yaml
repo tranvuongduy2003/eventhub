@@ -1,4 +1,0 @@
-interface:
-  display_name: "Harness Tools"
-  short_description: "Create EventHub harness tool adapter and CLI contracts."
-  default_prompt: "Use harness-tools to create or update EventHub hosted tool, MCP, or CLI adapter contracts."

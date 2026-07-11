@@ -13,8 +13,8 @@ Credentials and ports are defined by the Aspire AppHost, not hardcoded ad hoc va
 
 | Setting | AppHost source | Local dev value |
 |---|---|---|
-| Postgres resource | `AddPostgres("postgres", â€¦)` in [`src/AppHost/AppHost.cs`](../../../src/AppHost/AppHost.cs) | `postgres` |
-| Database | `AddDatabase("app")` | `app` â†’ services use `ConnectionStrings__app` |
+| Postgres resource | `AddPostgres("postgres", ...)` in [`src/AppHost/AppHost.cs`](../../../src/AppHost/AppHost.cs) | `postgres` |
+| Database | `AddDatabase("app")` | `app` -> services use `ConnectionStrings__app` |
 | Username | Aspire Postgres container default | `postgres` |
 | Password | `Parameters:postgres-password` in [`src/AppHost/appsettings.Development.json`](../../../src/AppHost/appsettings.Development.json) | `postgres` |
 | Host port | `.WithEndpoint(port: 5432, targetPort: 5432)` | `5432` |
@@ -27,7 +27,7 @@ postgresql://postgres:postgres@localhost:5432/app?sslmode=disable
 
 Also documented in [`.env.example`](../../../.env.example) as `POSTGRES_URI`. If you change `Parameters:postgres-password` or the database name in AppHost, update `.codex/config.toml`, `.env.example`, and `.env` together.
 
-When the stack is running, confirm the live string in the **Aspire dashboard** (Postgres â†’ `app` connection string) or via **aspire** MCP `list_resources`.
+When the stack is running, confirm the live string in the **Aspire dashboard** (Postgres -> `app` connection string) or via **aspire** MCP `list_resources`.
 
 ## Configuration
 
@@ -50,8 +50,8 @@ If MCP connection fails, compare the URL to the Aspire dashboard connection stri
 
 | Task | Use |
 |---|---|
-| Inspect live rows, counts, joins, explain plans | **This skill** â†’ MCP `query` |
-| Table/column meaning, invariants, indexes | [`docs/_memory/source/technical-design.md`](../../../docs/_memory/source/technical-design.md) Â§6 and [`docs/_memory/source/domain-model-specification.md`](../../../docs/_memory/source/domain-model-specification.md) first, then MCP to confirm |
+| Inspect live rows, counts, joins, explain plans | **This skill** -> MCP `query` |
+| Table/column meaning, invariants, indexes | [`docs/technical.md`](../../../docs/technical.md) first, then MCP to confirm |
 | Add/change schema, EF migrations | Constitution III · Tech §6 — **not** MCP (no writes) |
 | AppHost / container not up | `aspire.md`, `env-doctor` |
 | Integration tests | Constitution VII · Tech §11 |
@@ -60,19 +60,19 @@ If MCP connection fails, compare the URL to the Aspire dashboard connection stri
 
 ### Tool: `query`
 
-- **Input:** `sql` â€” a **SELECT** (or read-only diagnostic such as `EXPLAIN` if the server allows it)
+- **Input:** `sql` - a **SELECT** (or read-only diagnostic such as `EXPLAIN` if the server allows it)
 - **No** `INSERT`, `UPDATE`, `DELETE`, `DDL`, or migration scripts via MCP
 
 ### Resources (schema)
 
-The server exposes per-table schema resources (URI pattern like `postgres://â€¦/schema`). Prefer reading schema resources or `information_schema` before guessing column names.
+The server exposes per-table schema resources (URI pattern like `postgres://.../schema`). Prefer reading schema resources or `information_schema` before guessing column names.
 
 ## Project conventions (always apply in SQL)
 
-From [`docs/_memory/source/technical-design.md`](../../../docs/_memory/source/technical-design.md) Â§6 and [`docs/_memory/source/domain-model-specification.md`](../../../docs/_memory/source/domain-model-specification.md):
+From [`docs/technical.md`](../../../docs/technical.md):
 
 - Application schema: **`app`** (not `public` for app tables)
-- Qualify tables: `app.users`, `app.user_sessions`, â€¦
+- Qualify tables: `app.users`, `app.user_sessions`, ...
 - Indexes: `ux_users_username`, `ux_users_email`
 
 Core tables: `users`, `user_sessions`.
@@ -80,16 +80,17 @@ Core tables: `users`, `user_sessions`.
 ## Workflow
 
 1. Confirm Postgres is up (Aspire dashboard or `env-doctor`).
-2. Read [`docs/_memory/source/technical-design.md`](../../../docs/_memory/source/technical-design.md) Â§6 and [`docs/_memory/source/domain-model-specification.md`](../../../docs/_memory/source/domain-model-specification.md) for the question (FKs, indexes, aggregates).
+2. Read [`docs/technical.md`](../../../docs/technical.md) for the question (FKs, indexes, aggregates).
 3. Call MCP **`query`** with qualified `app.*` SQL.
-4. Interpret results against Constitution Iâ€“III and Tech Â§5â€“6 â€” MCP shows storage, not business validation.
+4. Interpret results against `docs/technical.md`. MCP shows storage, not business validation.
 
 ## Safety
 
-- Local dev only; connection string contains credentials â€” never commit secrets beyond the existing dev URL pattern.
+- Local dev only; connection string contains credentials - never commit secrets beyond the existing dev URL pattern.
 - Do not paste large result sets into chat; summarize counts and sample rows.
-- Redis is **not** in this MCP server â€” use docs / app logs for session cache projections.
+- Redis is **not** in this MCP server - use docs / app logs for session cache projections.
 
 ## Examples
 
 See [reference.md](reference.md) for starter queries.
+

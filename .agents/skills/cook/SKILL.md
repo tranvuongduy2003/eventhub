@@ -1,213 +1,172 @@
 ---
 name: cook
-description: End-to-end EventHub delivery workflow. Use for product specs, engineering plans, implementation, verification, and repair loops through one harness-owned entrypoint.
+description: "Run the complete EventHub idea-to-implementation loop: brainstorm from a user idea or docs/features.md target, create or refine a committed docs/specs implementation spec, produce a detailed implementation plan, implement in small feature slices, test, review, verify, and prepare an optional PR handoff."
 ---
 
-# Cook
+# Cook - idea to spec to implementation
 
-`cook` is the single EventHub feature-delivery skill with one phased workflow:
+Run from the repository root. `$cook` starts from an idea, product direction, existing spec, or
+target feature from `docs/features.md`, for example: "implement one planned feature from
+`docs/features.md`." Codex must use strong reasoning for product discovery, specification,
+planning, review, and verification, then use medium reasoning for implementation/test-writing speed
+once the spec and plan are explicit.
 
-`intake -> spec -> plan -> checkpoint loop -> verify -> memory sync -> handoff`
+The durable output of the discovery phase is a committed implementation spec in `docs/specs/`.
+Implementation work proceeds only after that spec is complete enough to serve as the contract.
 
-The harness owns orchestration, state, validation, approvals, and stop conditions. The working tree, shell, and subagents are execution surfaces only.
+## Model routing
 
-> PLAN SYNC: Deviations update the current artifact immediately. Mark tasks done only after objective checks pass.
+- **Strong / high reasoning:** `requirement-analyst`, `spec-brainstormer`,
+  `implementation-planner`, `code-reviewer`, `security-reviewer`, `acceptance-verifier`, and
+  `harness-doctor`. Use these for ambiguity removal, product synthesis, planning, and gates.
+- **Medium reasoning:** `implementer` and `test-writer`. Use these after the spec and plan have
+  narrowed the solution space.
+- If a caller cannot select model families directly, enforce this split through the subagent
+  `model_reasoning_effort` settings and by delegating only the right phase to each subagent.
 
-> EPHEMERAL PLAN: `.codex/plans/` only. Never commit. Delete only when the run completes and all required memory sync is done.
+## Input
 
-## Step 0: Read context
+`$ARGUMENTS` may be any of:
 
-Read the smallest relevant set:
+- a raw product idea;
+- a feature id or epic from `docs/features.md`;
+- a request to choose the next valuable planned feature;
+- an existing `docs/specs/<file>.md` path to implement or refresh;
+- issue text or PR comments, only when the user explicitly supplies or requests them.
 
-`docs/CONSTITUTION.md` · `docs/_memory/source/product-requirements.md` · `docs/_memory/source/feature-specification.md` · `docs/_memory/source/domain-model-specification.md` · `docs/_memory/source/technical-design.md` · `docs/_memory/source/harness-architecture.md` · `docs/_memory/source/harness-operational-policies.md` · existing related spec or plan · current task notes.
+If empty, inspect `docs/features.md` and `docs/specs/` to choose the next planned or
+not-confirmed feature with the clearest dependency chain. Do not require an issue id.
 
-When sources conflict: Constitution -> source memory -> harness source docs -> scoped rule -> this skill.
+## Flow
 
-For docs-heavy PowerShell reads, use `Get-Content -Encoding UTF8` so punctuation in source memory and skill text remains readable.
-
-## Step 1: Parse input
-
-| Input | Action |
-|-------|--------|
-| Feature/user request | Run from intake through done unless the user asks for a stop phase |
-| Feature/user request with `--dry-run`, `dry-run`, `audit`, or `trace-only` | Run intake/context planning as a no-write audit. Produce only a concise trace/report in chat or an explicit user-approved inbox note. Do not create product specs, plans, progress notes, code changes, or memory updates. The trace must list intended durable artifacts, adjacent-feature boundaries, likely validation, and any ambiguity that would block a real run. |
-| `.codex/plans/<file>.md` | Resume from the plan phase and implement |
-| `docs/_memory/specs/<file>.md` | Use that spec and create or resume the paired plan |
-| `task N` | Resume at task N |
-| Newest `.codex/plans/` | Use only when no path or feature request is provided |
-
-Use the full workflow by default. Stop after an intermediate artifact only when the user explicitly asks for a spec-only or plan-only outcome.
-
-Branch: `feature/<slug>` from the spec or plan. Do not create or switch branches unless the user asked for branch work.
-
-## Step 2: Artifact Contract
-
-Produce artifacts in the existing repository locations:
-
-| Artifact | Location | Commit? |
-|----------|----------|---------|
-| Spec Markdown | `docs/_memory/specs/<timestamp>-<slug>.md` | yes |
-| Plan Markdown | `.codex/plans/<same-filename>.md` | no |
-| Progress notes | `.codex/notes/progress.md` | no |
-| Harness runtime state | `.codex/state/` | no |
-| Eval evidence | `harness/evals/results/` | no |
-
-Specs and plans must be structured enough for the harness to parse their status, Harness Impact, Memory Sync inventory, tasks, and validation commands. The runtime schema for machine-readable task shape lives in `harness/orchestrator/task-spec.schema.json`.
-
-## Step 3: Spec Phase
-
-Write one implementation-ready product spec in `docs/_memory/specs/` when the request does not already provide one.
-
-The spec is product-driven: user value, observable behavior, domain rules, edge cases, and acceptance criteria. Do not put code-level file paths, class names, or framework details in the spec.
-
-Required sections:
-
-- Problem and solution
-- Acceptance criteria
-- Domain and business rules
-- UI behavior or API contract
-- Data, real-time, security, edge cases, dependencies, assumptions, out of scope
-- `## Adjacent Feature Boundary` for every feature-id run. Name dependent or neighboring features, state what is in this slice, and state what remains out of scope.
-- `## 7. Harness Impact`
-
-`## 7. Harness Impact` is mandatory. It must state impacts for `harness/evals/`, `harness/orchestrator/`, `.codex/policies/` or `harness/policies/`, `harness/telemetry/`, `harness/tools/`, and workflow surfaces such as `harness/graph/`, `.agents/skills/`, `.codex/hooks/`, `scripts/agent/`, or `AGENTS.md`. Use `N/A - product slice only; no harness behavior changes.` only when all are unaffected.
-
-If the user asked to stop after spec, run docs-memory checks for changed durable memory, report the spec path, and stop.
-
-Immediately after creating a durable spec, update the relevant long-term memory discovery surface before planning starts. Feature specs normally update `docs/_memory/mocs/feature-roadmap.md`; other durable specs may update source maps, MOCs, glossaries, retrieval guides, or README/index files. Run `scripts/agent/Test-DocsMemory.ps1` when durable docs memory changes.
-
-## Step 4: Plan Phase
-
-Create or update `.codex/plans/<same-filename-as-spec>.md`.
-
-Every plan must include these sections before tasks:
-
-```markdown
-## Harness Impact
-
-| Lane | Impact | Files | Validation |
-|------|--------|-------|------------|
-| evals | N/A or ... | `harness/evals/...` | `powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness` |
-| orchestrator | N/A or ... | `harness/orchestrator/...` | ... |
-| policies | N/A or ... | `.codex/policies/...` / `harness/policies/...` | ... |
-| telemetry | N/A or ... | `harness/telemetry/...` | ... |
-| tools | N/A or ... | `harness/tools/...` | ... |
-| workflow | N/A or ... | `harness/graph/...` / `.agents/skills/...` / `.codex/hooks/...` / `scripts/agent/...` / `AGENTS.md` | ... |
-
-## Memory Sync Inventory
-
-| Surface | Status | Notes |
-|---------|--------|-------|
-| Related spec | planned/N/A | ... |
-| Source docs | planned/N/A | ... |
-| MOCs/glossaries/retrieval guides | planned/N/A | ... |
-| README/index files | planned/N/A | ... |
-| Harness contracts and graph/routing | planned/N/A | ... |
-| External tracking | planned/N/A | ... |
-
-## Surface Completeness Review
-
-| Surface | Impact | Action | Validation |
-|---------|--------|--------|------------|
-| Backend/API | planned/N/A | ... | ... |
-| Frontend/web | planned/N/A | ... | ... |
-| OpenAPI/codegen | planned/N/A | ... | ... |
-| E2E/Playwright | planned/N/A | ... | ... |
-| DevOps/Aspire | planned/N/A | ... | ... |
-| Docs/memory | planned/N/A | ... | ... |
-| Harness/workflow | planned/N/A | ... | ... |
+```text
+$cook <idea-or-feature>
+  -> source grounding
+  -> requirement-analyst clarity gate
+  -> spec-brainstormer writes/refines docs/specs/<timestamp>-<slug>.md
+  -> implementation-planner writes .codex/tmp/implementation-plan.md
+  -> branch
+  -> loop-init creates .codex/tmp/features.json + .codex/tmp/codex-progress.md
+  -> loop-next until done
+  -> final review + acceptance verification
+  -> optional draft PR handoff only when explicitly approved/requested
 ```
 
-Then write 3-8 concrete tasks. Map every acceptance criterion to at least one task and map every impacted surface from the Surface Completeness Review to at least one task or done-criteria item. Include paths, notes, and validation commands. Harness changes must be visible as their own task or subtask, not hidden inside product work.
+## Step 1 - Ground the idea
 
-Surface completeness is mandatory for feature work. Do not mark `Frontend/web`, `E2E/Playwright`, `DevOps/Aspire`, or `OpenAPI/codegen` as `N/A` just because the first implementation path is backend-heavy. Mark a surface `N/A` only with a product/technical rationale, for example "no user-visible route or component changes", "no browser workflow crosses this behavior", "no endpoint or contract shape changed", or "no topology/config/runtime behavior changed". If the feature changes an attendee or organizer workflow, include frontend work or explicitly record why the existing UI already satisfies the acceptance criteria. If the feature changes a critical user journey, add or update Playwright coverage unless a narrower automated check is objectively sufficient and the plan records that rationale. If the feature changes API or Contracts, include OpenAPI export/codegen/verify. If the feature changes local topology, configuration, background services, CI, deployment scripts, or runtime dependencies, include DevOps/Aspire validation.
+Read the smallest relevant source set before synthesis:
 
-Every plan must also include:
+1. `docs/product.md`, `docs/features.md`, and `docs/technical.md`.
+2. `docs/specs/README.md` and nearby specs for adjacent or prerequisite features.
+3. Root `AGENTS.md` and any nested `AGENTS.md` for likely touched areas.
+4. Current source code only enough to know what already exists and what is missing.
 
-- `## Adjacent Feature Boundary` for feature-id runs, matching the spec boundary.
-- `## Done Criteria Ledger` with checkboxes for acceptance criteria, surface completeness review, memory sync, harness validation when changed, docs-memory validation when changed, changed-code verification, and review/rationale.
-- A reference to `.codex/notes/progress.md` for long runs.
+Capture the input as an **idea brief**, not as a final requirement. Include the feature/epic ids,
+personas, existing constraints, likely dependencies, and unknowns.
 
-Before implementation starts, create or update a TaskSpec sidecar under `.codex/state/cook/<task-id>.json` using `harness/orchestrator/task-spec.schema.json`, then validate the markdown plan and progress note:
+## Step 2 - Clarity gate
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-CookPlan.ps1 -PlanPath .codex/plans/<same-filename-as-spec>.md -ProgressPath .codex/notes/progress.md
+Run `requirement-analyst` on the idea brief and grounded source. It checks whether enough product,
+technical, and dependency context exists to brainstorm a spec without inventing behavior that
+conflicts with `docs/`.
+
+- **NEEDS-CLARIFICATION** -> write the report to `.codex/tmp/<slug>-clarify.md` and stop. Ask the
+  user only the blocking questions whose answers would change product behavior, security,
+  architecture, data shape, or scope.
+- **CLEAR** -> continue. Do not create a branch yet; the spec comes first.
+
+## Step 3 - Brainstorm and write the implementation spec
+
+Run `spec-brainstormer` with strong reasoning. It must create or refine one implementation-ready
+spec under `docs/specs/` using the naming rule from `docs/specs/README.md`:
+
+```text
+docs/specs/<YYYYMMDDHHmmss>-<feature-kebab>.md
 ```
 
-If the user asked to stop after plan, report the plan path and stop.
+The spec must be detailed enough that implementation can be delegated to a cheaper model without
+product guessing. It should include, as applicable:
 
-## Step 5: Context Retrieval
+- frontmatter with `doc_schema`, `doc_kind: implementation_spec`, `doc_id`, `title`, `status`,
+  `last_updated`, `owner`, `language`, and `applies_to`;
+- problem, solution, in-scope, out-of-scope, personas, dependencies, and source links;
+- acceptance criteria in verifiable GIVEN/WHEN/THEN form;
+- business rules, invariants, authorization, security, sensitive-data, and audit requirements;
+- API, contract, data, integration, frontend, e2e, and observability expectations;
+- edge cases, failure modes, concurrency/idempotency concerns, test strategy, risks, and
+  implementation notes;
+- explicit "not decided" questions only when they do not block the first implementation slice.
 
-Before each implementation task, use parallel read-only scouts when useful:
+If an existing spec is stale or thin, refine it rather than creating a competing spec. Do not make
+`docs/specs/` a second source of truth: reconcile durable behavior back to `docs/features.md` or
+`docs/technical.md` when the brainstorm reveals source-spec drift.
 
-| Agent | When |
-|-------|------|
-| `@agent-graph-impact-analyst` | Blast radius and callers |
-| `@agent-codebase-explorer` | Locate files and symbols |
-| `@agent-test-impact-analyzer` | Determine focused checks for the current diff |
-| `@agent-plan-domain-researcher` | Domain-heavy task |
-| `@agent-plan-application-researcher` | CQRS/Application task |
-| `@agent-plan-infrastructure-researcher` | Persistence, API, contract, or integration task |
-| `@agent-plan-web-researcher` | Frontend task |
+## Step 4 - Plan from the spec
 
-Subagents are read-only except explicit test-writer agents for red tests. The parent agent owns production code edits.
+Run `implementation-planner` with strong reasoning. It reads the new or selected spec and produces
+`.codex/tmp/implementation-plan.md` with:
 
-If subagent tools are unavailable, fall back to `rg`, `rg --files`, and targeted source reads. Use `rg --files` before reading guessed paths, record the scout fallback and key evidence in the plan or `.codex/notes/progress.md`, and continue with parent-agent edits.
+- implementation slices in dependency order;
+- intended files/areas and path-scoped `AGENTS.md` files;
+- domain/application/infrastructure/api/contracts/web/e2e impacts;
+- OpenAPI/codegen needs;
+- test and validation commands;
+- invariants and risk tier per slice;
+- rollback point from `git rev-parse HEAD`;
+- live-browser verification needs, when UI behavior cannot be proven from tests alone.
 
-## Step 6: Checkpoint Loop
+The plan must be detailed and explicit; implementation agents should not need to invent endpoint
+shapes, DTO names, state transitions, or acceptance evidence.
 
-For each unchecked task:
+## Step 5 - Create the feature branch
 
-1. For bug fixes, add a focused red test first when feasible.
-2. Implement the smallest change in layer order: Domain -> Application -> Infrastructure -> Api -> web -> harness workflow.
-3. Run affected checks.
-4. Fix only verified failures.
-5. Mark the task complete only when checks pass.
-6. Update the plan and `.codex/notes/progress.md` when new harness impact, memory drift, or blockers appear.
-7. Keep the Done Criteria Ledger current; do not leave final criteria to chat memory.
+After the spec and plan exist:
 
-Use `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Affected-Tests.ps1 <path>` for changed files and run the returned checks.
+- If already on a dedicated feature branch for this spec, stay on it.
+- Otherwise create `feature/<spec-slug>` from the current base without prompting.
+- Do not open, update, or merge a PR unless the user explicitly approved that GitHub operation.
 
-Run these additional checks when relevant:
+## Step 6 - Initialize the coding loop
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer harness
-powershell -NoProfile -ExecutionPolicy Bypass -File harness/evals/Invoke-HarnessEvals.ps1 -Layer graph
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1
-```
+Run `$loop-init` using the spec and `.codex/tmp/implementation-plan.md`. It creates:
 
-## Step 7: Stop Conditions
+- `.codex/tmp/features.json`
+- `.codex/tmp/codex-progress.md`
 
-Complete only when all apply:
+Each feature slice is a contract: allowed files, acceptance criteria, invariants, validation
+commands, risk tier, and convergence criteria.
 
-- Required acceptance criteria are satisfied.
-- Changed-code verification passes.
-- Harness lane validation passes when any harness lane changed.
-- Docs-memory validation passes after durable memory changes.
-- Related spec status and affected long-term memory surfaces are synchronized.
-- No high-severity review finding, policy denial, or unresolved approval remains.
-- The active plan's Done Criteria Ledger is complete or explicitly marked `N/A` with rationale.
+## Step 7 - Implement each slice
 
-Blocked states must record the policy denial, missing external state, repeated verifier failure, or required human decision.
+Run `$loop-next` until every slice in `features.json` is `done`. `loop-next` owns the per-slice
+implementation loop:
 
-## Step 8: Memory Sync And Handoff
+- delegate implementation to `implementer` using medium reasoning;
+- delegate focused tests to `test-writer` using medium reasoning;
+- run validation commands and deterministic sensors;
+- run `code-reviewer` always and `security-reviewer` when relevant, both strong reasoning;
+- run `acceptance-verifier` as a hard gate against the spec and slice criteria;
+- fix and re-verify until PASS.
 
-Use `memory-sync` before final handoff for spec-backed or workflow changes.
+Do not skip review/verification because the spec looked good. The spec reduces ambiguity; sensors
+still decide completion.
 
-For completed spec-backed work, mark the related spec `implemented` only after objective checks pass and Memory Sync is complete. Update source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data, and handoff evidence when they describe the changed behavior.
+## Step 8 - Final handoff
 
-Final verification:
+Before handoff, run changed-code verification:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Verify-ChangedCode.ps1
 ```
 
-For substantial work, run or record why you skipped an evidence-based code review.
+If the user explicitly requested a PR, use `$create-pr` only after approval and after the final
+verification gate is green. Otherwise stop with a concise local handoff: spec path, plan path,
+changed files, checks run, acceptance status, and residual risk.
 
-## Do Not
+## Behavior summary
 
-- Create a parallel `harness/cook/` architecture outside the existing harness contracts.
-- Add a root `evals/` tree.
-- Hide harness changes inside product tasks.
-- Commit `.codex/plans/**`, `.codex/notes/**`, `.codex/state/**`, or `harness/evals/results/**`.
-- Edit protected generated files such as `web/src/generated/` or `contracts/openapi/.build/`.
+- The default workflow starts from an idea or `docs/features.md`, not from GitHub Issues.
+- A complete `docs/specs/` implementation spec is mandatory before coding.
+- Strong models handle ambiguity, spec, planning, review, and verification.
+- Medium models handle implementation and test writing after the contract is explicit.
+- PR operations are optional and approval-gated.

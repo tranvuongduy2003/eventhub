@@ -12,111 +12,155 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-. "$repoRoot\.codex\hooks\lib\Use-VerifyRunner.ps1"
+Set-Location -LiteralPath $repoRoot
+$powerShellExecutable = if (Get-Command pwsh -ErrorAction SilentlyContinue) { 'pwsh' } else { 'powershell' }
+$testDocsMemoryCommand = "$powerShellExecutable -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-DocsMemory.ps1"
+$testHarnessPolicyCommand = "$powerShellExecutable -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-HarnessPolicy.ps1"
 
-function Convert-StepToCommand {
-    param([object]$Step)
-    switch ($Step.kind) {
-        'eslint' {
-            $webRel = [string]$Step.file
-            if ($webRel.StartsWith('web/')) { $webRel = $webRel.Substring(4) }
-            return "yarn --cwd web eslint $webRel --max-warnings 0"
-        }
-        'dotnet-format' {
-            return "dotnet format EventHub.slnx --verify-no-changes --include $($Step.file)"
-        }
-        'dotnet-test' {
-            $cmd = "dotnet test $($Step.project)"
-            if ($Step.filter) { $cmd += " --filter $($Step.filter)" }
-            return $cmd
-        }
-        'dotnet-build' {
-            return "dotnet build $($Step.project) -v q"
-        }
-        'shell-test' {
-            return [string]$Step.command
-        }
-        default {
-            return "unknown step: $($Step.kind)"
-        }
-    }
-}
+function ConvertTo-RelativePath {
+    param([string]$Value)
 
-function Get-InputFiles {
-    if ($Path -and $Path.Count -gt 0) {
-        return @($Path)
-    }
-    return @(Get-GitChangedFiles -ProjectRoot $repoRoot)
-}
-
-$files = @(Get-InputFiles)
-$stepKeys = @{}
-$steps = New-Object System.Collections.Generic.List[object]
-$mappedFiles = New-Object System.Collections.Generic.List[object]
-$needsTypeCheck = $false
-
-foreach ($file in $files) {
-    $rel = $file -replace '\\', '/'
-    if ($rel -match '^web/.*\.(tsx?|jsx?)$') {
-        $needsTypeCheck = $true
-    }
-
-    $abs = if ([System.IO.Path]::IsPathRooted($file)) {
-        $file
+    $fullPath = if ([System.IO.Path]::IsPathRooted($Value)) {
+        [System.IO.Path]::GetFullPath($Value)
     }
     else {
-        Join-Path $repoRoot ($file -replace '/', '\')
+        [System.IO.Path]::GetFullPath((Join-Path $repoRoot ($Value -replace '/', '\')))
     }
 
-    $plan = Get-AffectedPlan -ProjectRoot $repoRoot -FilePath $abs
-    $fileSteps = @()
-    if ($plan -and $plan.steps) {
-        $fileSteps = @($plan.steps | ForEach-Object { Convert-StepToCommand $_ })
+    $root = [System.IO.Path]::GetFullPath($repoRoot)
+    if (-not $root.EndsWith([System.IO.Path]::DirectorySeparatorChar)) {
+        $root += [System.IO.Path]::DirectorySeparatorChar
     }
 
-    $mappedFiles.Add(@{
-        file = $rel
-        skip = ($null -eq $plan -or $plan.skip -or -not $plan.steps)
-        steps = $fileSteps
-    })
-
-    if ($null -eq $plan -or $plan.skip -or -not $plan.steps) {
-        continue
+    if ($fullPath.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $fullPath.Substring($root.Length).Replace('\', '/')
     }
 
-    foreach ($step in @($plan.steps)) {
-        $key = Get-StepKey -Step $step
-        if (-not $stepKeys.ContainsKey($key)) {
-            $stepKeys[$key] = $true
-            $steps.Add($step)
-        }
+    return $Value.Replace('\', '/')
+}
+
+function Get-GitChangedFiles {
+    $files = @()
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $files += (& git diff --name-only HEAD 2>$null)
+        $files += (& git ls-files --others --exclude-standard 2>$null)
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
+    return @($files | Where-Object { $_ } | ForEach-Object { $_.Replace('\', '/') } | Sort-Object -Unique)
+}
+
+function Add-Command {
+    param(
+        [System.Collections.Generic.List[string]]$Commands,
+        [hashtable]$Seen,
+        [string]$Command
+    )
+
+    if (-not $Seen.ContainsKey($Command)) {
+        $Seen[$Command] = $true
+        $Commands.Add($Command) | Out-Null
     }
 }
 
-$commands = @()
-if ($needsTypeCheck) {
-    $commands += 'yarn --cwd web run tsc -b --noEmit'
+$files = if ($Path -and $Path.Count -gt 0) {
+    @($Path | ForEach-Object { ConvertTo-RelativePath $_ })
 }
-foreach ($step in $steps) {
-    $commands += Convert-StepToCommand $step
+else {
+    @(Get-GitChangedFiles)
 }
 
-$errors = New-Object System.Collections.Generic.List[string]
+$commands = [System.Collections.Generic.List[string]]::new()
+$seen = @{}
+$mappedFiles = [System.Collections.Generic.List[object]]::new()
+
+$backendChanged = $false
+$webChanged = $false
+$e2eChanged = $false
+$contractChanged = $false
+$docsOrHarnessChanged = $false
+
+foreach ($file in $files) {
+    $steps = [System.Collections.Generic.List[string]]::new()
+
+    if ($file -match '^src/.*\.cs$' -or $file -match '^tests/.*\.cs$') {
+        $backendChanged = $true
+        $steps.Add('dotnet build EventHub.slnx -c Release') | Out-Null
+    }
+    elseif ($file -match '^web/.*\.(ts|tsx|js|jsx|css)$' -or $file -eq 'web/package.json' -or $file -eq 'web/yarn.lock') {
+        $webChanged = $true
+        $steps.Add('yarn --cwd web build') | Out-Null
+    }
+    elseif ($file -match '^e2e/.*\.(ts|tsx|js|jsx)$' -or $file -eq 'e2e/package.json' -or $file -eq 'e2e/yarn.lock') {
+        $e2eChanged = $true
+        $steps.Add('yarn --cwd e2e test') | Out-Null
+    }
+
+    if ($file -match '^contracts/openapi/' -or $file -match '^src/Contracts/' -or $file -match '^src/Api/Endpoints/' -or $file -match '^web/src/lib/api/' -or $file -match '^web/src/generated/') {
+        $contractChanged = $true
+        $steps.Add('yarn --cwd web api:verify') | Out-Null
+    }
+
+    if ($file -match '(^|/)AGENTS\.md$' -or $file -match '^(docs/|\.codex/config\.toml$|\.codex/agents/|\.codex/hooks/|\.codex/hooks\.json$|\.agents/skills/|scripts/agent/)') {
+        $docsOrHarnessChanged = $true
+        $steps.Add($testDocsMemoryCommand) | Out-Null
+        $steps.Add($testHarnessPolicyCommand) | Out-Null
+    }
+
+    foreach ($step in $steps) {
+        Add-Command -Commands $commands -Seen $seen -Command $step
+    }
+
+    $mappedFiles.Add([pscustomobject]@{
+        file = $file
+        skip = ($steps.Count -eq 0)
+        steps = @($steps)
+    }) | Out-Null
+}
+
+if ($backendChanged) {
+    Add-Command -Commands $commands -Seen $seen -Command 'dotnet build EventHub.slnx -c Release'
+}
+if ($webChanged -or $contractChanged) {
+    Add-Command -Commands $commands -Seen $seen -Command 'yarn --cwd web build'
+}
+if ($e2eChanged) {
+    Add-Command -Commands $commands -Seen $seen -Command 'yarn --cwd e2e test'
+}
+if ($contractChanged) {
+    Add-Command -Commands $commands -Seen $seen -Command 'yarn --cwd web api:verify'
+}
+if ($docsOrHarnessChanged) {
+    Add-Command -Commands $commands -Seen $seen -Command $testDocsMemoryCommand
+    Add-Command -Commands $commands -Seen $seen -Command $testHarnessPolicyCommand
+}
+
+$errors = [System.Collections.Generic.List[string]]::new()
 if (-not $PlanOnly) {
-    if ($needsTypeCheck) {
-        foreach ($err in (Test-WebTypeCheck -ProjectRoot $repoRoot)) {
-            $errors.Add($err)
+    foreach ($command in $commands) {
+        $previousErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        try {
+            $output = & $powerShellExecutable -NoProfile -ExecutionPolicy Bypass -Command $command 2>&1
+            $exitCode = $LASTEXITCODE
         }
-    }
-    foreach ($err in (Invoke-VerificationSteps -ProjectRoot $repoRoot -Steps $steps.ToArray())) {
-        $errors.Add($err)
+        finally {
+            $ErrorActionPreference = $previousErrorActionPreference
+        }
+        if ($exitCode -ne 0) {
+            $tail = $output | Select-Object -Last 40 | Out-String
+            $errors.Add("$command failed with exit code ${exitCode}:`n$tail") | Out-Null
+        }
     }
 }
 
 $result = @{
     repoRoot = $repoRoot
-    files = $mappedFiles
-    commands = $commands
+    files = @($mappedFiles)
+    commands = @($commands)
     status = if ($PlanOnly) { 'planned' } elseif ($errors.Count -eq 0) { 'passed' } else { 'failed' }
     errors = @($errors)
     timestamp = (Get-Date).ToUniversalTime().ToString('o')
@@ -142,8 +186,8 @@ Write-Host 'Commands'
 if ($commands.Count -eq 0) {
     Write-Host '  (none)'
 }
-foreach ($cmd in $commands) {
-    Write-Host "  - $cmd"
+foreach ($command in $commands) {
+    Write-Host "  - $command"
 }
 if ($errors.Count -gt 0) {
     Write-Host ''

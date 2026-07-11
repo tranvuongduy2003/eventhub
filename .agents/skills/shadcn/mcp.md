@@ -16,6 +16,7 @@ Editor config files:
 | Editor | Config file |
 |--------|------------|
 | Codex | `.mcp.json` |
+| Cursor | `.cursor/mcp.json` |
 | VS Code | `.vscode/mcp.json` |
 | OpenCode | `opencode.json` |
 | Codex | `~/.codex/config.toml` (manual) |
@@ -24,7 +25,7 @@ Editor config files:
 
 ## Tools
 
-> **Tip:** MCP tools handle registry operations (search, view, install). For project configuration (aliases, framework, Tailwind version), use `npx shadcn@latest info` — there is no MCP equivalent.
+> **Tip:** MCP tools handle registry operations (search, view, install). For project configuration (aliases, framework, Tailwind version), use `npx shadcn@latest info` â€” there is no MCP equivalent.
 
 ### `shadcn:get_project_registries`
 
@@ -48,19 +49,19 @@ Fuzzy search across registries.
 
 View item details including full file contents.
 
-**Input:** `items` (string[]) — e.g. `["@shadcn/button", "@shadcn/card"]`
+**Input:** `items` (string[]) â€” e.g. `["@shadcn/button", "@shadcn/card"]`
 
 ### `shadcn:get_item_examples_from_registries`
 
 Find usage examples and demos with source code.
 
-**Input:** `registries` (string[]), `query` (string) — e.g. `"accordion-demo"`, `"button example"`
+**Input:** `registries` (string[]), `query` (string) â€” e.g. `"accordion-demo"`, `"button example"`
 
 ### `shadcn:get_add_command_for_items`
 
 Returns the CLI install command.
 
-**Input:** `items` (string[]) — e.g. `["@shadcn/button"]`
+**Input:** `items` (string[]) â€” e.g. `["@shadcn/button"]`
 
 ### `shadcn:get_audit_checklist`
 
@@ -91,3 +92,9 @@ Registries are set in `components.json`. The `@shadcn` registry is always built-
 - `${VAR}` references are resolved from environment variables.
 
 Community registry index: `https://ui.shadcn.com/r/registries.json`
+
+
+
+
+
+

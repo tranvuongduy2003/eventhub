@@ -1,28 +1,34 @@
 ---
 name: github-mcp
-description: Use the GitHub remote MCP server for repository, issue, pull request, workflow, branch, commit, and code-search operations. Use for all GitHub automation in this repository.
+description: Use the configured GitHub MCP server for repository, issue, pull request, workflow, branch, commit, and code-search operations. Use for all GitHub automation in this repository.
 ---
 
 # GitHub MCP
 
-Use the `github` MCP server configured in `.mcp.json`:
+Use the `github` MCP server configured in `.codex/config.toml`. In this repository the active
+configuration launches the GitHub MCP server through Docker and passes authentication from the
+`GITHUB_PERSONAL_ACCESS_TOKEN` environment variable:
 
-```json
-{
-  "mcpServers": {
-    "github": {
-      "type": "http",
-      "url": "https://api.githubcopilot.com/mcp/"
-    }
-  }
-}
+```toml
+[mcp_servers.github]
+command = "docker"
+args = [
+  "run",
+  "-i",
+  "--rm",
+  "--name", "eventhub-github-mcp-server",
+  "-e", "GITHUB_PERSONAL_ACCESS_TOKEN",
+  "-e", "GITHUB_TOOLSETS=all",
+  "ghcr.io/github/github-mcp-server"
+]
+env_vars = ["GITHUB_PERSONAL_ACCESS_TOKEN"]
 ```
 
 ## Priority
 
 1. Use GitHub MCP tools for all GitHub automation.
 2. Do not use command-line or direct HTTP GitHub surfaces for GitHub operations.
-3. Never put GitHub tokens or OAuth values in `.mcp.json`; the remote MCP handles authentication through the host client.
+3. Never commit GitHub tokens or OAuth values. The token must remain in the environment and must not be copied into `.codex/config.toml`, `.mcp.json`, docs, logs, or reports.
 
 ## Before Acting
 
