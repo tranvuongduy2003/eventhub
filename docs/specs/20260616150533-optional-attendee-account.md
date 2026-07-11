@@ -35,8 +35,8 @@ github_issue: null
 
 # Feature: Optional attendee account
 
-> Features: F-1.4  |  Status: DRAFT  |  Date: 2026-06-16
-> PRD: DEC-3, QG-1, QG-6  |  DDD: BC-1, AGG-User  |  Tech: §4, §5, §7
+> Features: F-1.4 | Status: DRAFT | Date: 2026-06-16
+> PRD: DEC-3, QG-1, QG-6 | DDD: BC-1, AGG-User | Tech: §4, §5, §7
 
 ## 1. Problem & Solution
 
@@ -47,6 +47,7 @@ github_issue: null
 **Personas:** PER-A1 (general attendee), PER-A2 (group buyer)
 
 **Scope:**
+
 - **In:** F-1.4 — attendee account registration, email-based linking of past orders/tickets, attendee role on the User aggregate
 - **Out:** F-7.6 (attendee ticket wallet — the UI that displays linked tickets), F-1.3 (organizer profile management), password reset flow, attendee profile editing beyond registration
 
@@ -77,6 +78,7 @@ github_issue: null
 **Aggregate:** AGG-User
 
 **Value objects involved:**
+
 - `VO-UserId` — identity (already exists)
 - `VO-EmailAddress` — well-formed, normalized, unique across all accounts (already exists)
 - `VO-DisplayName` — 1–64 characters, trimmed (already exists)
@@ -84,11 +86,13 @@ github_issue: null
 - `VO-UserRole` — `Organizer` or `Attendee` (already defined in domain-model-specification.md)
 
 **Invariants:**
+
 - `INV-1` — Email must be unique across all users. An attendee cannot register with an email already held by an organizer or another attendee.
 - `INV-2` — A password is only ever stored as a hash.
 - Email must be well-formed (VO-EmailAddress rules).
 
 **Behavior:**
+
 - `Register` (existing) is extended or a parallel `RegisterAttendee` factory method creates a User with role `Attendee`.
 - `LinkAttendeeIdentity` (defined in domain-model-specification.md as "optional, Later — F-1.4") — on account creation, the system links existing orders/tickets that share the same email address. This is an Application-layer orchestration (query orders by email, associate with the new UserId), not a domain invariant on the User aggregate itself.
 
@@ -109,6 +113,7 @@ github_issue: null
 ## 5. Data & Storage Impact
 
 **PostgreSQL (app schema):**
+
 - `users` table: add `role` column to distinguish `Organizer` from `Attendee`. The aggregate is currently a template; this is a greenfield addition, not a backfill migration.
 - `orders` table (BC-3): no schema change. Orders already store `Contact.Email`. The linking is done by matching email at registration time and setting a `buyer_user_id` (or equivalent) on matched orders — this requires a nullable column if not already present.
 - Migration: append-only; adds role column and nullable `buyer_user_id` on orders (if linking is materialized).
@@ -117,7 +122,7 @@ github_issue: null
 
 **MinIO:** No changes. Attendee accounts have no avatar in this feature (avatar is part of F-1.3 for organizers; attendee avatar is out of scope).
 
-**RabbitMQ:** No changes. `EVT-UserRegistered` is already an integration event; consumers handle it regardless of role.
+**Async workflow:** No changes. `EVT-UserRegistered` is already an integration event; consumers handle it regardless of role.
 
 ## 6. Real-Time & Consistency
 
@@ -145,7 +150,7 @@ Consistency is strong within the User aggregate (single transaction for account 
 
 **EC-02:** An attendee registers with an email that has many past guest orders (e.g., a prolific buyer). → All matching orders are linked. No limit; the linking is a set-based update.
 
-**EC-03:** An attendee registers, buys tickets as a guest with a *different* email (e.g., typo or alternate email). → Those orders are not linked. Only exact email matches are linked. The attendee would need to use the same email for future purchases to have them appear in the wallet (F-7.6).
+**EC-03:** An attendee registers, buys tickets as a guest with a _different_ email (e.g., typo or alternate email). → Those orders are not linked. Only exact email matches are linked. The attendee would need to use the same email for future purchases to have them appear in the wallet (F-7.6).
 
 **EC-04:** An attendee registers and immediately signs out before any linking completes. → If linking is in the same transaction, it completes before the response. If async, it completes shortly after. Either way, the attendee sees linked orders on next sign-in.
 
@@ -158,13 +163,16 @@ Consistency is strong within the User aggregate (single transaction for account 
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - F-1.1 (register organizer account) — the User aggregate, registration flow, and session mechanism are already built. ✅ Done.
 - F-5.2 (guest checkout) — must exist so that "guest checkout stays" is verifiable. Assumed available by the time F-1.4 is built (MVP phase).
 
 **Downstream features:**
+
 - F-7.6 (attendee ticket wallet) — depends on F-1.4. This feature creates the account; F-7.6 builds the UI to display linked tickets.
 
 **Risks:**
+
 - **Role design.** The existing User aggregate may not have a role field. Adding one is a schema change that affects existing organizer accounts (backfill). Low risk but requires a migration.
 - **Linking scope.** Linking past orders by email is a one-time batch operation at registration. If the orders table is large, the query could be slow. At this project's scale (small events, ASM-2), this is negligible.
 - **Scope creep into F-7.6.** The temptation to build a minimal ticket list alongside registration is high. This spec intentionally excludes it — F-1.4 creates the identity; F-7.6 displays the tickets.
@@ -189,8 +197,8 @@ Consistency is strong within the User aggregate (single transaction for account 
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | ~~Should attendee registration use the same endpoint as organizers or a separate one?~~ | Deferred to the `cook` plan phase |
-| 2 | Should order linking be synchronous at registration time, or can it be deferred to a background job? | ✅ Resolved — synchronous, in the same unit of work as account creation. Simpler; sufficient at this scale. |
-| 3 | Does the existing User aggregate already support a role field, or does it need to be added? | ✅ Resolved — `VO-UserRole` (`Organizer` / `Attendee`) is defined in `domain-model-specification.md` BC-1. The current aggregate is a template; the role field will be added as part of this feature. No migration concern. |
+| #   | Question                                                                                             | Status                                                                                                                                                                                                                      |
+| --- | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | ~~Should attendee registration use the same endpoint as organizers or a separate one?~~              | Deferred to the `cook` plan phase                                                                                                                                                                                           |
+| 2   | Should order linking be synchronous at registration time, or can it be deferred to a background job? | ✅ Resolved — synchronous, in the same unit of work as account creation. Simpler; sufficient at this scale.                                                                                                                 |
+| 3   | Does the existing User aggregate already support a role field, or does it need to be added?          | ✅ Resolved — `VO-UserRole` (`Organizer` / `Attendee`) is defined in `domain-model-specification.md` BC-1. The current aggregate is a template; the role field will be added as part of this feature. No migration concern. |

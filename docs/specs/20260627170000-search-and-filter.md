@@ -36,8 +36,8 @@ github_issue: 57
 
 # Feature: Search and filter
 
-> Features: F-4.5  |  Status: DRAFT  |  Date: 2026-06-27
-> PRD: G-4 (smooth mobile purchase), QG-1 (simplicity), QG-4 (mobile-friendly)  |  DDD: BC-2 AGG-Event, VO-EventSchedule, VO-EventLocation  |  Tech: §5, §6, §7
+> Features: F-4.5 | Status: DRAFT | Date: 2026-06-27
+> PRD: G-4 (smooth mobile purchase), QG-1 (simplicity), QG-4 (mobile-friendly) | DDD: BC-2 AGG-Event, VO-EventSchedule, VO-EventLocation | Tech: §5, §6, §7
 
 ## 1. Problem & Solution
 
@@ -46,9 +46,11 @@ github_issue: 57
 **Solution:** Add search and filter capabilities to the existing event listing page. An attendee can type a keyword to match against event titles and descriptions, select a date range (today, this week, this month, or custom), and filter by location. Filters combine — keyword + date + location narrow together. The listing updates to show only matching events. All search and filter state is reflected in the URL so results are shareable and bookmarkable.
 
 **Personas:**
+
 - **PER-A1** (General attendee) — finds events by searching or filtering rather than scrolling the full list.
 
 **Scope:**
+
 - **In scope:** F-4.5 — keyword search, date range filtering, location filtering on the public event listing.
 - **Out of scope:** Category/tag-based filtering (no category taxonomy exists in the domain model), advanced faceted search, autocomplete suggestions, search result ranking by relevance, saved searches, map-based filtering, organizer-specific filtering.
 
@@ -94,12 +96,12 @@ Referenced from `domain-model-specification.md`:
 
 ### 4.1 Search and filter controls
 
-| Control | Type | Behavior |
-|---------|------|----------|
-| **Keyword search** | Text input | Matches against event title and description (case-insensitive, partial). Debounced (300–500ms after typing stops). |
-| **Date filter** | Dropdown / selector | Options: "Any date" (default), "Today", "Tomorrow", "This week", "This month", "Custom range" (start/end date pickers). |
+| Control             | Type                | Behavior                                                                                                                  |
+| ------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Keyword search**  | Text input          | Matches against event title and description (case-insensitive, partial). Debounced (300–500ms after typing stops).        |
+| **Date filter**     | Dropdown / selector | Options: "Any date" (default), "Today", "Tomorrow", "This week", "This month", "Custom range" (start/end date pickers).   |
 | **Location filter** | Dropdown / selector | Options: "Any location" (default), plus distinct locations from published upcoming events. "Online" is a separate option. |
-| **Clear / Reset** | Button | Resets all filters to defaults; URL query parameters are cleared. |
+| **Clear / Reset**   | Button              | Resets all filters to defaults; URL query parameters are cleared.                                                         |
 
 ### 4.2 Filter interaction
 
@@ -112,23 +114,23 @@ Referenced from `domain-model-specification.md`:
 
 The existing `GET /api/events` endpoint (from F-4.4) is extended with query parameters:
 
-| Query param | Type | Description |
-|-------------|------|-------------|
-| `q` | `string` (optional) | Keyword to match against title and description |
-| `date` | `string` (optional) | Predefined range: `today`, `tomorrow`, `this-week`, `this-month` |
-| `dateFrom` | `string` (optional) | Custom date range start (ISO 8601 date, e.g., `2026-07-01`) — used when `date` is not set |
-| `dateTo` | `string` (optional) | Custom date range end (ISO 8601 date) — used when `date` is not set |
-| `location` | `string` (optional) | Location value to filter by (exact match against the event's location summary) |
+| Query param | Type                | Description                                                                               |
+| ----------- | ------------------- | ----------------------------------------------------------------------------------------- |
+| `q`         | `string` (optional) | Keyword to match against title and description                                            |
+| `date`      | `string` (optional) | Predefined range: `today`, `tomorrow`, `this-week`, `this-month`                          |
+| `dateFrom`  | `string` (optional) | Custom date range start (ISO 8601 date, e.g., `2026-07-01`) — used when `date` is not set |
+| `dateTo`    | `string` (optional) | Custom date range end (ISO 8601 date) — used when `date` is not set                       |
+| `location`  | `string` (optional) | Location value to filter by (exact match against the event's location summary)            |
 
 All parameters are optional. Omitting a parameter means "no filter" for that dimension. The response shape is the same as F-4.4 — an array of event listing items.
 
 A separate endpoint returns available locations for the filter dropdown:
 
-| Aspect | Detail |
-|--------|--------|
-| **Method / path** | `GET /api/events/locations` |
-| **Auth** | None required (public) |
-| **Response** | Array of distinct location strings from published upcoming events |
+| Aspect            | Detail                                                            |
+| ----------------- | ----------------------------------------------------------------- |
+| **Method / path** | `GET /api/events/locations`                                       |
+| **Auth**          | None required (public)                                            |
+| **Response**      | Array of distinct location strings from published upcoming events |
 
 ### 4.4 Response shape
 
@@ -143,7 +145,7 @@ The `/events` route from F-4.4 is enhanced. No new routes are introduced. Query 
 - **PostgreSQL:** The search/filter query extends the existing listing query with `WHERE` clauses. Keyword search uses `ILIKE` (case-insensitive) on title and description columns. Date filtering uses the `StartDate` column. Location filtering uses the location summary column. An index on `(Status, StartDate)` supports the base query; additional indexes may be added if query performance requires it.
 - **Redis:** The filtered listing response can be cached per filter combination. However, the number of possible filter combinations makes full caching impractical. A simpler approach: cache the unfiltered listing and apply filters in-memory, or skip caching for filtered results and rely on database query performance (acceptable at the project's intended scale — ASM-2).
 - **MinIO:** No impact.
-- **RabbitMQ:** No impact.
+- **Async workflow:** No impact.
 
 ## 6. Real-Time & Consistency
 
@@ -183,11 +185,13 @@ The `/events` route from F-4.4 is enhanced. No new routes are introduced. Query 
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - F-4.4 (Public event listing) — the base listing page and API endpoint must exist.
 - F-2.4 (Publish an event) — events must be publishable with status.
 - F-3.1 (Define a ticket type) — ticket types with prices exist for the listing.
 
 **Risks:**
+
 - **R-01 (Low):** Keyword search performance — `ILIKE` on title and description could be slow with many events. Mitigation: at the intended scale (small events, ASM-2), this is acceptable. If needed, PostgreSQL full-text search can be added later.
 - **R-02 (Low):** Location filter completeness — if events use inconsistent location formats (e.g., "HCMC" vs "Ho Chi Minh City"), the location filter may not match correctly. Mitigation: the location filter shows values derived from existing events, so it always matches what is stored.
 - **R-03 (Low):** URL query parameter bloat — many filter combinations produce long URLs. Mitigation: query parameters are concise (`q`, `date`, `location`); custom date ranges use ISO 8601 dates.
@@ -217,10 +221,10 @@ The `/events` route from F-4.4 is enhanced. No new routes are introduced. Query 
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should keyword search include organizer name or only event title/description? **Resolved:** Title and description only — organizer name is not shown on the public listing. | ✅ |
-| 2 | Should the location filter use exact match or fuzzy match? **Resolved:** Exact match against the location summary derived from existing events (AC-11). | ✅ |
-| 3 | Should the date filter include "Tomorrow" as a separate option? **Resolved:** Yes — it is a common quick filter for attendees looking for something soon. | ✅ |
-| 4 | Should search results be sorted by relevance or by date? **Resolved:** By date (soonest first), consistent with the unfiltered listing. Relevance sorting adds complexity without clear value at this scale. | ✅ |
-| 5 | Should the filter controls be always visible or collapsed on mobile? **Resolved:** Collapsed behind a toggle on mobile; keyword search input is always visible. | ✅ |
+| #   | Question                                                                                                                                                                                                     | Status |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| 1   | Should keyword search include organizer name or only event title/description? **Resolved:** Title and description only — organizer name is not shown on the public listing.                                  | ✅     |
+| 2   | Should the location filter use exact match or fuzzy match? **Resolved:** Exact match against the location summary derived from existing events (AC-11).                                                      | ✅     |
+| 3   | Should the date filter include "Tomorrow" as a separate option? **Resolved:** Yes — it is a common quick filter for attendees looking for something soon.                                                    | ✅     |
+| 4   | Should search results be sorted by relevance or by date? **Resolved:** By date (soonest first), consistent with the unfiltered listing. Relevance sorting adds complexity without clear value at this scale. | ✅     |
+| 5   | Should the filter controls be always visible or collapsed on mobile? **Resolved:** Collapsed behind a toggle on mobile; keyword search input is always visible.                                              | ✅     |

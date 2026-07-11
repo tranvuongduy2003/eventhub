@@ -34,8 +34,8 @@ github_issue: 17
 
 # Feature: Role-based access control for event operations
 
-> Features: F-1.7  |  Status: DRAFT  |  Date: 2026-06-20
-> PRD: DEC-3, QG-1, QG-5  |  DDD: BC-1, BC-2, AGG-Event  |  Tech: §4, §7
+> Features: F-1.7 | Status: DRAFT | Date: 2026-06-20
+> PRD: DEC-3, QG-1, QG-5 | DDD: BC-1, BC-2, AGG-Event | Tech: §4, §7
 
 ## 1. Problem & Solution
 
@@ -46,6 +46,7 @@ github_issue: 17
 **Personas:** PER-O1 (individual organizer), PER-O2 (small group organizer) — both need to trust that the permissions they assign are actually enforced.
 
 **Scope:**
+
 - **In:** Permission checks on all protected event operations across Event Management (edit, publish, cancel, add/manage ticket types), Check-in (scan, manual lookup, door counts), and Reporting (attendee list, sales results, export).
 - **Out:** Invitation flow (F-1.8), audit log (F-1.9), attendee accounts (F-1.4).
 
@@ -75,12 +76,12 @@ github_issue: 17
 
 **BR-01 (Permission mapping):** Each protected operation maps to a specific permission from F-1.5. The mapping is stable and documented:
 
-| Operation area | Operations | Required permission |
-|---|---|---|
-| Event Management | Edit event, add/change ticket types, set cover image, publish, close, cancel, duplicate | `EventManagement` |
-| Check-in | Scan ticket, manual lookup, view door counts | `CheckIn` |
-| Reporting | View attendee list, view sales results | `Reporting` |
-| Export | Export attendee list (CSV) | `Owner` role required (not a Staff permission) |
+| Operation area   | Operations                                                                              | Required permission                            |
+| ---------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Event Management | Edit event, add/change ticket types, set cover image, publish, close, cancel, duplicate | `EventManagement`                              |
+| Check-in         | Scan ticket, manual lookup, view door counts                                            | `CheckIn`                                      |
+| Reporting        | View attendee list, view sales results                                                  | `Reporting`                                    |
+| Export           | Export attendee list (CSV)                                                              | `Owner` role required (not a Staff permission) |
 
 **BR-02 (Owner bypass):** The Owner role implicitly holds all permissions. An Owner does not need explicit permission entries — their role is sufficient for any operation on that event.
 
@@ -97,29 +98,31 @@ github_issue: 17
 **Authorization pattern:** Implemented as a **MediatR pipeline behavior** that runs before every handler requiring authorization. Each protected command/query carries metadata indicating the required permission and event identifier (route parameter or inferred from the resource). The behavior resolves the caller's identity from the session, looks up their `EventUserRole` for that event, and checks the required permission. The permission lookup result is **cached per-request scope** to avoid repeated DB calls within a single request.
 
 **Error response (insufficient permissions):**
+
 - Status: `403 Forbidden`
 - RFC 7807 body with `code: "INSUFFICIENT_PERMISSIONS"`
 - Human-readable detail: "You do not have the required permissions to perform this operation on this event."
 
 **Error response (not authenticated):**
+
 - Status: `401 Unauthorized`
 - Standard 401 response (session cookie missing or expired)
 
 **Endpoints affected (existing and upcoming):**
 
-| Endpoint | Method | Required permission | Notes |
-|---|---|---|---|
-| Edit event | PUT/PATCH | `EventManagement` or `Owner` | Already exists (F-2.3) |
-| Publish event | POST | `EventManagement` or `Owner` | Already exists (F-2.4) |
-| Close/Cancel event | POST | `EventManagement` or `Owner` | Already exists (F-2.5) |
-| Add ticket type | POST | `EventManagement` or `Owner` | Already exists (F-3.1) |
-| Change ticket type | PUT | `EventManagement` or `Owner` | Already exists (F-3.5) |
-| Scan ticket | POST | `CheckIn` | Already exists (F-8.1) |
-| Manual lookup/check-in | POST | `CheckIn` | Already exists (F-8.3) |
-| Door counts | GET | `CheckIn` | Already exists (F-8.4) |
-| Attendee list | GET | `Reporting` | Already exists (F-9.1) |
-| Sales results | GET | `Reporting` | Already exists (F-9.3) |
-| Export attendees | GET | `Owner` only | Already exists (F-9.2) |
+| Endpoint               | Method    | Required permission          | Notes                  |
+| ---------------------- | --------- | ---------------------------- | ---------------------- |
+| Edit event             | PUT/PATCH | `EventManagement` or `Owner` | Already exists (F-2.3) |
+| Publish event          | POST      | `EventManagement` or `Owner` | Already exists (F-2.4) |
+| Close/Cancel event     | POST      | `EventManagement` or `Owner` | Already exists (F-2.5) |
+| Add ticket type        | POST      | `EventManagement` or `Owner` | Already exists (F-3.1) |
+| Change ticket type     | PUT       | `EventManagement` or `Owner` | Already exists (F-3.5) |
+| Scan ticket            | POST      | `CheckIn`                    | Already exists (F-8.1) |
+| Manual lookup/check-in | POST      | `CheckIn`                    | Already exists (F-8.3) |
+| Door counts            | GET       | `CheckIn`                    | Already exists (F-8.4) |
+| Attendee list          | GET       | `Reporting`                  | Already exists (F-9.1) |
+| Sales results          | GET       | `Reporting`                  | Already exists (F-9.3) |
+| Export attendees       | GET       | `Owner` only                 | Already exists (F-9.2) |
 
 **Public endpoints (no RBAC):**
 | Endpoint | Method | Notes |
@@ -130,6 +133,7 @@ github_issue: 17
 ## 5. Data & Storage Impact
 
 **No new tables or schema changes required.** The permission model is already in place from F-1.5:
+
 - `EventUserRole` table (user ↔ event ↔ role) is the source of truth for "who can do what on which event."
 - `RolePermission` table (role ↔ permission) defines what each role can do.
 - The lookup is: `EventUserRole` for (userId, eventId) → role → `RolePermission` → set of permissions.
@@ -167,10 +171,12 @@ github_issue: 17
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - **F-1.5 (Define roles and permissions):** Complete. Provides the permission model (RolePermission, Permission enum).
 - **F-1.6 (Assign roles to users per event):** Complete. Provides the user-role-event assignment (EventUserRole).
 
 **Risks:**
+
 - **Performance at scale:** Each protected endpoint now requires a DB lookup for the caller's role. At Next-phase scale (small events, modest concurrency), this is negligible. If it becomes a concern, short-lived caching (per-request or Redis TTL) can be added without changing the contract.
 - **Permission granularity:** The current model groups permissions by area (EventManagement, CheckIn, Reporting). If finer-grained control is needed later (e.g., "can edit tickets but not cancel the event"), the model can be extended — but that is out of scope for F-1.7.
 - **Consistency with existing endpoints:** All existing protected endpoints will be retrofitted with authorization in this feature. The MediatR pipeline behavior ensures uniform enforcement — no endpoint can be missed.
@@ -193,8 +199,8 @@ github_issue: 17
 
 ## 12. Resolved Questions
 
-| # | Question | Resolution |
-|---|----------|------------|
-| 1 | Should authorization be implemented as a MediatR pipeline behavior or explicit per-handler checks? | **MediatR pipeline behavior** — uniform enforcement, no risk of missing a handler. |
-| 2 | Should the permission check result be cached per-request? | **Yes** — cache per-request scope to avoid repeated DB lookups. |
-| 3 | Should existing endpoints be retrofitted with authorization now? | **Yes** — add authorization to all existing protected endpoints in this feature. |
+| #   | Question                                                                                           | Resolution                                                                         |
+| --- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| 1   | Should authorization be implemented as a MediatR pipeline behavior or explicit per-handler checks? | **MediatR pipeline behavior** — uniform enforcement, no risk of missing a handler. |
+| 2   | Should the permission check result be cached per-request?                                          | **Yes** — cache per-request scope to avoid repeated DB lookups.                    |
+| 3   | Should existing endpoints be retrofitted with authorization now?                                   | **Yes** — add authorization to all existing protected endpoints in this feature.   |

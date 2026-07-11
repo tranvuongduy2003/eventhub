@@ -30,7 +30,6 @@ Specs are durable implementation evidence. They bridge the three source-of-truth
 
 Use `<YYYYMMDDHHmmss>-<feature-kebab>.md`.
 
-
 ## Completion Sync
 
 When a spec-backed implementation completes, reconcile the relevant status and acceptance evidence in `docs/features.md`, update this spec when it remains current evidence, and refresh any affected `docs/harness/*`, `AGENTS.md`, skill, hook, or script guidance in the same change.

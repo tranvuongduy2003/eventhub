@@ -33,8 +33,8 @@ github_issue: 1
 
 # Feature: Multiple Occurrences / Sessions
 
-> Features: F-2.7  |  Status: DRAFT  |  Date: 2026-06-24
-> PRD: QG-1 (simplicity), QG-5 (correctness)  |  DDD: BC-2, AGG-Event  |  Tech: §6
+> Features: F-2.7 | Status: DRAFT | Date: 2026-06-24
+> PRD: QG-1 (simplicity), QG-5 (correctness) | DDD: BC-2, AGG-Event | Tech: §6
 
 ## 1. Problem & Solution
 
@@ -45,8 +45,9 @@ github_issue: 1
 **Personas:** PER-O2 (small group / club / small-business organizer) — needs to offer repeating or multi-session events without creating duplicate events.
 
 **Scope:**
+
 - **In:** F-2.7 only — add/remove/edit occurrences on an event; per-occurrence inventory; public page shows occurrences; attendee selects an occurrence at checkout; check-in validates against a specific occurrence.
-- **Out:** F-2.1 draft creation (already done); F-2.2 cover image; F-2.3 edit details; F-2.4 publish; F-2.5 close/cancel; F-2.6 duplicate; F-3.1 ticket type creation (ticket types are shared across occurrences; inventory is per-occurrence); F-4.3 rich link previews; F-11.* realtime updates for per-occurrence counts.
+- **Out:** F-2.1 draft creation (already done); F-2.2 cover image; F-2.3 edit details; F-2.4 publish; F-2.5 close/cancel; F-2.6 duplicate; F-3.1 ticket type creation (ticket types are shared across occurrences; inventory is per-occurrence); F-4.3 rich link previews; F-11.\* realtime updates for per-occurrence counts.
 
 ## 2. Acceptance Criteria
 
@@ -83,32 +84,38 @@ github_issue: 1
 The `Event` aggregate currently owns a single `VO-EventSchedule`. With F-2.7, occurrences become **child entities** within the `Event` aggregate, because they share the event's consistency boundary and the no-oversell invariant (`INV-10`) must hold per occurrence.
 
 **New entity:** `ENT-Occurrence` — a child of `AGG-Event`.
+
 - Identity: `VO-OccurrenceId`
 - Attributes: `VO-EventSchedule` (date-time range), per-ticket-type inventory counters (Sold, Reserved — capacity is inherited from the ticket type definition but tracked per occurrence).
 - Each occurrence maintains its own `Reserved + Sold ≤ Capacity` invariant.
 
 **Invariants (new or modified):**
+
 - **INV-10 (modified):** `Reserved + Sold ≤ Capacity` per ticket type **per occurrence**. The no-oversell guarantee is per-occurrence, not per-event.
 - **INV-26 (new):** An event's occurrences must not have overlapping time ranges (same start, or start < other end and end > other start).
 - **INV-27 (new):** An occurrence with `Sold + Reserved > 0` cannot be removed.
 - **INV-28 (new):** Ticket type capacity changes must not cause any occurrence's `Sold + Reserved` to exceed the new capacity.
 
 **Lifecycle:**
+
 - Occurrences are created in `Scheduled` status.
 - Closing/cancelling the event (F-2.5) cascades to all occurrences.
 - Individual occurrence close/cancel is not supported; the event-level action is the only way.
 
 **Domain events (new):**
+
 - `EVT-OccurrenceAdded` — when an organizer adds an occurrence.
 - `EVT-OccurrenceUpdated` — when an occurrence's date changes.
 - `EVT-OccurrenceRemoved` — when an occurrence is deleted.
 
 **Ticket type relationship:**
+
 - Ticket types remain defined at the **event level** (shared name, price, description).
 - Inventory (capacity, sold, reserved) is tracked **per occurrence per ticket type**.
 - This avoids duplicating ticket type definitions while allowing independent inventory control.
 
 **Interaction with existing features:**
+
 - **F-2.4 Publish:** An event can be published if it has ≥1 ticket type **and** ≥1 occurrence.
 - **F-2.5 Close/Cancel:** Closing/cancelling the event cascades to all occurrences. Individual occurrence close/cancel is not supported.
 - **F-2.6 Duplicate:** Copies the occurrence structure. Organizer must set new dates for each occurrence.
@@ -120,30 +127,36 @@ The `Event` aggregate currently owns a single `VO-EventSchedule`. With F-2.7, oc
 ## 4. UI Behavior
 
 **Organizer — Event edit page:**
+
 - New "Occurrences" section in the event edit view.
 - List of existing occurrences with date, status, and inventory summary.
 - "Add Occurrence" action: date-time picker (with time zone inherited from event).
 - Edit/remove actions per occurrence (remove blocked if inventory consumed).
 
 **Organizer — Dashboard:**
+
 - Per-occurrence breakdown of sold, available, and check-in counts.
 - Occurrence-level filtering on attendee list.
 
 **Attendee — Public event page:**
+
 - Occurrence selector (dropdown or list) showing upcoming occurrences with date and availability.
 - Selecting an occurrence updates the displayed availability for ticket types.
 - "Get Tickets" flow is scoped to the selected occurrence.
 
 **Attendee — Checkout:**
+
 - Selected occurrence is shown in the order summary.
 - Reservation and payment are scoped to that occurrence.
 
 **Attendee — Ticket/QR:**
+
 - Ticket displays the occurrence date alongside the event title.
 
 ## 5. Data & Storage Impact
 
 **PostgreSQL:**
+
 - New `occurrences` table under `app` schema, owned by the `event` aggregate.
   - Columns: `id`, `event_id` (FK), `starts_at`, `ends_at`, `time_zone`, `created_at`, `updated_at`.
 - New `occurrence_ticket_type_inventory` table (or similar join) to track per-occurrence, per-ticket-type inventory.
@@ -152,25 +165,29 @@ The `Event` aggregate currently owns a single `VO-EventSchedule`. With F-2.7, oc
 - Optimistic concurrency (`row_version`) on the `occurrences` table or on the inventory rows to protect the no-oversell invariant per occurrence.
 
 **Impact on existing tables:**
+
 - `orders` table: add `occurrence_id` FK (nullable for backward compatibility with existing orders that predate occurrences).
 - `tickets` table: add `occurrence_id` FK.
 - `reservations` table: add `occurrence_id` FK.
 
 **Redis:** No new cache concerns; existing cache invalidation patterns apply.
 
-**MinIO / RabbitMQ:** No changes.
+**MinIO / Async workflow:** No changes.
 
 ## 6. Real-Time & Consistency
 
 **Consistency:**
+
 - Strong consistency within the `Event` aggregate: adding/removing occurrences and reserving/releasing inventory per occurrence happen in the same transaction.
 - The no-oversell invariant (`INV-10`) is enforced per-occurrence with optimistic concurrency retry.
 
-**Real-time (future — F-11.*):**
+**Real-time (future — F-11.\*):**
+
 - When F-11.1 (live sales) is implemented, it should support per-occurrence counts. This is out of scope for this spec but the data model supports it.
 
 **Integration events:**
-- `EVT-OccurrenceAdded`, `EVT-OccurrenceUpdated`, `EVT-OccurrenceRemoved` are published for downstream consumers (Reporting, Notifications).
+
+- `EVT-OccurrenceAdded`, `EVT-OccurrenceUpdated`, `EVT-OccurrenceRemoved` are raised for downstream workflows (Reporting, Notifications).
 - Idempotent consumption per existing patterns.
 
 ## 7. Security & Privacy
@@ -201,11 +218,13 @@ The `Event` aggregate currently owns a single `VO-EventSchedule`. With F-2.7, oc
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - F-2.1 (Create draft event) — already implemented; occurrences extend the existing Event aggregate.
 - F-1.5 (Roles and permissions) — already implemented; Owner role gates occurrence management.
 - F-3.1 (Ticket types) — already implemented; ticket types are defined at event level, inventory is per-occurrence.
 
 **Risks:**
+
 - **Complexity increase (QG-1):** This feature adds a new entity and per-occurrence inventory tracking, increasing the Event aggregate's complexity. Mitigation: keep occurrences as child entities (not a separate aggregate) to maintain strong consistency without cross-aggregate coordination.
 - **Migration impact:** Existing events have no occurrences. A migration strategy is needed — existing events get a single "default" occurrence derived from their current schedule, or occurrences are required only for events created after this feature.
 - **Performance:** Events with many occurrences (e.g., daily for a year) could make the aggregate large. Mitigation: archive or paginate past occurrences if needed.
@@ -226,13 +245,13 @@ The `Event` aggregate currently owns a single `VO-EventSchedule`. With F-2.7, oc
 - Occurrence-level cover images or descriptions.
 - Automatic occurrence generation from a recurrence rule (e.g., "every Monday for 10 weeks").
 - Individual occurrence close/cancel (only event-level close/cancel supported).
-- Real-time per-occurrence sales updates (F-11.* — separate feature).
+- Real-time per-occurrence sales updates (F-11.\* — separate feature).
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | How should existing events (pre-F-2.7) be migrated? Should they get a default occurrence, or is the feature only for new events? | ✅ No backfill needed. Existing events continue to work with their implicit single schedule. Occurrences are only for events created after this feature. |
-| 2 | Should there be a maximum number of occurrences per event? If so, what limit? | ✅ No limit. |
-| 3 | When an event is duplicated (F-2.6), should the organizer be prompted to set new dates for each occurrence, or should dates be cleared entirely? | ✅ Organizer must set new dates for each occurrence when duplicating. |
-| 4 | Should closing/cancelling an individual occurrence trigger attendee notifications (email), or only event-level close/cancel? | ✅ Only event-level close/cancel. Individual occurrence close/cancel is out of scope. |
+| #   | Question                                                                                                                                         | Status                                                                                                                                                   |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | How should existing events (pre-F-2.7) be migrated? Should they get a default occurrence, or is the feature only for new events?                 | ✅ No backfill needed. Existing events continue to work with their implicit single schedule. Occurrences are only for events created after this feature. |
+| 2   | Should there be a maximum number of occurrences per event? If so, what limit?                                                                    | ✅ No limit.                                                                                                                                             |
+| 3   | When an event is duplicated (F-2.6), should the organizer be prompted to set new dates for each occurrence, or should dates be cleared entirely? | ✅ Organizer must set new dates for each occurrence when duplicating.                                                                                    |
+| 4   | Should closing/cancelling an individual occurrence trigger attendee notifications (email), or only event-level close/cancel?                     | ✅ Only event-level close/cancel. Individual occurrence close/cancel is out of scope.                                                                    |

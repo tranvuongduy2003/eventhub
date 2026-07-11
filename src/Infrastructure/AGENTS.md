@@ -17,7 +17,7 @@ Applies to `src/Infrastructure/**`. Inherits `src/AGENTS.md` and the root instru
 
 - Store integration events transactionally with state changes; publish only after commit.
 - Consumers must use stable message identifiers plus inbox/deduplication so redelivery is safe.
-- Preserve observable retry/dead-letter context; do not silently discard failures.
+- Preserve observable retry or reconstruction context; do not silently discard failures.
 - Payment adapters form an anti-corruption layer, validate provider signatures, store no card data, and never make EventHub the holder of funds.
 - Secrets and provider credentials must never be committed or placed in domain entities.
 

@@ -39,8 +39,8 @@ github_issue: 6
 
 # Feature: Sign in and sign out
 
-> Features: F-1.2  |  Status: DRAFT  |  Date: 2026-06-16
-> PRD: DEC-3 (MVP spine)  |  DDD: BC-1 · AGG-Session · INV-3  |  Tech: §5–7 (session auth, PostgreSQL)
+> Features: F-1.2 | Status: DRAFT | Date: 2026-06-16
+> PRD: DEC-3 (MVP spine) | DDD: BC-1 · AGG-Session · INV-3 | Tech: §5–7 (session auth, PostgreSQL)
 
 ## 1. Problem & Solution
 
@@ -51,6 +51,7 @@ github_issue: 6
 **Personas:** PER-O1 (individual organizer), PER-O2 (small group / club organizer) — both need to return to their events securely.
 
 **Scope:**
+
 - **In:** F-1.2 only — sign-in form, credential validation, session creation, sign-out, session expiry behavior.
 - **Out:** F-1.1 registration (already complete); F-1.3 profile management; F-1.4 attendee accounts; forgot-password / reset-password; OAuth / social login; multi-device session management; remember-me / persistent sessions beyond the configured session window.
 
@@ -84,16 +85,16 @@ github_issue: 6
 
 Align with BC-1 Identity & Access, AGG-User, and AGG-Session:
 
-| Rule | Detail |
-|------|--------|
-| **Credential validation** | Email is looked up after normalization (same normalization as F-1.1). The submitted password is compared against the stored hash using the same hashing algorithm used at registration. |
-| **No field disclosure** | A failed sign-in response must not indicate whether the email was unknown or the password was wrong. This prevents account enumeration. |
-| **INV-3** | An expired session grants no access. Session expiry is checked on each authenticated request; expired sessions are treated as absent. |
-| **Session lifecycle** | A session starts (`Start` behavior on AGG-Session) on successful sign-in and is destroyed (`Invalidate` behavior) on sign-out or expiry. Expired sessions are cleaned up automatically by a background process or TTL-based eviction. |
+| Rule                                        | Detail                                                                                                                                                                                                                                                       |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Credential validation**                   | Email is looked up after normalization (same normalization as F-1.1). The submitted password is compared against the stored hash using the same hashing algorithm used at registration.                                                                      |
+| **No field disclosure**                     | A failed sign-in response must not indicate whether the email was unknown or the password was wrong. This prevents account enumeration.                                                                                                                      |
+| **INV-3**                                   | An expired session grants no access. Session expiry is checked on each authenticated request; expired sessions are treated as absent.                                                                                                                        |
+| **Session lifecycle**                       | A session starts (`Start` behavior on AGG-Session) on successful sign-in and is destroyed (`Invalidate` behavior) on sign-out or expiry. Expired sessions are cleaned up automatically by a background process or TTL-based eviction.                        |
 | **Session invalidation on password change** | When an organizer changes their password (future feature), all existing sessions for that user are immediately invalidated. The user must sign in again with the new password. This prevents stale sessions from remaining active after a credential change. |
-| **Session duration** | Driven by application configuration (not user-configurable). Fixed **absolute** timeout from sign-in (e.g., 24 hours from authentication, not reset on activity). |
-| **Concurrent sessions** | Signing in from a second device does not invalidate the first session unless configured otherwise. Multiple active sessions per user are permitted for MVP simplicity (QG-1). |
-| **Lockout** | No account lockout after failed attempts for MVP. Rate limiting at the transport layer is desirable but not a hard gate. |
+| **Session duration**                        | Driven by application configuration (not user-configurable). Fixed **absolute** timeout from sign-in (e.g., 24 hours from authentication, not reset on activity).                                                                                            |
+| **Concurrent sessions**                     | Signing in from a second device does not invalidate the first session unless configured otherwise. Multiple active sessions per user are permitted for MVP simplicity (QG-1).                                                                                |
+| **Lockout**                                 | No account lockout after failed attempts for MVP. Rate limiting at the transport layer is desirable but not a hard gate.                                                                                                                                     |
 
 ## 4. UI Behavior
 
@@ -119,22 +120,22 @@ Align with BC-1 Identity & Access, AGG-User, and AGG-Session:
 
 ### API contract (product level)
 
-| Operation | Method & path | Success | Failure |
-|-----------|---------------|---------|---------|
-| Sign in | `POST /api/auth/login` | `200 OK` — body includes user id, display name, email; `Set-Cookie` session cookie | `401 Unauthorized` — body is RFC 7807 problem details with a generic `invalid_credentials` code |
-| Sign out | `POST /api/auth/logout` | `204 No Content` — session destroyed, cookie cleared | `204` even if no session existed (idempotent) |
-| Current user | `GET /api/auth/me` | `200 OK` — user id, display name, email, role | `401 Unauthorized` — no valid session |
+| Operation    | Method & path           | Success                                                                            | Failure                                                                                         |
+| ------------ | ----------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Sign in      | `POST /api/auth/login`  | `200 OK` — body includes user id, display name, email; `Set-Cookie` session cookie | `401 Unauthorized` — body is RFC 7807 problem details with a generic `invalid_credentials` code |
+| Sign out     | `POST /api/auth/logout` | `204 No Content` — session destroyed, cookie cleared                               | `204` even if no session existed (idempotent)                                                   |
+| Current user | `GET /api/auth/me`      | `200 OK` — user id, display name, email, role                                      | `401 Unauthorized` — no valid session                                                           |
 
 After `200` on login, the browser holds a session cookie usable for `GET /api/auth/me` and all authenticated endpoints.
 
 ## 5. Data & Storage Impact
 
-| Store | Impact |
-|-------|--------|
-| **PostgreSQL** | No schema changes. Sessions may be stored server-side (PostgreSQL or Redis) per Tech §7 configuration. The user table is read-only for this slice (credential verification). |
-| **Redis** | If sessions are stored in Redis: session record created on sign-in, deleted on sign-out, auto-expires per TTL. Redis is rebuildable; the authoritative user record stays in PostgreSQL. |
-| **MinIO** | None. |
-| **RabbitMQ** | None. Sign-in/sign-out are synchronous request/response flows with no integration events. |
+| Store              | Impact                                                                                                                                                                                  |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PostgreSQL**     | No schema changes. Sessions may be stored server-side (PostgreSQL or Redis) per Tech §7 configuration. The user table is read-only for this slice (credential verification).            |
+| **Redis**          | If sessions are stored in Redis: session record created on sign-in, deleted on sign-out, auto-expires per TTL. Redis is rebuildable; the authoritative user record stays in PostgreSQL. |
+| **MinIO**          | None.                                                                                                                                                                                   |
+| **Async workflow** | None. Sign-in/sign-out are synchronous request/response flows with no integration events.                                                                                               |
 
 ## 6. Real-Time & Consistency
 
@@ -175,11 +176,11 @@ Session state is immediately consistent: the cookie is set or cleared in the sam
 
 ## 9. Dependencies & Risks
 
-| Type | Item |
-|------|------|
-| **Upstream** | F-1.1 (registration) — must exist; sign-in validates against accounts created by registration. |
-| **Downstream** | F-2.1 (create draft event) and all subsequent organizer features depend on an active session for authorization. |
-| **Risks** | Session storage choice (PostgreSQL vs Redis) may affect sign-out reliability — mitigate by ensuring server-side session deletion is authoritative. No brute-force protection at the application layer for MVP — mitigate with transport-level rate limiting if available. |
+| Type           | Item                                                                                                                                                                                                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Upstream**   | F-1.1 (registration) — must exist; sign-in validates against accounts created by registration.                                                                                                                                                                            |
+| **Downstream** | F-2.1 (create draft event) and all subsequent organizer features depend on an active session for authorization.                                                                                                                                                           |
+| **Risks**      | Session storage choice (PostgreSQL vs Redis) may affect sign-out reliability — mitigate by ensuring server-side session deletion is authoritative. No brute-force protection at the application layer for MVP — mitigate with transport-level rate limiting if available. |
 
 ## 10. Assumptions
 
@@ -208,7 +209,7 @@ Session state is immediately consistent: the cookie is set or cleared in the sam
 
 ## 12. Resolved Decisions
 
-| # | Question | Decision | Date |
-|---|----------|----------|------|
-| 1 | What is the default session duration? Is it a rolling window or absolute? | **Absolute** — fixed timeout from sign-in, not reset on activity. | 2026-06-16 |
-| 2 | Should the post-login redirect preserve the originally requested URL? | **Yes** — preserve the original URL and redirect there after sign-in. | 2026-06-16 |
+| #   | Question                                                                  | Decision                                                              | Date       |
+| --- | ------------------------------------------------------------------------- | --------------------------------------------------------------------- | ---------- |
+| 1   | What is the default session duration? Is it a rolling window or absolute? | **Absolute** — fixed timeout from sign-in, not reset on activity.     | 2026-06-16 |
+| 2   | Should the post-login redirect preserve the originally requested URL?     | **Yes** — preserve the original URL and redirect there after sign-in. | 2026-06-16 |

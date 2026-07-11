@@ -11,13 +11,13 @@ Read-only PostgreSQL access through the **`postgres`** MCP server in [`.codex/co
 
 Credentials and ports are defined by the Aspire AppHost, not hardcoded ad hoc values.
 
-| Setting | AppHost source | Local dev value |
-|---|---|---|
-| Postgres resource | `AddPostgres("postgres", ...)` in [`src/AppHost/AppHost.cs`](../../../src/AppHost/AppHost.cs) | `postgres` |
-| Database | `AddDatabase("app")` | `app` -> services use `ConnectionStrings__app` |
-| Username | Aspire Postgres container default | `postgres` |
-| Password | `Parameters:postgres-password` in [`src/AppHost/appsettings.Development.json`](../../../src/AppHost/appsettings.Development.json) | `postgres` |
-| Host port | `.WithEndpoint(port: 5432, targetPort: 5432)` | `5432` |
+| Setting           | AppHost source                                                                                                                    | Local dev value                                |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Postgres resource | `AddPostgres("postgres", ...)` in [`src/AppHost/AppHost.cs`](../../../src/AppHost/AppHost.cs)                                     | `postgres`                                     |
+| Database          | `AddDatabase("app")`                                                                                                              | `app` -> services use `ConnectionStrings__app` |
+| Username          | Aspire Postgres container default                                                                                                 | `postgres`                                     |
+| Password          | `Parameters:postgres-password` in [`src/AppHost/appsettings.Development.json`](../../../src/AppHost/appsettings.Development.json) | `postgres`                                     |
+| Host port         | `.WithEndpoint(port: 5432, targetPort: 5432)`                                                                                     | `5432`                                         |
 
 **MCP URI** (must stay in sync with AppHost):
 
@@ -37,24 +37,24 @@ command = "npx"
 args = ["-y", "@modelcontextprotocol/server-postgres", "postgresql://postgres:postgres@localhost:5432/app?sslmode=disable"]
 ```
 
-| Item | Value |
-|---|---|
-| Server id | `postgres` |
-| Package | `@modelcontextprotocol/server-postgres` |
-| Mode | **Read-only** (all SQL runs in a read-only transaction) |
+| Item          | Value                                                            |
+| ------------- | ---------------------------------------------------------------- |
+| Server id     | `postgres`                                                       |
+| Package       | `@modelcontextprotocol/server-postgres`                          |
+| Mode          | **Read-only** (all SQL runs in a read-only transaction)          |
 | Prerequisites | AppHost running with Docker; Postgres reachable at the URI above |
 
 If MCP connection fails, compare the URL to the Aspire dashboard connection string for database **`app`**.
 
 ## When to use MCP vs other skills
 
-| Task | Use |
-|---|---|
-| Inspect live rows, counts, joins, explain plans | **This skill** -> MCP `query` |
-| Table/column meaning, invariants, indexes | [`docs/technical.md`](../../../docs/technical.md) first, then MCP to confirm |
-| Add/change schema, EF migrations | Constitution III · Tech §6 — **not** MCP (no writes) |
-| AppHost / container not up | `aspire.md`, `env-doctor` |
-| Integration tests | Constitution VII · Tech §11 |
+| Task                                            | Use                                                                          |
+| ----------------------------------------------- | ---------------------------------------------------------------------------- |
+| Inspect live rows, counts, joins, explain plans | **This skill** -> MCP `query`                                                |
+| Table/column meaning, invariants, indexes       | [`docs/technical.md`](../../../docs/technical.md) first, then MCP to confirm |
+| Add/change schema, EF migrations                | Constitution III · Tech §6 — **not** MCP (no writes)                         |
+| AppHost / container not up                      | `aspire.md`, `env-doctor`                                                    |
+| Integration tests                               | Constitution VII · Tech §11                                                  |
 
 ## MCP capabilities
 
@@ -93,4 +93,3 @@ Core tables: `users`, `user_sessions`.
 ## Examples
 
 See [reference.md](reference.md) for starter queries.
-

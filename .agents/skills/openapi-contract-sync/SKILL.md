@@ -9,11 +9,11 @@ HTTP contract flow for **EventHub**.
 
 ## Source of truth
 
-| Artifact | Git | Role |
-|----------|-----|------|
-| `contracts/openapi/api.v1.yaml` | **Committed** | Reviewable REST contract |
-| `contracts/openapi/.build/api-v1.json` | Ignored | MSBuild export (JSON only at build time) |
-| `web/src/generated/api-schema.ts` | Ignored | `openapi-typescript` output |
+| Artifact                               | Git           | Role                                     |
+| -------------------------------------- | ------------- | ---------------------------------------- |
+| `contracts/openapi/api.v1.yaml`        | **Committed** | Reviewable REST contract                 |
+| `contracts/openapi/.build/api-v1.json` | Ignored       | MSBuild export (JSON only at build time) |
+| `web/src/generated/api-schema.ts`      | Ignored       | `openapi-typescript` output              |
 
 ## Pipeline
 
@@ -56,7 +56,13 @@ yarn --cwd web api:verify    # CI check: YAML matches API (no write)
 Import generated types from the barrel:
 
 ```typescript
-import type { paths, components, ApiPath, ApiJsonBody, ApiJsonResponse } from '@/lib/api'
+import type {
+  paths,
+  components,
+  ApiPath,
+  ApiJsonBody,
+  ApiJsonResponse,
+} from "@/lib/api";
 
 // Example when schemas exist:
 // type Body = components['schemas']['LoginRequest']

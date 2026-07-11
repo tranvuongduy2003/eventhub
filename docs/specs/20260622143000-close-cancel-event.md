@@ -35,14 +35,15 @@ github_issue: 29
 
 # Feature: Close or Cancel an Event
 
-> Features: F-2.5  |  Status: DRAFT  |  Date: 2026-06-22
-> PRD: DEC-1 (no platform fee), QG-1 (simplicity)  |  DDD: BC-2 AGG-Event lifecycle  |  Tech: §4–6
+> Features: F-2.5 | Status: DRAFT | Date: 2026-06-22
+> PRD: DEC-1 (no platform fee), QG-1 (simplicity) | DDD: BC-2 AGG-Event lifecycle | Tech: §4–6
 
 ## 1. Problem & Solution
 
 **Problem:** An organizer needs to stop selling tickets for an event — either temporarily (sales are done, but the event still happens) or permanently (the event is off). Without this, a published event stays sellable forever, even when it should not be.
 
 **Solution:** Two distinct actions on a published event:
+
 - **Close** — stops all new purchases; issued tickets remain valid for entry. The event is still happening, just not accepting new buyers.
 - **Cancel** — the event is not happening. Sales stop, the event is marked cancelled, and once the payments epic (EP-6) exists, paid orders are refunded and tickets are voided. Attendees can be notified.
 
@@ -76,11 +77,11 @@ github_issue: 29
 
 **Lifecycle transitions (from domain-model-specification.md §7):**
 
-| From | Action | To | Guard |
-|------|--------|----|-------|
-| Published | Close | Closed | Caller holds Owner role |
+| From      | Action | To        | Guard                   |
+| --------- | ------ | --------- | ----------------------- |
+| Published | Close  | Closed    | Caller holds Owner role |
 | Published | Cancel | Cancelled | Caller holds Owner role |
-| Closed | Cancel | Cancelled | Caller holds Owner role |
+| Closed    | Cancel | Cancelled | Caller holds Owner role |
 
 - Close is only valid from **Published**.
 - Cancel is valid from **Published** or **Closed**.
@@ -88,42 +89,50 @@ github_issue: 29
 - **Draft** events cannot be Closed or Cancelled (they are not yet public; the organizer can simply stop editing or delete them — deletion is out of scope for this spec).
 
 **Domain events raised:**
+
 - `EVT-EventClosed` — raised when an event is Closed.
 - `EVT-EventCancelled` — raised when an event is Cancelled. This is an **integration event** that will fan out to Sales, Payments, Ticketing, and Notifications (per domain-model-specification.md §6) when those consumers are built.
 
 **Inventory impact:**
+
 - **Close:** no inventory change. Existing reservations and sold tickets are untouched. New reservations are blocked by the Closed status (INV-14: cannot reserve unless Published).
 - **Cancel:** existing reservations should be released (inventory returns to pool, though the pool is moot since the event is cancelled). Sold tickets are voided. This is downstream work (F-6.6, EP-10) — the domain event signals the cancellation for those features to consume.
 
 **Authorization:**
+
 - Only the **Owner** of an event can Close or Cancel it. This aligns with F-1.5 (Owner = full control) and is enforced in the Application handler, not just the API layer.
 
 ## 4. UI Behavior
 
 **Organizer dashboard:**
+
 - For a Published event, the organizer sees a "Close Event" action and a "Cancel Event" action (with confirmation).
 - For a Closed event, the organizer sees a "Cancel Event" action (Close is no longer available since it is already closed).
 - For a Cancelled event, neither action is available.
 - Both actions require a confirmation step (e.g., "Are you sure you want to cancel? This cannot be undone.").
 
 **Public event page:**
+
 - Published → normal page with buy option.
 - Closed → page still accessible but shows "This event is closed for registration" or similar; no buy button; issued tickets still work.
 - Cancelled → page shows "This event has been cancelled"; no buy button.
 
 **Confirmation dialog for Cancel:**
+
 - Clearly states the consequences: sales stop, tickets are invalidated, and (once F-6.6 exists) refunds will be processed.
 - Requires explicit confirmation to proceed.
 
 ## 5. Data & Storage Impact
 
 **PostgreSQL:**
+
 - The `Event` aggregate's status field transitions as described. No new columns needed — `VO-EventStatus` already includes `Closed` and `Cancelled` states.
 - A `CancelledAt` timestamp may be added to the Event record for audit and downstream reference (aligns with Tech §6 timestamp conventions).
 
-**Redis / MinIO / RabbitMQ:**
+**Redis / MinIO / Async workflow:**
+
 - No direct storage changes.
-- `EVT-EventCancelled` will be published to RabbitMQ when downstream consumers (F-6.6, F-9.5) are built. For this slice, the domain event is raised in-process and the integration event infrastructure is prepared but consumers are not yet active.
+- `EVT-EventCancelled` will be emitted when messaging infrastructure exists when downstream workflows (F-6.6, F-9.5) are built. For this slice, the domain event is raised in-process and the integration event infrastructure is prepared but consumers are not yet active.
 
 ## 6. Real-Time & Consistency
 
@@ -155,19 +164,22 @@ github_issue: 29
 ## 9. Dependencies & Risks
 
 **Upstream dependencies (already built):**
+
 - F-1.2 (Sign in) — organizer must be authenticated.
 - F-1.5 / F-1.6 (Roles) — Owner role must exist and be assignable.
 - F-2.1 (Create draft) — event must exist.
 - F-2.4 (Publish) — event must be Published before it can be Closed or Cancelled.
 
 **Downstream dependencies (not in this slice):**
+
 - F-6.6 (Refund on cancellation) — consumes `EVT-EventCancelled` to trigger refunds.
 - F-9.5 (Light messaging) — consumes `EVT-EventCancelled` to notify attendees.
 - EP-10 (Transfer & Returns) — Cancel voids tickets; transfer/return rules interact with Cancelled state.
 
 **Risks:**
+
 - **Scope creep into refunds:** The Cancel action is meaningful only when refunds eventually happen. This slice must clearly record the cancellation intent without implementing the refund flow. Risk of partial implementation confusing users if Cancel is visible but refunds are not yet built.
-- **Downstream consumer readiness:** `EVT-EventCancelled` integration event should be published even if no consumers exist yet, to avoid a later migration. Consumers (Sales, Payments, Ticketing, Notifications) should handle the event idempotently when they are built.
+- **Downstream workflow readiness:** `EVT-EventCancelled` integration event should be raised even if no downstream workflows exist yet, to avoid a later migration. Consumers (Sales, Payments, Ticketing, Notifications) should handle the event idempotently when they are built.
 
 ## 10. Assumptions
 
@@ -188,8 +200,8 @@ github_issue: 29
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should Cancel on an event with confirmed orders be blocked until F-6.6 (refunds) is built, or should it proceed and record the intent? | ✅ Resolved: proceed and record — downstream features consume the event when ready. |
-| 2 | Should a `CancelledAt` timestamp be added to the Event aggregate for audit purposes? | ✅ Resolved: yes, lightweight addition aligned with Tech §6 conventions. |
-| 3 | Should the public page for a Closed event differ visually from Cancelled (e.g., "sales closed" vs "event cancelled")? | ✅ Resolved: yes, distinct messaging for clarity. |
+| #   | Question                                                                                                                               | Status                                                                              |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| 1   | Should Cancel on an event with confirmed orders be blocked until F-6.6 (refunds) is built, or should it proceed and record the intent? | ✅ Resolved: proceed and record — downstream features consume the event when ready. |
+| 2   | Should a `CancelledAt` timestamp be added to the Event aggregate for audit purposes?                                                   | ✅ Resolved: yes, lightweight addition aligned with Tech §6 conventions.            |
+| 3   | Should the public page for a Closed event differ visually from Cancelled (e.g., "sales closed" vs "event cancelled")?                  | ✅ Resolved: yes, distinct messaging for clarity.                                   |

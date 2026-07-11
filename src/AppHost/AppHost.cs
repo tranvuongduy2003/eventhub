@@ -19,25 +19,14 @@ var redis = builder.AddRedis("cache")
 var storage = builder.AddMinioContainer("storage")
     .WithDataVolume();
 
-var messaging = builder.AddRabbitMQ("messaging")
-    .WithDataVolume()
-    .WithManagementPlugin();
-
-var seq = builder.AddSeq("seq")
-    .WithEnvironment("ACCEPT_EULA", "Y");
-
 #pragma warning disable ASPIRECERTIFICATES001 // WithHttpsDeveloperCertificate
 var api = builder.AddProject<Projects.EventHub_Api>("api", launchProfileName: "https")
     .WithReference(applicationDatabase)
     .WithReference(redis, connectionName: "Cache")
     .WithReference(storage)
-    .WithReference(messaging)
-    .WithReference(seq)
     .WaitFor(postgres)
     .WaitFor(redis)
     .WaitFor(storage)
-    .WaitFor(messaging)
-    .WaitFor(seq)
     .WithHttpsDeveloperCertificate()
     .WithExternalHttpEndpoints()
     .WithUrl("/scalar", "Scalar")

@@ -118,4 +118,3 @@ Out of scope: multi-device realtime UX guarantees beyond database consistency, o
 - `.codex/tmp/telemetry/`: N/A - product slice only; no harness behavior changes.
 - `scripts/agent/`: N/A - product slice only; no harness behavior changes.
 - Workflow surfaces (`scripts/agent/`, `.agents/skills/`, `.codex/hooks/`, `scripts/agent/`, `AGENTS.md`): N/A - product slice only; no harness behavior changes.
-

@@ -40,8 +40,8 @@ github_issue: 40
 
 # Feature: Inventory and No-Oversell Guarantee
 
-> Features: F-3.4  |  Status: DRAFT  |  Date: 2026-06-25
-> PRD: QG-5, RSK-5, 3.4  |  DDD: INV-10, INV-12, INV-14, AGG-Event  |  Tech: 4, 6
+> Features: F-3.4 | Status: DRAFT | Date: 2026-06-25
+> PRD: QG-5, RSK-5, 3.4 | DDD: INV-10, INV-12, INV-14, AGG-Event | Tech: 4, 6
 
 ## 1. Problem & Solution
 
@@ -50,10 +50,12 @@ github_issue: 40
 **Solution:** Track per-ticket-type availability (`Available = Capacity - Reserved - Sold`) on the Event aggregate. Use optimistic concurrency with retry so that two buyers racing for the last ticket — exactly one succeeds and the other receives a sold-out rejection. Reservations are time-limited holds; they either commit to sales or release back to the pool.
 
 **Personas:**
+
 - **PER-O1 (Organizer):** Needs confidence that inventory numbers are accurate and that overbooking is impossible.
 - **PER-A1 (Attendee):** Expects that if a ticket is shown as available, purchasing it will succeed — and that sold-out is clearly communicated.
 
 **Scope:**
+
 - **In:** Reserve inventory, commit reservation (reserved → sold), release reservation (hold expiry), return to pool (ticket return), sold-out detection and rejection, availability calculation, optimistic concurrency for race conditions.
 - **Out:** Ticket return flow (F-10.3 — only the inventory-return mechanism is in scope), live inventory dashboards (F-11.1), sold-out nudges (F-11.3), low-stock indicators, multi-currency, secondary marketplace.
 
@@ -79,7 +81,7 @@ github_issue: 40
 
 **AC-10:** GIVEN a ticket type with capacity 100, WHEN the capacity is reduced by the organizer, THEN the new capacity must be greater than or equal to Reserved + Sold (the reduction is rejected if it would violate this constraint).
 
-**AC-11:** GIVEN inventory operations (reserve, commit, release, return), WHEN any operation completes, THEN domain events are raised for downstream consumers (inventory reserved, reservation committed, reservation released, inventory returned to pool).
+**AC-11:** GIVEN inventory operations (reserve, commit, release, return), WHEN any operation completes, THEN domain events are raised for downstream workflows (inventory reserved, reservation committed, reservation released, inventory returned to pool).
 
 **AC-12:** GIVEN a ticket type whose availability just reached 0, WHEN the sold-out condition is detected, THEN an integration event is emitted so realtime dashboards and notification systems can react.
 
@@ -87,11 +89,11 @@ github_issue: 40
 
 ### Invariants (from domain-model-specification.md)
 
-| ID | Rule | Enforcement |
-|----|------|-------------|
-| **INV-10** | `Reserved + Sold <= Capacity` per ticket type | Aggregate-level check on every Reserve, CommitReservation, ReleaseReservation, ReturnToPool, and capacity change |
-| **INV-12** | Capacity cannot be reduced below `Reserved + Sold` | Aggregate-level check on capacity update |
-| **INV-14** | Cannot reserve unless the event is Published, within SalesWindow (if defined), and not Closed/Cancelled | Aggregate-level precondition check on Reserve |
+| ID         | Rule                                                                                                    | Enforcement                                                                                                      |
+| ---------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **INV-10** | `Reserved + Sold <= Capacity` per ticket type                                                           | Aggregate-level check on every Reserve, CommitReservation, ReleaseReservation, ReturnToPool, and capacity change |
+| **INV-12** | Capacity cannot be reduced below `Reserved + Sold`                                                      | Aggregate-level check on capacity update                                                                         |
+| **INV-14** | Cannot reserve unless the event is Published, within SalesWindow (if defined), and not Closed/Cancelled | Aggregate-level precondition check on Reserve                                                                    |
 
 ### Inventory Lifecycle
 
@@ -102,13 +104,13 @@ github_issue: 40
 
 ### Domain Events
 
-| Event | Type | Trigger | Consumers |
-|-------|------|---------|-----------|
-| InventoryReserved | Domain | Reservation created | Same unit of work |
-| ReservationCommitted | Domain | Reserved → Sold transition | Same unit of work |
-| ReservationReleased | Integration | Hold expired / released | Sales (expire order) |
-| InventoryReturnedToPool | Domain/Integration | Ticket returned to pool | Sales, Reporting |
-| EventSoldOut | Integration | Availability hits 0 | Realtime (F-11.1), Nudges (F-11.3) |
+| Event                   | Type               | Trigger                    | Consumers                          |
+| ----------------------- | ------------------ | -------------------------- | ---------------------------------- |
+| InventoryReserved       | Domain             | Reservation created        | Same unit of work                  |
+| ReservationCommitted    | Domain             | Reserved → Sold transition | Same unit of work                  |
+| ReservationReleased     | Integration        | Hold expired / released    | Sales (expire order)               |
+| InventoryReturnedToPool | Domain/Integration | Ticket returned to pool    | Sales, Reporting                   |
+| EventSoldOut            | Integration        | Availability hits 0        | Realtime (F-11.1), Nudges (F-11.3) |
 
 ### Concurrency Strategy
 
@@ -127,12 +129,12 @@ This is the documented "pragmatic two-aggregate write" — `PlaceOrder` reserves
 
 Inventory operations are internal domain behaviors invoked by command handlers. They are not directly exposed as standalone API endpoints. The following endpoints consume inventory indirectly:
 
-| Endpoint | Action | Inventory Effect |
-|----------|--------|-----------------|
-| `POST /api/orders` (PlaceOrder) | Start checkout | Reserve inventory (F-5.1, F-5.3) |
-| Order confirmation flow | Payment captured or free auto-confirm | CommitReservation |
-| Hold expiry background job | Timeout without payment | ReleaseReservation |
-| `GET /api/events/{eventId}/public` | View event | Display availability and sold-out status |
+| Endpoint                           | Action                                | Inventory Effect                         |
+| ---------------------------------- | ------------------------------------- | ---------------------------------------- |
+| `POST /api/orders` (PlaceOrder)    | Start checkout                        | Reserve inventory (F-5.1, F-5.3)         |
+| Order confirmation flow            | Payment captured or free auto-confirm | CommitReservation                        |
+| Hold expiry background job         | Timeout without payment               | ReleaseReservation                       |
+| `GET /api/events/{eventId}/public` | View event                            | Display availability and sold-out status |
 
 ### Availability Display
 
@@ -144,13 +146,13 @@ The public event page (`GET /api/events/{eventId}/public`) must include per-tick
 
 ### Error Responses
 
-| Scenario | Error Code | HTTP Status |
-|----------|-----------|-------------|
-| Ticket type sold out | `TICKET_TYPE_SOLD_OUT` | 422 |
-| Requested quantity exceeds availability | `INSUFFICIENT_AVAILABILITY` | 422 |
-| Event not published | `EVENT_NOT_PUBLISHED` | 422 |
-| Outside sales window | `SALES_WINDOW_CLOSED` | 422 |
-| Concurrency conflict (after retry exhaustion) | `CONCURRENCY_CONFLICT` | 409 |
+| Scenario                                      | Error Code                  | HTTP Status |
+| --------------------------------------------- | --------------------------- | ----------- |
+| Ticket type sold out                          | `TICKET_TYPE_SOLD_OUT`      | 422         |
+| Requested quantity exceeds availability       | `INSUFFICIENT_AVAILABILITY` | 422         |
+| Event not published                           | `EVENT_NOT_PUBLISHED`       | 422         |
+| Outside sales window                          | `SALES_WINDOW_CLOSED`       | 422         |
+| Concurrency conflict (after retry exhaustion) | `CONCURRENCY_CONFLICT`      | 409         |
 
 ## 5. Data & Storage Impact
 
@@ -158,22 +160,22 @@ The public event page (`GET /api/events/{eventId}/public`) must include per-tick
 
 **No new tables required.** Inventory state lives on the existing `TicketType` entity within the Event aggregate:
 
-| Column | Type | Purpose |
-|--------|------|---------|
+| Column     | Type    | Purpose                                                    |
+| ---------- | ------- | ---------------------------------------------------------- |
 | `capacity` | integer | Maximum quantity (set by organizer, constrained by INV-12) |
-| `reserved` | integer | Currently held by in-flight orders |
-| `sold` | integer | Confirmed sales |
+| `reserved` | integer | Currently held by in-flight orders                         |
+| `sold`     | integer | Confirmed sales                                            |
 
 **Reservation entity** (new, owned by Event aggregate):
 
-| Column | Type | Purpose |
-|--------|------|---------|
-| `id` | uuid | Primary key |
-| `ticket_type_id` | uuid | FK to ticket type |
-| `quantity` | integer | Number of tickets held |
-| `order_id` | uuid | Back-reference to the order |
-| `expires_at` | timestamptz | Hold deadline |
-| `created_at` | timestamptz | Audit |
+| Column           | Type        | Purpose                     |
+| ---------------- | ----------- | --------------------------- |
+| `id`             | uuid        | Primary key                 |
+| `ticket_type_id` | uuid        | FK to ticket type           |
+| `quantity`       | integer     | Number of tickets held      |
+| `order_id`       | uuid        | Back-reference to the order |
+| `expires_at`     | timestamptz | Hold deadline               |
+| `created_at`     | timestamptz | Audit                       |
 
 The Reservation entity is an owned entity within the Event aggregate — it lives in the same transaction boundary. The `row_version` column on the Event aggregate root guards all inventory mutations via optimistic concurrency.
 
@@ -181,7 +183,7 @@ The Reservation entity is an owned entity within the Event aggregate — it live
 
 No direct Redis impact. Availability is computed from PostgreSQL state. Read-side caching of availability (if any) is rebuildable and out of scope for this feature.
 
-### RabbitMQ
+### Async workflow
 
 Integration events (`ReservationReleased`, `EventSoldOut`) are published after successful commit. Consumers are idempotent.
 
@@ -191,7 +193,7 @@ Integration events (`ReservationReleased`, `EventSoldOut`) are published after s
 
 - **Strong consistency** inside the Event aggregate — all inventory mutations (reserve, commit, release, return) are transactional with optimistic concurrency retry.
 - **Pragmatic two-aggregate write** — `PlaceOrder` mutates both Event (reserve) and Order (create) in one transaction. This is the documented exception to one-aggregate-per-transaction, justified by the no-oversell hard requirement.
-- **Eventual consistency** for cross-context notifications — `ReservationReleased` and `EventSoldOut` are integration events delivered via RabbitMQ after commit. Consumers are idempotent.
+- **Eventual consistency** for cross-context notifications — `ReservationReleased` and `EventSoldOut` are integration events handled by local workflows after commit. Consumers are idempotent.
 
 ### Realtime (F-11.1, F-11.3 — out of scope but data provided)
 
@@ -226,30 +228,30 @@ The `EventSoldOut` integration event is the hook for realtime dashboards and sol
 
 ### Dependencies
 
-| Feature | Relationship |
-|---------|-------------|
-| F-3.1 (Define ticket type) | **Complete.** TicketType entity with capacity, sold, reserved fields exists. |
-| F-3.2 (Free tickets) | **Complete.** Order aggregate and PlaceOrder exist. Inventory applies identically to free tickets. |
+| Feature                     | Relationship                                                                                        |
+| --------------------------- | --------------------------------------------------------------------------------------------------- |
+| F-3.1 (Define ticket type)  | **Complete.** TicketType entity with capacity, sold, reserved fields exists.                        |
+| F-3.2 (Free tickets)        | **Complete.** Order aggregate and PlaceOrder exist. Inventory applies identically to free tickets.  |
 | F-3.3 (Transparent pricing) | **Complete.** Price snapshotting ensures order totals are immutable; no interaction with inventory. |
-| EP-2 (Event management) | Event aggregate and lifecycle exist. |
+| EP-2 (Event management)     | Event aggregate and lifecycle exist.                                                                |
 
 ### Downstream Features (unblocked by F-3.4)
 
-| Feature | What it needs from F-3.4 |
-|---------|--------------------------|
+| Feature                                | What it needs from F-3.4          |
+| -------------------------------------- | --------------------------------- |
 | F-5.1 (Select tickets, start checkout) | Reserve inventory during checkout |
-| F-5.3 (Create order, hold inventory) | Reservation + hold timer |
-| F-10.3 (Return ticket to pool) | ReturnToPool mechanism |
-| F-11.1 (Live sales, inventory) | Real-time availability data |
-| F-11.3 (Sold-out nudges) | EventSoldOut integration event |
+| F-5.3 (Create order, hold inventory)   | Reservation + hold timer          |
+| F-10.3 (Return ticket to pool)         | ReturnToPool mechanism            |
+| F-11.1 (Live sales, inventory)         | Real-time availability data       |
+| F-11.3 (Sold-out nudges)               | EventSoldOut integration event    |
 
 ### Risks
 
-| Risk | Severity | Mitigation |
-|------|----------|------------|
-| Hot-aggregate contention under high concurrency | Low (small events) | Optimistic concurrency + 3 retries; known scaling path (split inventory aggregate) is out of scope |
-| Hold expiry timing — too short causes false sold-outs, too long ties up inventory | Medium | Configurable per ticket type by organizer; 15 minutes default |
-| Partial failure between reserve and order creation | Low | Single transaction (pragmatic two-aggregate write); either both succeed or both roll back |
+| Risk                                                                              | Severity           | Mitigation                                                                                         |
+| --------------------------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------- |
+| Hot-aggregate contention under high concurrency                                   | Low (small events) | Optimistic concurrency + 3 retries; known scaling path (split inventory aggregate) is out of scope |
+| Hold expiry timing — too short causes false sold-outs, too long ties up inventory | Medium             | Configurable per ticket type by organizer; 15 minutes default                                      |
+| Partial failure between reserve and order creation                                | Low                | Single transaction (pragmatic two-aggregate write); either both succeed or both roll back          |
 
 ## 10. Assumptions
 
@@ -272,8 +274,8 @@ The `EventSoldOut` integration event is the hook for realtime dashboards and sol
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | What is the default reservation hold duration? | ✅ 15 minutes default |
-| 2 | Should the organizer be able to configure hold duration per ticket type, or is a platform-wide default sufficient for MVP? | ✅ Configurable per ticket type by the organizer |
-| 3 | What is the maximum retry count for optimistic concurrency conflicts before returning 409? | ✅ 3 retries |
+| #   | Question                                                                                                                   | Status                                           |
+| --- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| 1   | What is the default reservation hold duration?                                                                             | ✅ 15 minutes default                            |
+| 2   | Should the organizer be able to configure hold duration per ticket type, or is a platform-wide default sufficient for MVP? | ✅ Configurable per ticket type by the organizer |
+| 3   | What is the maximum retry count for optimistic concurrency conflicts before returning 409?                                 | ✅ 3 retries                                     |

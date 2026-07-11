@@ -50,14 +50,14 @@ An implementation conforms only when:
 
 ## 1. Architectural drivers
 
-| Driver | Product source | Technical response |
-|---|---|---|
-| Small, maintainable solo project | `G-2`, `QG-1`, `ASM-1` | Modular monolith, one deployable API host, conventional components, no microservice split. |
-| No oversell | `QG-5`, F-3.4 | Inventory is protected by an aggregate invariant, database transaction, optimistic concurrency, and retry. |
-| Transparent pricing | `G-3`, `QG-2`, F-3.3/F-5.4 | Money is a value object; order lines snapshot prices; charged amount must equal displayed final total. |
-| Responsible payments | `QG-6`, `DEC-1`, EP-6 | Provider anti-corruption layer, signed/idempotent webhook handling, no card storage, no funds held by EventHub. |
-| Reliable ticket admission | `QG-3`, F-7.1/F-8.1/F-8.2 | Unique unguessable ticket codes and idempotent exactly-once admission semantics. |
-| Mobile and realtime UX | `QG-4`, EP-4/EP-11 | REST for commands/queries; SignalR only for server-push enhancements. |
+| Driver                           | Product source             | Technical response                                                                                              |
+| -------------------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Small, maintainable solo project | `G-2`, `QG-1`, `ASM-1`     | Modular monolith, one deployable API host, conventional components, no microservice split.                      |
+| No oversell                      | `QG-5`, F-3.4              | Inventory is protected by an aggregate invariant, database transaction, optimistic concurrency, and retry.      |
+| Transparent pricing              | `G-3`, `QG-2`, F-3.3/F-5.4 | Money is a value object; order lines snapshot prices; charged amount must equal displayed final total.          |
+| Responsible payments             | `QG-6`, `DEC-1`, EP-6      | Provider anti-corruption layer, signed/idempotent webhook handling, no card storage, no funds held by EventHub. |
+| Reliable ticket admission        | `QG-3`, F-7.1/F-8.1/F-8.2  | Unique unguessable ticket codes and idempotent exactly-once admission semantics.                                |
+| Mobile and realtime UX           | `QG-4`, EP-4/EP-11         | REST for commands/queries; SignalR only for server-push enhancements.                                           |
 
 ## 2. Architecture
 
@@ -69,18 +69,18 @@ EventHub is a **modular monolith** using:
 - **Domain-Driven Design** for business boundaries and invariants;
 - **CQRS** for distinct command and query models over one PostgreSQL source of truth;
 - **ports and adapters** for external systems;
-- **event-driven integration** between logical bounded contexts where immediate consistency is not required.
+- **in-process domain events** for local workflows where immediate consistency is not required.
 
 ### 2.2 Normative architecture rules
 
 - **ARCH-1 — Dependency direction:** `Domain <- Application <- Infrastructure`, with `Api` as composition root. Inner layers MUST NOT reference outer layers.
-- **ARCH-2 — Pure domain:** Domain MUST remain pure C# and MUST NOT depend on EF Core, ASP.NET Core, MediatR, Redis, RabbitMQ, MinIO, SignalR, or Infrastructure.
+- **ARCH-2 — Pure domain:** Domain MUST remain pure C# and MUST NOT depend on EF Core, ASP.NET Core, MediatR, Redis, MinIO, SignalR, or Infrastructure.
 - **ARCH-3 — Application ownership:** Commands, queries, validators, orchestration, and external-system ports belong to Application.
 - **ARCH-4 — Adapter ownership:** Infrastructure implements persistence and external-system ports. Api owns HTTP, authentication middleware, endpoints, and hubs.
 - **ARCH-5 — Thin transport:** Endpoints MUST bind/authorize/dispatch/map only; business rules MUST NOT be implemented in endpoints.
 - **ARCH-6 — Source of truth:** PostgreSQL is authoritative. Redis and read projections MUST be rebuildable.
 - **ARCH-7 — Contract first:** Public REST shapes are governed by `contracts/openapi/api.v1.yaml`; generated clients MUST NOT be edited manually.
-- **ARCH-8 — Idempotent boundaries:** Payment callbacks, message consumers, ticket issuance, and check-in MUST tolerate retries safely.
+- **ARCH-8 — Idempotent boundaries:** Payment callbacks, retriable workflows, ticket issuance, and check-in MUST tolerate retries safely.
 - **ARCH-9 — Single deployable:** Bounded contexts are logical modules, not independently deployed services, unless this specification is deliberately revised.
 
 ### 2.3 Logical request flow
@@ -104,12 +104,12 @@ tests/
   Testing.Common/
 ```
 
-| Layer | May reference | MUST NOT reference |
-|---|---|---|
-| Domain | — | EF Core, ASP.NET Core, MediatR, Infrastructure |
-| Application | Domain, Contracts | Infrastructure, HTTP transport |
-| Infrastructure | Application, Domain | Api |
-| Api | Application, Infrastructure, Contracts | business rules in endpoints |
+| Layer          | May reference                          | MUST NOT reference                             |
+| -------------- | -------------------------------------- | ---------------------------------------------- |
+| Domain         | —                                      | EF Core, ASP.NET Core, MediatR, Infrastructure |
+| Application    | Domain, Contracts                      | Infrastructure, HTTP transport                 |
+| Infrastructure | Application, Domain                    | Api                                            |
+| Api            | Application, Infrastructure, Contracts | business rules in endpoints                    |
 
 Every project SHOULD expose `AssemblyReference.Assembly` for assembly scanning and registration.
 
@@ -138,51 +138,51 @@ Application services coordinate aggregates and contexts. Domain services contain
 
 ## 5. Ubiquitous language
 
-| Term | Meaning | Owner |
-|---|---|---|
-| Organizer | Account that creates and runs events and owns its audience data. | BC-1 |
-| Attendee | Person who buys or holds a ticket. In the MVP, identified by contact name and email rather than requiring an account. | Shared identity concept |
-| Event | Organizer-owned occurrence with schedule, location, and ticket types. | BC-2 |
-| Ticket Type | Sellable category with price, capacity, availability, and optional sales rules. | BC-2 |
-| Capacity | Maximum quantity for a ticket type. | BC-2 |
-| Availability | `Capacity − Reserved − Sold`. | BC-2 |
-| Reservation | Time-limited inventory hold associated with an order. | BC-2 |
-| Order | Attendee purchase containing price-snapshotted order lines. | BC-3 |
-| Hold | Time window in which a pending order's reservation remains valid. | BC-2/BC-3 |
-| Payment | Attempt to settle an order through the external provider. | BC-4 |
-| Ticket | Issued admission represented by a unique code and held by a contact. | BC-5 |
-| Check-in | Validation and admission of a valid ticket exactly once. | BC-5 |
-| Transfer | Reassignment of a ticket with no markup; old code is invalidated and a new code is issued. | BC-5 |
-| Return-to-pool | Voiding an eligible ticket, refunding it, and restoring inventory for face-value resale. | BC-5 → BC-2 |
-| Attendee List / Results | Organizer-owned read models derived from sales, tickets, and check-ins. | BC-7 |
-| Notification | Email initiated by a domain/integration event or scheduled action. | BC-6 |
+| Term                    | Meaning                                                                                                               | Owner                   |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| Organizer               | Account that creates and runs events and owns its audience data.                                                      | BC-1                    |
+| Attendee                | Person who buys or holds a ticket. In the MVP, identified by contact name and email rather than requiring an account. | Shared identity concept |
+| Event                   | Organizer-owned occurrence with schedule, location, and ticket types.                                                 | BC-2                    |
+| Ticket Type             | Sellable category with price, capacity, availability, and optional sales rules.                                       | BC-2                    |
+| Capacity                | Maximum quantity for a ticket type.                                                                                   | BC-2                    |
+| Availability            | `Capacity − Reserved − Sold`.                                                                                         | BC-2                    |
+| Reservation             | Time-limited inventory hold associated with an order.                                                                 | BC-2                    |
+| Order                   | Attendee purchase containing price-snapshotted order lines.                                                           | BC-3                    |
+| Hold                    | Time window in which a pending order's reservation remains valid.                                                     | BC-2/BC-3               |
+| Payment                 | Attempt to settle an order through the external provider.                                                             | BC-4                    |
+| Ticket                  | Issued admission represented by a unique code and held by a contact.                                                  | BC-5                    |
+| Check-in                | Validation and admission of a valid ticket exactly once.                                                              | BC-5                    |
+| Transfer                | Reassignment of a ticket with no markup; old code is invalidated and a new code is issued.                            | BC-5                    |
+| Return-to-pool          | Voiding an eligible ticket, refunding it, and restoring inventory for face-value resale.                              | BC-5 → BC-2             |
+| Attendee List / Results | Organizer-owned read models derived from sales, tickets, and check-ins.                                               | BC-7                    |
+| Notification            | Email initiated by a domain/integration event or scheduled action.                                                    | BC-6                    |
 
 ## 6. Strategic domain design
 
 ### 6.1 Subdomains and bounded contexts
 
-| ID | Context | Type | Responsibility | Aggregate or shape |
-|---|---|---|---|---|
-| BC-1 | Identity & Access | Supporting | Accounts, authentication identity, ownership and event roles | `AGG-User`; sessions are an application/infrastructure concern |
-| BC-2 | Event Management | Core | Events, ticket types, pricing, inventory, reservations, lifecycle | `AGG-Event` |
-| BC-3 | Sales | Core | Orders, holds, discounts, checkout, price snapshots | `AGG-Order` |
-| BC-4 | Payments | Generic | Provider payment/refund state behind an anti-corruption layer | `AGG-Payment` |
-| BC-5 | Ticketing | Core | Ticket issuance, access, check-in, transfer, returns | `AGG-Ticket` |
-| BC-6 | Notifications | Generic | Idempotent asynchronous email delivery | Event-driven; no aggregate |
-| BC-7 | Reporting & Audience | Supporting | Attendee and results projections | Read models; no aggregate |
+| ID   | Context              | Type       | Responsibility                                                    | Aggregate or shape                                             |
+| ---- | -------------------- | ---------- | ----------------------------------------------------------------- | -------------------------------------------------------------- |
+| BC-1 | Identity & Access    | Supporting | Accounts, authentication identity, ownership and event roles      | `AGG-User`; sessions are an application/infrastructure concern |
+| BC-2 | Event Management     | Core       | Events, ticket types, pricing, inventory, reservations, lifecycle | `AGG-Event`                                                    |
+| BC-3 | Sales                | Core       | Orders, holds, discounts, checkout, price snapshots               | `AGG-Order`                                                    |
+| BC-4 | Payments             | Generic    | Provider payment/refund state behind an anti-corruption layer     | `AGG-Payment`                                                  |
+| BC-5 | Ticketing            | Core       | Ticket issuance, access, check-in, transfer, returns              | `AGG-Ticket`                                                   |
+| BC-6 | Notifications        | Generic    | Idempotent asynchronous email delivery                            | Event-driven; no aggregate                                     |
+| BC-7 | Reporting & Audience | Supporting | Attendee and results projections                                  | Read models; no aggregate                                      |
 
 ### 6.2 Context map
 
-| Upstream | Downstream | Relationship and mechanism |
-|---|---|---|
-| BC-1 | All contexts | Published identity values (`UserId`, `OrganizerId`); downstream contexts reference identity only. |
-| BC-2 | BC-3 | Synchronous reservation during order placement to protect inventory; release/commit outcomes are coordinated transactionally or by idempotent events as specified below. |
-| BC-3 | BC-4 | Sales requests payment; Payments reports captured/failed/refunded outcomes. |
-| External provider | BC-4 | Anti-corruption layer validates signatures and translates provider concepts. |
-| BC-3 | BC-5 | `EVT-OrderConfirmed` triggers ticket issuance. |
-| BC-2 | BC-3/4/5/6 | `EVT-EventCancelled` fans out to cancellation, refund, voiding, and notification workflows. |
-| BC-5 | BC-2/4 | Return-to-pool restores inventory and requests refund. |
-| BC-2/3/4/5 | BC-6/7 | Integration events drive notifications and projections. |
+| Upstream          | Downstream   | Relationship and mechanism                                                                                                                                               |
+| ----------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| BC-1              | All contexts | Published identity values (`UserId`, `OrganizerId`); downstream contexts reference identity only.                                                                        |
+| BC-2              | BC-3         | Synchronous reservation during order placement to protect inventory; release/commit outcomes are coordinated transactionally or by idempotent events as specified below. |
+| BC-3              | BC-4         | Sales requests payment; Payments reports captured/failed/refunded outcomes.                                                                                              |
+| External provider | BC-4         | Anti-corruption layer validates signatures and translates provider concepts.                                                                                             |
+| BC-3              | BC-5         | `EVT-OrderConfirmed` triggers ticket issuance.                                                                                                                           |
+| BC-2              | BC-3/4/5/6   | `EVT-EventCancelled` fans out to cancellation, refund, voiding, and notification workflows.                                                                              |
+| BC-5              | BC-2/4       | Return-to-pool restores inventory and requests refund.                                                                                                                   |
+| BC-2/3/4/5        | BC-6/7       | Integration events drive notifications and projections.                                                                                                                  |
 
 ### 6.3 Tactical conventions
 
@@ -296,52 +296,52 @@ Event-scoped Owner/Staff assignments and permission checks belong to the Identit
 
 ### 7.6 BC-6 — Notifications
 
-No aggregate. Consumers send email through `IEmailSender` in response to ticket issuance, event cancellation, reminders, invitations, and organizer messages. Delivery is at-least-once and MUST be idempotent for a logical `(message, recipient)` pair.
+No aggregate. Application workflows send email through `IEmailSender` in response to ticket issuance, reminders, and organizer messages. Delivery MUST be idempotent for a logical `(message, recipient)` pair when the workflow can be retried.
 
 ### 7.7 BC-7 — Reporting & Audience
 
-No write aggregate. CQRS projections produce attendee lists, event results, and organizer overviews from order, ticket, and check-in events. Projections are eventually consistent and MUST be rebuildable from authoritative PostgreSQL data and/or retained integration events.
+No write aggregate. CQRS projections produce attendee lists, event results, and organizer overviews from authoritative PostgreSQL order, ticket, and check-in data. Projections MUST be rebuildable from PostgreSQL.
 
 ## 8. Shared value objects
 
-| Value object | Rules |
-|---|---|
-| `VO-Money` | Non-negative amount plus one configured currency; arithmetic only within the same currency. |
-| `VO-EmailAddress` | Well-formed and normalized for comparison. |
-| `VO-Contact` | Name plus normalized email; guest attendee identity. |
-| `VO-EventSchedule` | Start/end with time zone; end is not before start. |
-| `VO-EventLocation` | Exactly one of physical address or Online. |
-| `VO-Capacity` | Positive integer ceiling for a ticket type. |
-| `VO-Slug` | URL-safe and unique among published events. |
-| `VO-CoverImageRef` | Object key/reference only; never file bytes. |
-| `VO-TicketCode` | Unique and unguessable QR payload. |
-| `VO-ProviderReference` | External payment provider identifier. |
-| Typed IDs | User, Event, TicketType, Reservation, Order, Payment, and Ticket identities MUST NOT be represented as interchangeable bare primitives in Domain. |
+| Value object           | Rules                                                                                                                                             |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VO-Money`             | Non-negative amount plus one configured currency; arithmetic only within the same currency.                                                       |
+| `VO-EmailAddress`      | Well-formed and normalized for comparison.                                                                                                        |
+| `VO-Contact`           | Name plus normalized email; guest attendee identity.                                                                                              |
+| `VO-EventSchedule`     | Start/end with time zone; end is not before start.                                                                                                |
+| `VO-EventLocation`     | Exactly one of physical address or Online.                                                                                                        |
+| `VO-Capacity`          | Positive integer ceiling for a ticket type.                                                                                                       |
+| `VO-Slug`              | URL-safe and unique among published events.                                                                                                       |
+| `VO-CoverImageRef`     | Object key/reference only; never file bytes.                                                                                                      |
+| `VO-TicketCode`        | Unique and unguessable QR payload.                                                                                                                |
+| `VO-ProviderReference` | External payment provider identifier.                                                                                                             |
+| Typed IDs              | User, Event, TicketType, Reservation, Order, Payment, and Ticket identities MUST NOT be represented as interchangeable bare primitives in Domain. |
 
 ## 9. Events and lifecycle
 
 ### 9.1 Event catalogue
 
-| Event | Scope | Primary consumers |
-|---|---|---|
-| `EVT-UserRegistered` | domain | local identity handlers |
-| `EVT-EventPublished` | integration | reporting/discovery projections |
-| `EVT-InventoryReserved` | domain | local workflow |
-| `EVT-ReservationReleased` | integration | sales expiry workflow |
-| `EVT-ReservationCommitted` | domain | local workflow |
-| `EVT-EventSoldOut` | integration | realtime/reporting |
-| `EVT-OrderPlaced` | domain | local workflow |
-| `EVT-OrderConfirmed` | integration | ticketing, event management, reporting |
-| `EVT-OrderExpired` | domain | local workflow |
-| `EVT-PaymentInitiated` | domain | local workflow |
-| `EVT-PaymentCaptured` | integration | sales |
-| `EVT-PaymentFailed` | integration | sales |
-| `EVT-PaymentRefunded` | integration | sales, ticketing |
-| `EVT-TicketIssued` | integration | notifications, reporting |
-| `EVT-TicketCheckedIn` | integration | realtime, reporting |
-| `EVT-TicketTransferred` | integration | notifications, reporting |
-| `EVT-TicketReturned` | integration | event management, payments |
-| `EVT-EventCancelled` | integration | sales, payments, ticketing, notifications |
+| Event                      | Scope       | Primary handlers                          |
+| -------------------------- | ----------- | ----------------------------------------- |
+| `EVT-UserRegistered`       | domain      | local identity handlers                   |
+| `EVT-EventPublished`       | integration | reporting/discovery projections           |
+| `EVT-InventoryReserved`    | domain      | local workflow                            |
+| `EVT-ReservationReleased`  | integration | sales expiry workflow                     |
+| `EVT-ReservationCommitted` | domain      | local workflow                            |
+| `EVT-EventSoldOut`         | integration | realtime/reporting                        |
+| `EVT-OrderPlaced`          | domain      | local workflow                            |
+| `EVT-OrderConfirmed`       | integration | ticketing, event management, reporting    |
+| `EVT-OrderExpired`         | domain      | local workflow                            |
+| `EVT-PaymentInitiated`     | domain      | local workflow                            |
+| `EVT-PaymentCaptured`      | integration | sales                                     |
+| `EVT-PaymentFailed`        | integration | sales                                     |
+| `EVT-PaymentRefunded`      | integration | sales, ticketing                          |
+| `EVT-TicketIssued`         | integration | notifications, reporting                  |
+| `EVT-TicketCheckedIn`      | integration | realtime, reporting                       |
+| `EVT-TicketTransferred`    | integration | notifications, reporting                  |
+| `EVT-TicketReturned`       | integration | event management, payments                |
+| `EVT-EventCancelled`       | integration | sales, payments, ticketing, notifications |
 
 ### 9.2 State transitions
 
@@ -369,15 +369,15 @@ Creating an order and its inventory reservation is one application operation. In
 
 ### 10.3 Eventual consistency
 
-Other cross-context side effects are asynchronous. Integration events MUST be persisted transactionally with the state change that produced them, then published after commit. Consumers MUST use stable message identifiers and an inbox/deduplication mechanism so redelivery is safe.
+The current implementation has no async messaging infrastructure. Cross-context side effects run through local MediatR domain-event handlers, explicit application commands, or background jobs inside the modular monolith. Retried workflows MUST remain idempotent and reconstructable from PostgreSQL.
 
 ### 10.4 Required idempotency
 
 - Provider webhooks are deduplicated by provider event/reference plus operation.
 - `EVT-OrderConfirmed` may issue each logical ticket only once.
 - Check-in retries return the prior successful result without admitting twice.
-- Refund and cancellation consumers tolerate duplicate delivery.
-- Notification consumers suppress duplicate logical sends.
+- Refund and cancellation workflows tolerate repeated execution.
+- Notification workflows suppress duplicate logical sends when retried.
 
 ### 10.5 End-to-end purchase flow
 
@@ -406,17 +406,16 @@ Hold expiry releases inventory and expires the order. Event cancellation fans ou
 
 ## 12. Runtime components and ports
 
-| Component | Technology | Responsibility | Boundary |
-|---|---|---|---|
-| Relational store | PostgreSQL | authoritative aggregate and transactional data | repository/unit-of-work adapters |
-| Cache | Redis | session/response cache, rebuildable data, optional SignalR backplane | cache/session ports |
-| Object storage | MinIO | cover images and other binary assets | storage port |
-| Messaging | RabbitMQ | integration events and asynchronous work | publisher/consumer adapters |
-| Realtime | SignalR | server-to-client updates | Api hubs |
-| Payment | trusted external provider | payment capture/refund | `IPaymentGateway` ACL |
-| Email | external/local provider | ticket and organizer email | `IEmailSender` |
-| Telemetry | OpenTelemetry + Seq | logs, traces, and metrics | `ServiceDefaults` |
-| Orchestration | .NET Aspire | local topology, resource provisioning, service discovery | `AppHost` |
+| Component        | Technology                            | Responsibility                                                       | Boundary                         |
+| ---------------- | ------------------------------------- | -------------------------------------------------------------------- | -------------------------------- |
+| Relational store | PostgreSQL                            | authoritative aggregate and transactional data                       | repository/unit-of-work adapters |
+| Cache            | Redis                                 | session/response cache, rebuildable data, optional SignalR backplane | cache/session ports              |
+| Object storage   | MinIO                                 | cover images and other binary assets                                 | storage port                     |
+| Realtime         | SignalR                               | server-to-client updates                                             | Api hubs                         |
+| Payment          | trusted external provider             | payment capture/refund                                               | `IPaymentGateway` ACL            |
+| Email            | external/local provider               | ticket and organizer email                                           | `IEmailSender`                   |
+| Telemetry        | OpenTelemetry + Aspire dashboard OTLP | logs, traces, and metrics                                            | `ServiceDefaults`                |
+| Orchestration    | .NET Aspire                           | local topology, resource provisioning, service discovery             | `AppHost`                        |
 
 AppHost is the local topology source of truth. Service projects use native SDKs; they SHOULD NOT depend on Aspire client abstractions when ordinary vendor SDKs satisfy the port.
 
@@ -439,36 +438,35 @@ Configuration precedence is:
 
 `appsettings.json → appsettings.Development.json → Aspire-injected environment → user secrets/environment secrets`.
 
-Expected sections include `Session`, `Concurrency`, `Cache`, `Storage`, `Messaging`, `Realtime`, `Payment`, and `Logging`. Connection names follow AppHost resource names. Secrets MUST never be committed.
+Expected sections include `Session`, `Concurrency`, `Cache`, `Storage`, `Realtime`, `Payment`, and `Logging`. Connection names follow AppHost resource names. Secrets MUST never be committed.
 
 ## 15. Observability and operations
 
 - `ServiceDefaults` configures structured logging, OpenTelemetry traces/metrics, service discovery, and health checks once.
-- OTLP exports to Seq using the AppHost-provided endpoint.
-- Correlation and trace IDs flow through HTTP, MediatR, message publication, and consumers.
+- OTLP exports to the AppHost-provided Aspire dashboard endpoint.
+- Correlation and trace IDs flow through HTTP, MediatR handlers, and background jobs.
 - `/health` exposes health checks and Aspire surfaces topology and resource health.
-- Operational dashboards include Aspire, Seq, MinIO console, and RabbitMQ management.
-- Integration-event failures MUST be observable with retry/dead-letter context rather than silently discarded.
+- Operational dashboards include Aspire and the MinIO console.
+- Background workflow failures MUST be observable with retry or reconstruction context rather than silently discarded.
 
 ## 16. Local development
 
 1. Start Docker Desktop or a compatible container runtime.
 2. Run `dotnet run --project src/AppHost/EventHub.AppHost.csproj`.
-3. Aspire provisions PostgreSQL, Redis, MinIO, RabbitMQ, and Seq and injects connection data.
-4. Use the Aspire dashboard for topology/health, Seq for logs/traces, MinIO for objects, and RabbitMQ UI for queues.
+3. Aspire provisions PostgreSQL, Redis, and MinIO and injects connection data.
+4. Use the Aspire dashboard for topology, health, logs, traces, and metrics; use MinIO for objects.
 5. Development API documentation is exposed through Scalar at `/scalar`.
 
 ## 17. Verification strategy
 
 ### 17.1 Test levels
 
-| Level | Required focus |
-|---|---|
-| Domain unit | aggregate behavior, value-object validation, state transitions, every high-risk `INV-*` rule |
-| Application unit/component | handler orchestration, validation, authorization, idempotency decisions using port fakes |
-| API integration | HTTP contracts, auth, EF mappings, PostgreSQL transactions/concurrency, and infrastructure boundaries |
-| Consumer integration | RabbitMQ delivery, inbox deduplication, retry, and projection/notification behavior |
-| End-to-end | only critical user journeys whose risk cannot be covered more cheaply, especially purchase → ticket → check-in |
+| Level                      | Required focus                                                                                                 |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Domain unit                | aggregate behavior, value-object validation, state transitions, every high-risk `INV-*` rule                   |
+| Application unit/component | handler orchestration, validation, authorization, idempotency decisions using port fakes                       |
+| API integration            | HTTP contracts, auth, EF mappings, PostgreSQL transactions/concurrency, and infrastructure boundaries          |
+| End-to-end                 | only critical user journeys whose risk cannot be covered more cheaply, especially purchase → ticket → check-in |
 
 Integration adapters SHOULD be tested against real engines through Testcontainers when an in-process fake would hide material behavior.
 
@@ -493,19 +491,19 @@ REST shapes are maintained in `contracts/openapi/api.v1.yaml`. Build tooling exp
 
 ## 19. Feature and domain traceability
 
-| Epic | Primary bounded context(s) | Main technical anchors |
-|---|---|---|
-| EP-1 | BC-1 | authentication, session adapter, event-scoped RBAC |
-| EP-2 | BC-2 | event lifecycle, image storage, authorization |
-| EP-3 | BC-2/BC-3 | inventory invariant, money, pricing snapshots, concurrency |
-| EP-4 | BC-2/BC-7 | public read models and HTTP queries |
-| EP-5 | BC-2/BC-3 | reservation + order transaction, expiry workflow |
-| EP-6 | BC-4/BC-3 | payment ACL, webhook idempotency, refund workflow |
-| EP-7 | BC-5/BC-6 | ticket factory, access links, asynchronous email |
-| EP-8 | BC-5 | code validation, exactly-once admission semantics |
-| EP-9 | BC-7/BC-6 | projections, exports, results, messaging |
-| EP-10 | BC-5/BC-2/BC-4 | transfer invariants, inventory return, refund |
-| EP-11 | BC-2/BC-3/BC-5 | integration events and SignalR projections |
+| Epic  | Primary bounded context(s) | Main technical anchors                                     |
+| ----- | -------------------------- | ---------------------------------------------------------- |
+| EP-1  | BC-1                       | authentication, session adapter, event-scoped RBAC         |
+| EP-2  | BC-2                       | event lifecycle, image storage, authorization              |
+| EP-3  | BC-2/BC-3                  | inventory invariant, money, pricing snapshots, concurrency |
+| EP-4  | BC-2/BC-7                  | public read models and HTTP queries                        |
+| EP-5  | BC-2/BC-3                  | reservation + order transaction, expiry workflow           |
+| EP-6  | BC-4/BC-3                  | payment ACL, webhook idempotency, refund workflow          |
+| EP-7  | BC-5/BC-6                  | ticket factory, access links, asynchronous email           |
+| EP-8  | BC-5                       | code validation, exactly-once admission semantics          |
+| EP-9  | BC-7/BC-6                  | projections, exports, results, messaging                   |
+| EP-10 | BC-5/BC-2/BC-4             | transfer invariants, inventory return, refund              |
+| EP-11 | BC-2/BC-3/BC-5             | domain events and SignalR projections                      |
 
 ## 20. Maintenance rule
 

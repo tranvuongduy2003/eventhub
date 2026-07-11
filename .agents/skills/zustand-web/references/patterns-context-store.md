@@ -79,47 +79,40 @@ export { createFeatureStore, FeatureProvider, useFeatureContext }
 
 ```tsx
 // In parent component or route
-import { FeatureProvider } from "@/features/feature/stores/useFeatureStore"
+import { FeatureProvider } from "@/features/feature/stores/useFeatureStore";
 
 const FeaturePage = () => {
   return (
     <FeatureProvider>
       <FeatureContent />
     </FeatureProvider>
-  )
-}
+  );
+};
 ```
 
 ### Consume Store
 
 ```tsx
-import { useFeatureContext } from "@/features/feature/stores/useFeatureStore"
+import { useFeatureContext } from "@/features/feature/stores/useFeatureStore";
 
 const FeatureContent = () => {
   // Always use selector function
-  const settings = useFeatureContext((state) => state.settings)
-  const setSettings = useFeatureContext((state) => state.setSettings)
+  const settings = useFeatureContext((state) => state.settings);
+  const setSettings = useFeatureContext((state) => state.setSettings);
 
   return (
     <button onClick={() => setSettings("item-1", { enabled: true })}>
       Update Settings
     </button>
-  )
-}
+  );
+};
 ```
 
 ## Key Differences from Basic Store
 
-| Aspect | Basic Store | Context-Based Store |
-|--------|-------------|---------------------|
-| Instance | Singleton | Multiple per Provider |
-| Access | `useStore((s) => s.value)` | `useStoreContext((s) => s.value)` |
-| Creation | `create<T>()` | Factory function + Context |
-| Scope | Global | Scoped to Provider tree |
-
-
-
-
-
-
-
+| Aspect   | Basic Store                | Context-Based Store               |
+| -------- | -------------------------- | --------------------------------- |
+| Instance | Singleton                  | Multiple per Provider             |
+| Access   | `useStore((s) => s.value)` | `useStoreContext((s) => s.value)` |
+| Creation | `create<T>()`              | Factory function + Context        |
+| Scope    | Global                     | Scoped to Provider tree           |

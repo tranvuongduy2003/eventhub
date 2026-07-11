@@ -1,4 +1,4 @@
-﻿# Workflow Patterns
+# Workflow Patterns
 
 ## Sequential Workflows
 
@@ -20,14 +20,9 @@ For tasks with branching logic, guide Codex through decision points:
 
 ```markdown
 1. Determine the modification type:
-   **Creating new content?** â†’ Follow "Creation workflow" below
-   **Editing existing content?** â†’ Follow "Editing workflow" below
+   **Creating new content?** → Follow "Creation workflow" below
+   **Editing existing content?** → Follow "Editing workflow" below
 
 2. Creation workflow: [steps]
 3. Editing workflow: [steps]
 ```
-
-
-
-
-

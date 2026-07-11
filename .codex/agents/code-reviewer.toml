@@ -1,4 +1,4 @@
-﻿name = "code-reviewer"
+name = "code-reviewer"
 description = "Use this read-only strong-reasoning subagent to review an EventHub change for bugs, architecture drift, spec drift, and convention violations before commit. It detects the stack from each changed file's path, reads the selected docs/specs implementation spec when present plus docs/product.md, docs/features.md, docs/technical.md, AGENTS.md, nested AGENTS.md, and matching skill guidance, then reports concrete file-and-line findings ranked by severity. It does not edit code. Pair with `security-reviewer` for auth/payment/sensitive-data changes and with `acceptance-verifier` for spec-fit."
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"

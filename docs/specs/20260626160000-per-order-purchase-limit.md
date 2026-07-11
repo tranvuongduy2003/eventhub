@@ -37,7 +37,7 @@ github_issue: 43
 
 # Feature: Per-order purchase limit
 
-> Features: F-3.6  |  Status: DRAFT  |  Date: 2026-06-26
+> Features: F-3.6 | Status: DRAFT | Date: 2026-06-26
 > PRD: QG-1 (simplicity), QG-3 (fairness), QG-5 (correct at small scale)
 > DDD: BC-2 Event Management, BC-3 Sales, AGG-Event, AGG-Order, ENT-TicketType, INV-24
 
@@ -50,6 +50,7 @@ github_issue: 43
 **Personas:** PER-O1 (individual organizer) — wants to ensure fair access to tickets for small events where one large buyer could exhaust inventory.
 
 **Scope:**
+
 - **In:** Setting an optional per-order limit on each ticket type; enforcing the limit during checkout; displaying the limit to attendees; blocking orders that exceed the limit.
 - **Out:** Per-event aggregate limits (summing across all types), discount codes (F-3.7), scheduled on-sale windows (F-3.8), group-buy workflows (PER-A2).
 
@@ -82,20 +83,24 @@ github_issue: 43
 **Bounded context:** BC-2 — Event Management (limit is defined on the ticket type) and BC-3 — Sales (limit is enforced at order placement).
 
 **Domain model alignment (from domain-model-specification.md):**
+
 - `ENT-TicketType` already carries an optional `MaxPerOrder` attribute. This feature activates and end-to-end tests that attribute.
 - **INV-24:** Line quantities must respect `MaxPerOrder` at placement. An order that violates this invariant cannot be created.
 
 **Behavior:**
+
 - The organizer sets `MaxPerOrder` on a ticket type via the `ChangeTicketType` behavior on the Event aggregate.
 - `MaxPerOrder` is optional — when not set (null), there is no per-order cap for that type.
 - When set, the value must be a positive integer (≥ 1).
 - The limit is enforced during the `Place` behavior on the Order aggregate: each order line's quantity must be ≤ the corresponding ticket type's `MaxPerOrder` (if set).
 
 **Interaction with availability (INV-10):**
+
 - The per-order limit and inventory availability are independent constraints. Both must be satisfied.
 - Effective maximum = min(MaxPerOrder, Available). The more restrictive of the two governs.
 
 **Price snapshot (INV-25):**
+
 - The `MaxPerOrder` value is not snapshotted on the order — it is a selling constraint, not a pricing attribute. The organizer may change it between orders.
 
 **Events:** No new domain or integration events are required. The limit is a passive constraint checked at order placement, not a state transition.
@@ -103,6 +108,7 @@ github_issue: 43
 ## 4. UI Behavior
 
 **Organizer — Ticket type edit screen:**
+
 - Each ticket type shows an optional "Max per order" field (numeric input).
 - When empty or null, no limit is applied — the field displays a placeholder like "No limit".
 - When set, the value is displayed as "Max {n} per order" next to the type.
@@ -110,10 +116,12 @@ github_issue: 43
 - The field is editable for Draft and Published events (changes take effect on future orders only).
 
 **Public event page (EP-4):**
+
 - Each ticket type that has a per-order limit displays the limit beneath the type name and price, e.g., "Max 4 per order".
 - Types without a limit show no additional text.
 
 **Checkout (EP-5):**
+
 - The quantity selector for each ticket type respects the per-order limit. If a limit is set, the maximum selectable quantity is capped at that limit (or available inventory, whichever is lower).
 - If the attendee manually enters a quantity exceeding the limit, an inline error message appears: "Maximum {n} tickets per order for {type name}".
 - The order summary before confirmation reflects the enforced quantities.
@@ -121,6 +129,7 @@ github_issue: 43
 ## 5. Data & Storage Impact
 
 **PostgreSQL (app schema):**
+
 - The `ticket_types` table already has a `max_per_order` column (nullable integer) from the initial schema (domain-model-specification.md ENT-TicketType). No schema change is required.
 - If the column does not yet exist, a migration adds `max_per_order INTEGER NULL` to the `ticket_types` table.
 
@@ -128,15 +137,17 @@ github_issue: 43
 
 **MinIO:** No impact.
 
-**RabbitMQ:** No new messages. The limit is a passive validation rule, not an event-producing state change.
+**Async workflow:** No new messages. The limit is a passive validation rule, not an event-producing state change.
 
 ## 6. Real-Time & Consistency
 
 **Consistency:**
+
 - The per-order limit is checked at order placement time, within the same transaction that reserves inventory (the pragmatic two-aggregate write described in domain-model-specification.md §8). There is no eventual-consistency concern — the limit is a point-in-time validation.
 - If the organizer changes the limit between a browse and a purchase, the attendee sees the current limit on the event page. The limit at placement time is what matters.
 
 **Real-time (EP-11 — future):**
+
 - No impact. The limit does not produce live data; it is a constraint.
 
 ## 7. Security & Privacy
@@ -147,27 +158,29 @@ github_issue: 43
 
 ## 8. Edge Cases
 
-**EC-01:** An attendee browses the event page, sees a limit of 4, then the organizer changes it to 2 before the attendee completes checkout. *Resolution:* The server enforces the limit at placement time (now 2). The attendee sees an error if they still have 4 selected; they must reduce to 2.
+**EC-01:** An attendee browses the event page, sees a limit of 4, then the organizer changes it to 2 before the attendee completes checkout. _Resolution:_ The server enforces the limit at placement time (now 2). The attendee sees an error if they still have 4 selected; they must reduce to 2.
 
-**EC-02:** A ticket type has a per-order limit of 4 but only 1 ticket remaining. *Resolution:* The effective cap is 1 (the lesser of limit and availability). The attendee can buy at most 1.
+**EC-02:** A ticket type has a per-order limit of 4 but only 1 ticket remaining. _Resolution:_ The effective cap is 1 (the lesser of limit and availability). The attendee can buy at most 1.
 
-**EC-03:** An attendee places an order for 3 tickets (within the limit), then tries to place a second order for 3 more of the same type. *Resolution:* Each order is evaluated independently against the per-order limit. The second order is allowed if inventory permits. The limit prevents hoarding in a single order, not across multiple orders.
+**EC-03:** An attendee places an order for 3 tickets (within the limit), then tries to place a second order for 3 more of the same type. _Resolution:_ Each order is evaluated independently against the per-order limit. The second order is allowed if inventory permits. The limit prevents hoarding in a single order, not across multiple orders.
 
-**EC-04:** An organizer sets the per-order limit to 1 for a workshop seat type. *Resolution:* Each order may contain at most 1 unit of that type. An attendee wanting 2 must place two separate orders (if inventory allows).
+**EC-04:** An organizer sets the per-order limit to 1 for a workshop seat type. _Resolution:_ Each order may contain at most 1 unit of that type. An attendee wanting 2 must place two separate orders (if inventory allows).
 
-**EC-05:** The per-order limit is set, then the organizer removes it (sets to null). *Resolution:* Future orders have no cap for that type. Existing orders are unaffected.
+**EC-05:** The per-order limit is set, then the organizer removes it (sets to null). _Resolution:_ Future orders have no cap for that type. Existing orders are unaffected.
 
-**EC-06:** A free ticket type has a per-order limit. *Resolution:* The limit applies regardless of ticket price. Free tickets can also be capped per order.
+**EC-06:** A free ticket type has a per-order limit. _Resolution:_ The limit applies regardless of ticket price. Free tickets can also be capped per order.
 
-**EC-07:** An attendee selects 2 of Type A (limit 4) and 3 of Type B (limit 2) in one order. *Resolution:* Type A is within limit; Type B exceeds its limit. The order is blocked; the attendee must reduce Type B to 2 or fewer.
+**EC-07:** An attendee selects 2 of Type A (limit 4) and 3 of Type B (limit 2) in one order. _Resolution:_ Type A is within limit; Type B exceeds its limit. The order is blocked; the attendee must reduce Type B to 2 or fewer.
 
 ## 9. Dependencies & Risks
 
 **Dependencies (from feature-specification.md):**
+
 - **F-3.1 (Define a ticket type):** Must exist — the per-order limit is an attribute on a ticket type.
 - **F-5.1 (Select tickets and start checkout):** Must enforce the limit during ticket selection and checkout.
 
 **Risks:**
+
 - **R-1: Attendee confusion.** If limits are not clearly communicated, attendees may be surprised when blocked. Mitigation: display the limit prominently on the event page and in the checkout flow (AC-09).
 - **R-2: Organizer misuse.** Setting a limit of 1 on general admission may frustrate group buyers (PER-A2). Mitigation: the field is optional and the organizer's responsibility; the system provides the tool, not the policy.
 - **R-3: Multiple-order circumvention.** A determined buyer can bypass the per-order limit by placing multiple orders. Mitigation: accepted for this feature scope — the limit raises the floor for fair access without being a hard anti-hoarding mechanism. Account-level or email-level caps are out of scope.
@@ -189,7 +202,7 @@ github_issue: 43
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should the per-order limit be visible to attendees on the event page, or only enforced at checkout? | ✅ Resolved: visible on the event page (AC-09) for transparency |
-| 2 | Should there be a system-wide maximum for the per-order limit (e.g., cap at 20)? | ✅ Resolved: No — keep it simple; the organizer decides the appropriate limit per type |
+| #   | Question                                                                                            | Status                                                                                 |
+| --- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| 1   | Should the per-order limit be visible to attendees on the event page, or only enforced at checkout? | ✅ Resolved: visible on the event page (AC-09) for transparency                        |
+| 2   | Should there be a system-wide maximum for the per-order limit (e.g., cap at 20)?                    | ✅ Resolved: No — keep it simple; the organizer decides the appropriate limit per type |

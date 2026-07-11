@@ -1,6 +1,6 @@
 ---
 name: backend
-description: "Procedural backend workflow for EventHub .NET work: source-driven scouting, layer-specific AGENTS routing, Domain/Application/Infrastructure/Api/Contracts/AppHost changes, EF Core/PostgreSQL, MediatR/CQRS, backend tests, Aspire-aware verification, and OpenAPI handoff without duplicating repository rules."
+description: "Procedural backend workflow for EventHub .NET work: source-driven scouting, layer-specific AGENTS routing, Domain/Application/Infrastructure/Api/Contracts/AppHost changes, EF Core/PostgreSQL, MediatR/CQRS, System.Threading.Channels integration-event publisher/consumer work, backend tests, Aspire-aware verification, and OpenAPI handoff without duplicating repository rules."
 ---
 
 # Backend Skill
@@ -40,7 +40,7 @@ Open the concrete files you find. Let local naming, result mapping, builders, fi
 
 ## Workflow
 
-1. Classify the change by layer and risk: domain invariant, application orchestration, persistence/adapter, HTTP contract, AppHost/runtime, or tests.
+1. Classify the change by layer and risk: domain invariant, application orchestration, persistence/adapter, messaging adapter, HTTP contract, AppHost/runtime, or tests.
 2. Load only the applicable nested instructions and reference below.
 3. Trace the full vertical slice when behavior crosses layers: endpoint/contract -> command/query -> handler -> domain method -> repository/adapter -> tests.
 4. Plan intended files, invariants/acceptance criteria, verification command, rollback point, and approval boundary.
@@ -55,6 +55,7 @@ Read only the reference needed for the current task:
 - `references/architecture.md` - source-discovery map for a backend vertical slice.
 - `references/endpoints.md` - endpoint and public REST contract workflow.
 - `references/entities-dbcontext.md` - EF Core model/repository workflow.
+- `references/messaging.md` - Channel-based integration event publisher, consumer, event, and DI workflow.
 - `references/querying.md` - read/query workflow and translation-sensitive checks.
 - `references/migrations.md` - migration generation and review workflow.
 - `references/testing.md` - backend test placement and fixture discovery.

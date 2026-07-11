@@ -57,10 +57,3 @@ Requires explicit user instruction:
 - Destructive operations outside the repository.
 
 The guardrail hook blocks known unsafe command patterns. Human confirmation is still required for operations that are risky but not mechanically detectable.
-
-
-
-
-
-
-

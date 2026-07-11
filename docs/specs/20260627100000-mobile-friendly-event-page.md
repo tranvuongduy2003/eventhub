@@ -29,8 +29,8 @@ github_issue: 51
 
 # Feature: Mobile-friendly event page
 
-> Features: F-4.2  |  Status: DRAFT  |  Date: 2026-06-27
-> PRD: QG-4 (Mobile-friendly), G-4 (Make buying smooth on mobile), ASM-3 (Most attendees buy on a phone)  |  DDD: BC-2 (Event Management)  |  Tech: §7 (API surface)
+> Features: F-4.2 | Status: DRAFT | Date: 2026-06-27
+> PRD: QG-4 (Mobile-friendly), G-4 (Make buying smooth on mobile), ASM-3 (Most attendees buy on a phone) | DDD: BC-2 (Event Management) | Tech: §7 (API surface)
 
 ## 1. Problem & Solution
 
@@ -39,10 +39,12 @@ github_issue: 51
 **Solution:** Adapt the existing public event page layout to be fully responsive on typical phone screens (320px–428px viewport width). The page must be readable without zooming, the buy flow must be usable with touch, and no horizontal scrolling should appear. This is a layout and styling effort on the existing F-4.1 page — no new data, endpoints, or domain logic.
 
 **Personas:**
+
 - **PER-A1** (General attendee) — discovers an event link on their phone and wants to read about it and buy tickets quickly.
 - **PER-A2** (Group buyer) — buys multiple tickets on a phone for friends; needs the quantity selector and checkout to work comfortably with touch.
 
 **Scope:**
+
 - **In scope:** F-4.2 — responsive layout for the public event page on phone-sized screens.
 - **Out of scope:** Rich link previews (F-4.3), public event listing (F-4.4), search (F-4.5), offline support, native app behavior, tablet-specific layouts, landscape orientation optimization.
 
@@ -75,6 +77,7 @@ github_issue: 51
 This feature has no domain or business rule impact. It is a pure presentation-layer concern on the existing public event page (F-4.1).
 
 The page displays data already defined in BC-2 (Event Management):
+
 - `AGG-Event` attributes: title, description, schedule, location, cover image, status.
 - `ENT-TicketType` attributes: name, price (`VO-Money`), availability (capacity − reserved − sold).
 - Event status lifecycle (`VO-EventStatus`): Draft, Published, Closed, Cancelled — each shows an appropriate state on the page.
@@ -86,22 +89,23 @@ No new invariants, domain events, or aggregates are introduced.
 ### 4.1 Layout approach
 
 The page uses a **mobile-first responsive layout**:
+
 - **Base layout:** single column, full-width, designed for phone screens (320px–428px).
 - **Breakpoints:** the layout widens gracefully at larger breakpoints (tablet, desktop) — the existing desktop layout is adapted, not replaced.
 - **Content order on mobile:** cover image at top, followed by title, date/time, location, description, ticket types, and buy CTA — in a logical reading order that puts the most actionable content (tickets + buy) within easy reach.
 
 ### 4.2 Key component behavior on phone
 
-| Component | Mobile behavior |
-|-----------|----------------|
-| Cover image | Full-width, aspect ratio preserved, no horizontal overflow |
-| Event title | Prominent, readable at default zoom |
-| Date/time + location | Stacked below title, icons or labels for quick scanning |
-| Description | Full-width text; **collapsible on mobile** — shows a preview (e.g., first 3–4 lines) with a "Read more" / "Show less" toggle to reduce scroll depth |
-| Ticket type list | Single column, each type as a card/row with name, price, and availability |
-| Buy CTA | Prominent, full-width, **sticky at the bottom of the viewport on mobile** — always visible while scrolling |
-| Quantity selector | Touch-friendly controls (buttons, not tiny dropdowns) |
-| Event state banner | Full-width banner for Draft/Closed/Cancelled states |
+| Component            | Mobile behavior                                                                                                                                     |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cover image          | Full-width, aspect ratio preserved, no horizontal overflow                                                                                          |
+| Event title          | Prominent, readable at default zoom                                                                                                                 |
+| Date/time + location | Stacked below title, icons or labels for quick scanning                                                                                             |
+| Description          | Full-width text; **collapsible on mobile** — shows a preview (e.g., first 3–4 lines) with a "Read more" / "Show less" toggle to reduce scroll depth |
+| Ticket type list     | Single column, each type as a card/row with name, price, and availability                                                                           |
+| Buy CTA              | Prominent, full-width, **sticky at the bottom of the viewport on mobile** — always visible while scrolling                                          |
+| Quantity selector    | Touch-friendly controls (buttons, not tiny dropdowns)                                                                                               |
+| Event state banner   | Full-width banner for Draft/Closed/Cancelled states                                                                                                 |
 
 ### 4.3 Touch targets
 
@@ -142,11 +146,13 @@ No new security or privacy concerns. The page remains publicly accessible for pu
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - F-4.1 (Shareable public event page) — must exist. This feature adapts the existing page.
 - F-3.1 (Define a ticket type) — the page displays ticket types; they must exist in the system.
 - F-3.3 (Transparent pricing) — prices shown must be final/all-inclusive.
 
 **Risks:**
+
 - **R-01:** Existing desktop layout may be tightly coupled, requiring significant refactoring to become responsive. Mitigation: use a mobile-first approach; adapt, don't rewrite.
 - **R-02:** Touch target sizes on existing components may be below the 44px minimum. Mitigation: audit and increase tap areas during implementation.
 - **R-03:** Long descriptions or many ticket types may create excessive scroll on mobile. Mitigation: descriptions are collapsible on mobile (see AC-09); ticket type list scrolls vertically.
@@ -172,8 +178,8 @@ No new security or privacy concerns. The page remains publicly accessible for pu
 
 ## 12. Open Questions
 
-| # | Question | Answer |
-|---|----------|--------|
-| 1 | Should the buy CTA be sticky at the bottom of the viewport on mobile (always visible while scrolling)? | ✅ Yes — sticky CTA at bottom of viewport on mobile. |
-| 2 | Should long event descriptions be collapsible on mobile to reduce scroll depth? | ✅ Yes — collapse long descriptions on mobile with a "Read more" toggle. |
-| 3 | Is there a minimum supported viewport width below 320px? | ✅ No minimum below 320px — page should remain functional but not optimized below that. |
+| #   | Question                                                                                               | Answer                                                                                  |
+| --- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| 1   | Should the buy CTA be sticky at the bottom of the viewport on mobile (always visible while scrolling)? | ✅ Yes — sticky CTA at bottom of viewport on mobile.                                    |
+| 2   | Should long event descriptions be collapsible on mobile to reduce scroll depth?                        | ✅ Yes — collapse long descriptions on mobile with a "Read more" toggle.                |
+| 3   | Is there a minimum supported viewport width below 320px?                                               | ✅ No minimum below 320px — page should remain functional but not optimized below that. |

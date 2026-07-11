@@ -45,10 +45,3 @@ Use this map to choose where a change belongs.
 
 - `contracts/openapi/api.v1.yaml`: committed OpenAPI contract.
 - `scripts/openapi/sync-contract.mjs`: contract export and verification helper.
-
-
-
-
-
-
-

@@ -34,7 +34,7 @@ github_issue: 47
 
 # Feature: Scheduled On-Sale Window
 
-> Features: F-3.8  |  Status: DRAFT  |  Date: 2026-06-27
+> Features: F-3.8 | Status: DRAFT | Date: 2026-06-27
 > PRD: QG-1 (simplicity), QG-2 (transparency), QG-5 (correctness at small scale)
 > DDD: BC-2 Event Management, AGG-Event, ENT-TicketType, VO-SalesWindow, INV-14
 > Tech: §4 (CQRS pipeline), §6 (persistence, concurrency)
@@ -48,6 +48,7 @@ github_issue: 47
 **Personas:** PER-O1 (individual organizer) and PER-O2 (small group/club organizer) configure sales windows. PER-A1 and PER-A2 (attendees) experience the resulting availability on the event page.
 
 **Scope:**
+
 - **In:** Set optional start and end date-times on a ticket type; enforce the window during reservation; reflect window state on the event page; owner-only management; edit/remove the window.
 - **Out:** Countdown timers on the UI, automated notifications when a window opens/closes, per-event (vs per-ticket-type) sales windows, recurring schedules.
 
@@ -74,6 +75,7 @@ github_issue: 47
 ## 3. Domain & Business Rules
 
 **Value object: `VO-SalesWindow`** (defined in `domain-model-specification.md`)
+
 - Contains a start date-time and an end date-time, both in UTC.
 - End must be after start.
 - Optional — a ticket type without a sales window is always on sale (when the event is published).
@@ -82,6 +84,7 @@ github_issue: 47
 **Invariant INV-14** (`domain-model-specification.md`): A reservation can only succeed when the event is `Published`, the ticket type's sales window is currently open (or absent), and the event is not `Closed` or `Cancelled`. This invariant is the enforcement point for the sales window.
 
 **Behavior on `ENT-TicketType`:**
+
 - Setting a sales window: the organizer provides start and end; the value object is attached to the ticket type.
 - The `Reserve` behavior on `AGG-Event` already checks INV-14; the sales window check is an addition to that guard.
 - Removing a sales window returns the ticket type to always-on-sale behavior.
@@ -91,12 +94,14 @@ github_issue: 47
 ## 4. UI Behavior
 
 **Organizer — ticket type management (dashboard):**
+
 - When creating or editing a ticket type, the organizer can optionally set a sales window by providing a start date-time and an end date-time (both with time zone, converted to UTC for storage).
 - Both fields are optional; leaving both empty means always on sale.
 - Validation: end must be after start; both must be in the future when first set (editing an existing window with past dates is allowed if the organizer is adjusting).
 - A clear summary shows the current window state: "Sales open Jun 28, 10:00 – Jun 30, 18:00" or "Always on sale."
 
 **Attendee — event page (public):**
+
 - Each ticket type shows its availability state alongside its price:
   - **On sale:** purchasable, same as today.
   - **Not yet on sale:** shown with a note such as "Sales begin Jun 28, 10:00" — not purchasable.
@@ -107,12 +112,13 @@ github_issue: 47
 ## 5. Data & Storage Impact
 
 **PostgreSQL (`app` schema):**
+
 - The `TicketType` table gains two nullable columns: `sales_window_start` (`timestamptz`) and `sales_window_end` (`timestamptz`).
 - Both nullable = no window set (always on sale). Both non-null = window defined.
 - No new tables required; the sales window is an attribute of the existing ticket type entity.
 - Migration is additive (new nullable columns) — backward-compatible.
 
-**Redis / MinIO / RabbitMQ:** No impact. The sales window is a domain attribute checked at reservation time; no caching, storage, or messaging changes required.
+**Redis / MinIO / Async workflow:** No impact. The sales window is a domain attribute checked at reservation time; no caching, storage, or messaging changes required.
 
 ## 6. Real-Time & Consistency
 
@@ -145,11 +151,13 @@ github_issue: 47
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - F-3.1 (Define a ticket type) — the ticket type must exist before a sales window can be set on it. Already implemented.
 - F-1.5 (Define roles and permissions) — Owner role check. Already implemented.
 - F-3.4 (Inventory and no-oversell) — reservation mechanism that the window check hooks into. Already implemented.
 
 **Risks:**
+
 - **Time zone confusion:** Organizers may think in local time but the system stores UTC. Mitigation: the UI accepts local time with time zone and converts; display always shows in the organizer's configured time zone.
 - **Clock skew:** If the server clock is slightly off, the window boundary could be a few seconds early or late. Acceptable for this scale (QG-5 — small events, modest demand).
 
@@ -169,6 +177,6 @@ github_issue: 47
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should the system prevent an organizer from setting a sales window start in the past, or allow it (effectively making the ticket type immediately on sale)? Current design allows it. | ✅ Resolved — allow past start (organizer may be adjusting an existing window). |
+| #   | Question                                                                                                                                                                              | Status                                                                          |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| 1   | Should the system prevent an organizer from setting a sales window start in the past, or allow it (effectively making the ticket type immediately on sale)? Current design allows it. | ✅ Resolved — allow past start (organizer may be adjusting an existing window). |

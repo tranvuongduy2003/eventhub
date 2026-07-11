@@ -92,7 +92,7 @@ This slice turns each confirmed purchased unit into an issued ticket with a uniq
 
 **Dependencies:** F-5.6 order status, F-6.2 free-order confirmation, and F-6.3 paid confirmation must already exist.
 
-**Assumptions:** The local email adapter can remain no-op while tests use a fake sender at the Application port. A QR can be rendered from the ticket code in the web client without changing the backend storage contract.
+**Assumptions:** The local email adapter records delivery intent while tests use a fake sender at the Application port. A QR can be rendered from the ticket code in the web client without changing the backend storage contract.
 
 **Out of scope:** EP-8 scan validation/check-in, EP-10 transfer/returns, refund/cancellation invalidation, a production email provider, and email template design beyond useful local content.
 
@@ -108,12 +108,11 @@ Neighboring features: F-5.6 order status, F-6.2/F-6.3 confirmation, EP-8 check-i
 
 N/A - product slice only; no harness behavior changes.
 
-| Lane | Impact |
-|------|--------|
-| `scripts/agent/` | N/A - no eval runner or case changes. |
-| `.codex/agents/` | N/A - no orchestration contract changes. |
-| `.codex/policies/` / `.codex/hooks/` | N/A - no policy or approval changes. |
-| `.codex/tmp/telemetry/` | N/A - no harness telemetry changes. |
-| `scripts/agent/` | N/A - no harness tool adapter changes. |
-| Workflow surfaces | N/A - no graph, hook, skill, script, or AGENTS.md changes. |
-
+| Lane                                 | Impact                                                     |
+| ------------------------------------ | ---------------------------------------------------------- |
+| `scripts/agent/`                     | N/A - no eval runner or case changes.                      |
+| `.codex/agents/`                     | N/A - no orchestration contract changes.                   |
+| `.codex/policies/` / `.codex/hooks/` | N/A - no policy or approval changes.                       |
+| `.codex/tmp/telemetry/`              | N/A - no harness telemetry changes.                        |
+| `scripts/agent/`                     | N/A - no harness tool adapter changes.                     |
+| Workflow surfaces                    | N/A - no graph, hook, skill, script, or AGENTS.md changes. |

@@ -73,8 +73,8 @@ public sealed class RevokeRoleTests(IntegrationTestFixture fixture)
     [Fact]
     public async Task RevokeRole_UserWithNoRole_Returns204()
     {
-        var callerId = await RegisterUserAsync("owner-noop");
-        var targetId = await CreateUserInDatabaseAsync("target-noop@example.com");
+        var callerId = await RegisterUserAsync("owner-idempotent");
+        var targetId = await CreateUserInDatabaseAsync("target-idempotent@example.com");
         var eventId = 203;
         await SeedOwnerRoleAsync(eventId, callerId);
 

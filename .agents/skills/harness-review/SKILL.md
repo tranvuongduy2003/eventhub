@@ -4,8 +4,10 @@ description: Review Codex harness telemetry, agents, skills, hooks, rules, evals
 ---
 
 ---
+
 description: Diagnose the agent harness itself from deep telemetry - run the harness-doctor (Evolution Agent), write a dated review report, and gate every proposed change behind the regression suite and HITL. Read-only diagnosis; a human applies changes.
 argument-hint: (optional) a focus area, e.g. "permissions" or "loop"
+
 ---
 
 # Harness Review - Agentic Harness Engineering (AHE)
@@ -67,11 +69,3 @@ Tell the user: the report path, the top diagnosed failure modes, the **harness-l
 replayability), and the recommended proposals - each marked with its motivating evidence, the
 harness-eval scenario that would validate it, and whether it is HITL-required. Then stop; wait for the
 human to choose what to apply.
-
-
-
-
-
-
-
-

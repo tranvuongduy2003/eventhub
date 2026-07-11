@@ -39,8 +39,8 @@ github_issue: 1
 
 # Feature: Register an organizer account
 
-> Features: F-1.1  |  Status: DRAFT  |  Date: 2026-06-16
-> PRD: DEC-3 (MVP spine), DEC-4 (self-service)  |  DDD: BC-1 · AGG-User · INV-1, INV-2  |  Tech: §5–7 (session auth, PostgreSQL)
+> Features: F-1.1 | Status: DRAFT | Date: 2026-06-16
+> PRD: DEC-3 (MVP spine), DEC-4 (self-service) | DDD: BC-1 · AGG-User · INV-1, INV-2 | Tech: §5–7 (session auth, PostgreSQL)
 
 ## 1. Problem & Solution
 
@@ -51,6 +51,7 @@ github_issue: 1
 **Personas:** PER-O1 (individual organizer), PER-O2 (small group / club organizer) — both need a fast, trustworthy way to create an account with no sales or admin intervention (DEC-4).
 
 **Scope:**
+
 - **In:** F-1.1 only — account creation, validation, persistence, automatic sign-in after success.
 - **Out:** F-1.2 sign-in/sign-out as standalone flows (session establishment on register is in scope); F-1.3 profile edits; F-1.4 attendee accounts; email verification; social/OAuth login; password reset; admin-provisioned accounts; CAPTCHA/bot mitigation beyond basic validation.
 
@@ -80,16 +81,16 @@ github_issue: 1
 
 Align with BC-1 Identity & Access and AGG-User:
 
-| Rule | Detail |
-|------|--------|
-| **INV-1** | Email addresses are unique across all accounts. Comparison uses normalized form (trim whitespace; treat email as case-insensitive for the local-part domain rules per standard email normalization). |
-| **INV-2** | Passwords are stored only as a secure one-way hash; plain-text passwords never appear in logs, responses, or persistence. |
-| **Role** | Accounts created through this flow have the **Organizer** role. Attendee role linking is out of scope (F-1.4). |
-| **Display name** | Required public label for the organizer (maps to display name in product copy). Trimmed; length 1–64 characters after trim; must not be only whitespace. **Not** required to be unique — multiple accounts may share the same display name. |
-| **Email** | Must be well-formed per standard email rules; max 254 characters. |
-| **Password rules** | Minimum 8 characters; at least one letter (A–Z or a–z); at least one digit (0–9); at least one special character from `!@#$%^&*()_+-=[]{}|;:'",.<>?/\`~`. |
-| **Behavior** | Registration is atomic: validate → create user aggregate → persist → start session → return success. Duplicate email is a business rejection, not a server error. |
-| **Event** | On successful creation, emit EVT-UserRegistered with the new user identity and timestamp. |
+| Rule               | Detail                                                                                                                                                                                                                                      |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| **INV-1**          | Email addresses are unique across all accounts. Comparison uses normalized form (trim whitespace; treat email as case-insensitive for the local-part domain rules per standard email normalization).                                        |
+| **INV-2**          | Passwords are stored only as a secure one-way hash; plain-text passwords never appear in logs, responses, or persistence.                                                                                                                   |
+| **Role**           | Accounts created through this flow have the **Organizer** role. Attendee role linking is out of scope (F-1.4).                                                                                                                              |
+| **Display name**   | Required public label for the organizer (maps to display name in product copy). Trimmed; length 1–64 characters after trim; must not be only whitespace. **Not** required to be unique — multiple accounts may share the same display name. |
+| **Email**          | Must be well-formed per standard email rules; max 254 characters.                                                                                                                                                                           |
+| **Password rules** | Minimum 8 characters; at least one letter (A–Z or a–z); at least one digit (0–9); at least one special character from `!@#$%^&\*()\_+-=[]{}                                                                                                 | ;:'",.<>?/\`~`. |
+| **Behavior**       | Registration is atomic: validate → create user aggregate → persist → start session → return success. Duplicate email is a business rejection, not a server error.                                                                           |
+| **Event**          | On successful creation, emit EVT-UserRegistered with the new user identity and timestamp.                                                                                                                                                   |
 
 Password confirmation is a **UI/input safeguard** only; it is not a persisted attribute.
 
@@ -113,20 +114,20 @@ Password confirmation is a **UI/input safeguard** only; it is not a persisted at
 
 ### API contract (product level)
 
-| Operation | Method & path | Success | Failure |
-|-----------|---------------|---------|---------|
+| Operation          | Method & path     | Success                                                                                                    | Failure                                                                                                                                                         |
+| ------------------ | ----------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Register organizer | `POST /api/users` | `201 Created` — body includes user id, display name, email, created timestamp; `Set-Cookie` session cookie | `400` malformed JSON; `422` validation or business rule (duplicate email, weak password) with RFC 7807 problem details including stable `code` and field errors |
 
 After `201`, the browser holds a session cookie usable for `GET /api/auth/me` (same shape as post-login user summary). Registration does **not** require a separate login call.
 
 ## 5. Data & Storage Impact
 
-| Store | Impact |
-|-------|--------|
-| **PostgreSQL** | New row in authoritative user table: stable user id, normalized email (unique index), display name (no uniqueness constraint), password hash, organizer role, created timestamp. |
-| **Redis** | Session record written after successful commit (rebuildable cache; not source of truth). |
-| **MinIO** | None for this slice. |
-| **RabbitMQ** | None required for MVP registration; EVT-UserRegistered may be handled in-process initially. |
+| Store              | Impact                                                                                                                                                                           |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PostgreSQL**     | New row in authoritative user table: stable user id, normalized email (unique index), display name (no uniqueness constraint), password hash, organizer role, created timestamp. |
+| **Redis**          | Session record written after successful commit (rebuildable cache; not source of truth).                                                                                         |
+| **MinIO**          | None for this slice.                                                                                                                                                             |
+| **Async workflow** | None required for MVP registration; EVT-UserRegistered may be handled in-process initially.                                                                                      |
 
 ## 6. Real-Time & Consistency
 
@@ -158,11 +159,11 @@ N/A — registration is a synchronous request/response flow. No SignalR or integ
 
 ## 9. Dependencies & Risks
 
-| Type | Item |
-|------|------|
-| **Upstream** | None — F-1.1 is the foundation of EP-1. |
-| **Downstream** | F-1.2 (returning users), F-2.1 (create draft event) depend on accounts existing. |
-| **Risks** | Weak password policy vs usability (mitigated by clear inline rules); duplicate-email UX vs enumeration (accepted per F-1.1); scope creep into email verification or attendee registration (defer to F-1.4). |
+| Type           | Item                                                                                                                                                                                                        |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Upstream**   | None — F-1.1 is the foundation of EP-1.                                                                                                                                                                     |
+| **Downstream** | F-1.2 (returning users), F-2.1 (create draft event) depend on accounts existing.                                                                                                                            |
+| **Risks**      | Weak password policy vs usability (mitigated by clear inline rules); duplicate-email UX vs enumeration (accepted per F-1.1); scope creep into email verification or attendee registration (defer to F-1.4). |
 
 ## 10. Assumptions
 
@@ -191,8 +192,8 @@ N/A — registration is a synchronous request/response flow. No SignalR or integ
 
 ## 12. Resolved decisions
 
-| # | Question | Decision | Date |
-|---|----------|----------|------|
-| 1 | Should display names be globally unique, or only email? | **Email unique only; display name may duplicate.** | 2026-06-16 |
-| 2 | Is a terms-of-service checkbox required at registration? | **No** for MVP. | 2026-06-16 |
-| 3 | Should successful registration send a welcome email? | **No** — deferred to the notifications epic. | 2026-06-16 |
+| #   | Question                                                 | Decision                                           | Date       |
+| --- | -------------------------------------------------------- | -------------------------------------------------- | ---------- |
+| 1   | Should display names be globally unique, or only email?  | **Email unique only; display name may duplicate.** | 2026-06-16 |
+| 2   | Is a terms-of-service checkbox required at registration? | **No** for MVP.                                    | 2026-06-16 |
+| 3   | Should successful registration send a welcome email?     | **No** — deferred to the notifications epic.       | 2026-06-16 |

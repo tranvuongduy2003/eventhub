@@ -17,8 +17,8 @@ mid-slice, and declaring "done" while the work is incomplete or drifts from the 
 ## Steps
 
 1. **Re-sync to ground truth FIRST (anti belief-divergence).** Before trusting any progress
-   note, read the *real* state of the working tree - the progress file is a *belief*, git + tests are
-   the *ground truth*, and the two can drift. Run `git status` and `git diff --stat HEAD`,
+   note, read the _real_ state of the working tree - the progress file is a _belief_, git + tests are
+   the _ground truth_, and the two can drift. Run `git status` and `git diff --stat HEAD`,
    check the current branch is the feature branch (never `main`), and skim the files in the
    in-progress feature's `filesTouched`. If the working tree contradicts `codex-progress.md` (e.g.
    progress says a feature is `done` but the code is absent, or there are uncommitted leftovers),
@@ -35,7 +35,7 @@ mid-slice, and declaring "done" while the work is incomplete or drifts from the 
 5. **Write and run tests, then run the feature's `validationCommands`.** Delegate to `test-writer`
    for the tests, then run them yourself: backend `dotnet test`; web/e2e the relevant `yarn`
    command. In addition, run every command in this feature's `validationCommands` array from
-   `features.json` - those are the deterministic sensors the contract says prove *this* feature. Fix
+   `features.json` - those are the deterministic sensors the contract says prove _this_ feature. Fix
    until all are green (100% backend coverage is enforced - use `$backend` -> coverage workflow
    and `powershell -NoProfile -ExecutionPolicy Bypass -File ps/Get-CodeCoverage.ps1`). Also confirm the feature's `invariants` still hold and that
    edits stayed within `filesTouched` - a touched file outside that list is scope drift: either it
@@ -66,7 +66,7 @@ mid-slice, and declaring "done" while the work is incomplete or drifts from the 
 ## Convergence criteria (explicit - never implicit)
 
 A feature converges on **objective evidence**, not on a feeling that enough rounds have run. This is
-the difference between test-gated convergence and *implicit convergence* (the weakest, brittlest
+the difference between test-gated convergence and _implicit convergence_ (the weakest, brittlest
 kind). A feature is `done` only when ALL of these hold:
 
 - every command in the feature's `validationCommands` exits green;
@@ -88,9 +88,3 @@ cheap sensor (build/lint) is green while an expensive one (tests/coverage/accept
 - If you fan out to multiple agents (the `Workflow` tool) for a feature, follow
   `docs/harness/shared-substrate.md`: ground shared state in git worktree + tests (not text),
   keep the topology simple, and converge only on objective signals.
-
-
-
-
-
-

@@ -6,7 +6,7 @@ Applies to `src/Domain/**`. Inherits `src/AGENTS.md` and the root instructions.
 
 ## Domain purity
 
-- Keep Domain pure C#. Do not reference EF Core, ASP.NET Core, MediatR, Redis, RabbitMQ, MinIO, SignalR, Infrastructure, or transport contracts.
+- Keep Domain pure C#. Do not reference EF Core, ASP.NET Core, MediatR, Redis, `System.Threading.Channels`, MinIO, SignalR, Infrastructure, or transport contracts.
 - Do not add persistence annotations, serialization concerns, dependency-injection code, logging, HTTP concepts, or infrastructure retry logic.
 - Reference other aggregates and bounded contexts by typed identity only.
 

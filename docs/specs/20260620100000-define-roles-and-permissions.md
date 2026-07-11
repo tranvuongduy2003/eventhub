@@ -32,7 +32,7 @@ github_issue: 13
 
 # Feature: Define roles and permissions
 
-> Features: F-1.5  |  Status: DRAFT  |  Date: 2026-06-20
+> Features: F-1.5 | Status: DRAFT | Date: 2026-06-20
 > PRD: DEC-3 (MVP scope), QG-1 (simplicity), QG-5 (correct at small scale)
 > DDD: BC-1 (Identity & Access), AGG-User
 > Tech: §4 (CQRS pipeline), §6 (persistence), §7 (API conventions)
@@ -46,6 +46,7 @@ github_issue: 13
 **Personas:** PER-O1 (individual organizer), PER-O2 (small group/club organizer)
 
 **Scope:**
+
 - **In:** Defining the two roles (Owner, Staff), their permission sets, and the grouping by capability area. Storing the creator of an event as its initial Owner.
 - **Out:** Assigning roles to other users (F-1.6), enforcing permissions on operations (F-1.7), inviting staff by email (F-1.8), audit logging (F-1.9).
 
@@ -88,16 +89,19 @@ Reference: `domain-model-specification.md` BC-1 (Identity & Access), the permiss
 This feature is primarily a domain model concern. The UI and API surface is minimal for this slice — the roles and permissions exist in the system and are used by subsequent features (F-1.6 assignment, F-1.7 enforcement).
 
 **API (informational — no new endpoints for this slice):**
+
 - The roles and permissions model is internal to the system. No public endpoint is needed to "list roles" in the MVP — the two roles are built-in and well-known.
 - When F-1.6 adds role assignment, the API will accept role identifiers (e.g., `"Owner"`, `"Staff"`) as part of the assignment payload.
 
 **UI (informational — no new screens for this slice):**
+
 - Role names and permission descriptions will appear in the UI when F-1.6 (assign roles) and F-1.7 (access denied messages) are built.
 - The event creation flow (F-2.1) silently assigns the creator as Owner — no extra UI step.
 
 ## 5. Data & Storage Impact
 
 **PostgreSQL (`app` schema):**
+
 - A new table or columns are needed to represent event-level role assignments. At minimum: an association table linking `UserId`, `EventId`, and `Role` (as an enum or reference).
 - For this slice (F-1.5 only), the model defines the roles and permissions; the assignment table is created when F-1.6 is implemented. However, the automatic Owner assignment on event creation (AC-05) requires that the association can be written, so the storage for role assignments should be introduced here.
 - Recommended: an `EventUserRole` table with `(EventId, UserId, Role)` as the composite key, ensuring a user holds exactly one role per event.
@@ -106,7 +110,7 @@ This feature is primarily a domain model concern. The UI and API surface is mini
 
 **MinIO:** No impact.
 
-**RabbitMQ:** No impact.
+**Async workflow:** No impact.
 
 ## 6. Real-Time & Consistency
 
@@ -135,10 +139,12 @@ This feature is primarily a domain model concern. The UI and API surface is mini
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - F-1.1 (Register an organizer account) — must exist; roles are assigned to registered users.
 - F-2.1 (Create a draft event) — triggers the automatic Owner assignment (AC-05). The role model can be defined independently, but the Owner-on-creation behavior requires F-2.1.
 
 **Risks:**
+
 - **RSK-R1 — Over-engineering the permission model:** With only two roles and five permission areas, the model must stay simple. Avoid building a full permission matrix, custom role creation UI, or fine-grained per-action permissions — those are enterprise features out of scope for a small-event platform (product-requirements.md QG-1).
 - **RSK-R2 — Coupling with F-1.6 and F-1.7:** This spec defines the model; F-1.6 adds assignment; F-1.7 adds enforcement. If the model is too rigid, F-1.7 enforcement will be awkward. The five-area grouping is designed to be extensible without being over-general.
 
@@ -161,8 +167,8 @@ This feature is primarily a domain model concern. The UI and API surface is mini
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should the five permission areas be represented as an enum in the domain, or as discrete value objects? | ✅ **Value objects** — more extensible when new permission areas are added later without breaking the model. |
-| 2 | When the Owner role is assigned automatically on event creation, should this be a domain event or a silent side effect? | ✅ **Silent side effect** of event creation — no separate domain event needed; it is part of the event creation invariant. |
-| 3 | Should the `EventUserRole` table include a `CreatedAt` timestamp? | ✅ **Include `CreatedAt`** — low cost now, useful for future audit logging (F-1.9). |
+| #   | Question                                                                                                                | Status                                                                                                                     |
+| --- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Should the five permission areas be represented as an enum in the domain, or as discrete value objects?                 | ✅ **Value objects** — more extensible when new permission areas are added later without breaking the model.               |
+| 2   | When the Owner role is assigned automatically on event creation, should this be a domain event or a silent side effect? | ✅ **Silent side effect** of event creation — no separate domain event needed; it is part of the event creation invariant. |
+| 3   | Should the `EventUserRole` table include a `CreatedAt` timestamp?                                                       | ✅ **Include `CreatedAt`** — low cost now, useful for future audit logging (F-1.9).                                        |

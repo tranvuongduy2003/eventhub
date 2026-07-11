@@ -12,7 +12,7 @@ This skill provides guidance for creating effective skills.
 
 Skills are modular, self-contained packages that extend Codex's capabilities by providing
 specialized knowledge, workflows, and tools. Think of them as "onboarding guides" for specific
-domains or tasksâ€”they transform Codex from a general-purpose agent into a specialized agent
+domains or tasks—they transform Codex from a general-purpose agent into a specialized agent
 equipped with procedural knowledge that no model can fully possess.
 
 ### What Skills Provide
@@ -50,15 +50,15 @@ Every skill consists of a required SKILL.md file and optional bundled resources:
 
 ```
 skill-name/
-â”œâ”€â”€ SKILL.md (required)
-â”‚   â”œâ”€â”€ YAML frontmatter metadata (required)
-â”‚   â”‚   â”œâ”€â”€ name: (required)
-â”‚   â”‚   â””â”€â”€ description: (required)
-â”‚   â””â”€â”€ Markdown instructions (required)
-â””â”€â”€ Bundled Resources (optional)
-    â”œâ”€â”€ scripts/          - Executable code (Python/Bash/etc.)
-    â”œâ”€â”€ references/       - Documentation intended to be loaded into context as needed
-    â””â”€â”€ assets/           - Files used in output (templates, icons, fonts, etc.)
+├── SKILL.md (required)
+│   ├── YAML frontmatter metadata (required)
+│   │   ├── name: (required)
+│   │   └── description: (required)
+│   └── Markdown instructions (required)
+└── Bundled Resources (optional)
+    ├── scripts/          - Executable code (Python/Bash/etc.)
+    ├── references/       - Documentation intended to be loaded into context as needed
+    └── assets/           - Files used in output (templates, icons, fonts, etc.)
 ```
 
 #### SKILL.md (required)
@@ -88,7 +88,7 @@ Documentation and reference material intended to be loaded as needed into contex
 - **Use cases**: Database schemas, API documentation, domain knowledge, company policies, detailed workflow guides
 - **Benefits**: Keeps SKILL.md lean, loaded only when Codex determines it's needed
 - **Best practice**: If files are large (>10k words), include grep search patterns in SKILL.md
-- **Avoid duplication**: Information should live in either SKILL.md or references files, not both. Prefer references files for detailed information unless it's truly core to the skillâ€”this keeps SKILL.md lean while making information discoverable without hogging the context window. Keep only essential procedural instructions and workflow guidance in SKILL.md; move detailed reference material, schemas, and examples to references files.
+- **Avoid duplication**: Information should live in either SKILL.md or references files, not both. Prefer references files for detailed information unless it's truly core to the skill—this keeps SKILL.md lean while making information discoverable without hogging the context window. Keep only essential procedural instructions and workflow guidance in SKILL.md; move detailed reference material, schemas, and examples to references files.
 
 ##### Assets (`assets/`)
 
@@ -150,12 +150,12 @@ For Skills with multiple domains, organize content by domain to avoid loading ir
 
 ```
 bigquery-skill/
-â”œâ”€â”€ SKILL.md (overview and navigation)
-â””â”€â”€ reference/
-    â”œâ”€â”€ finance.md (revenue, solution metrics)
-    â”œâ”€â”€ sales.md (opportunities, pipeline)
-    â”œâ”€â”€ product.md (API usage, features)
-    â””â”€â”€ marketing.md (campaigns, attribution)
+├── SKILL.md (overview and navigation)
+└── reference/
+    ├── finance.md (revenue, solution metrics)
+    ├── sales.md (opportunities, pipeline)
+    ├── product.md (API usage, features)
+    └── marketing.md (campaigns, attribution)
 ```
 
 When a user asks about sales metrics, Codex only reads sales.md.
@@ -164,11 +164,11 @@ Similarly, for skills supporting multiple frameworks or variants, organize by va
 
 ```
 cloud-deploy/
-â”œâ”€â”€ SKILL.md (workflow + provider selection)
-â””â”€â”€ references/
-    â”œâ”€â”€ aws.md (AWS deployment patterns)
-    â”œâ”€â”€ gcp.md (GCP deployment patterns)
-    â””â”€â”€ deploy.md (deployment patterns)
+├── SKILL.md (workflow + provider selection)
+└── references/
+    ├── aws.md (AWS deployment patterns)
+    ├── gcp.md (GCP deployment patterns)
+    └── deploy.md (deployment patterns)
 ```
 
 When the user chooses AWS, Codex only reads aws.md.
@@ -360,7 +360,6 @@ python scripts/quick_validate.py <path/to/skill-folder>
 The packaging script will:
 
 1. **Validate** the skill automatically, checking:
-
    - YAML frontmatter format and required fields
    - Skill naming conventions and directory structure
    - Description completeness and quality
@@ -380,9 +379,3 @@ After testing the skill, users may request improvements. Often this happens righ
 2. Notice struggles or inefficiencies
 3. Identify how SKILL.md or bundled resources should be updated
 4. Implement changes and test again
-
-
-
-
-
-

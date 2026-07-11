@@ -33,7 +33,7 @@ github_issue: 15
 
 # Feature: Assign roles to users per event
 
-> Features: F-1.6  |  Status: DRAFT  |  Date: 2026-06-20
+> Features: F-1.6 | Status: DRAFT | Date: 2026-06-20
 > PRD: DEC-3 (MVP scope), QG-1 (simplicity), QG-5 (correct at small scale)
 > DDD: BC-1 (Identity & Access), AGG-User, AGG-Event
 > Tech: §4 (CQRS pipeline), §6 (persistence), §7 (API conventions)
@@ -47,6 +47,7 @@ github_issue: 15
 **Personas:** PER-O1 (individual organizer), PER-O2 (small group/club organizer)
 
 **Scope:**
+
 - **In:** Assigning roles (Owner, Staff) to registered users for a specific event. Ownership transfer on re-assignment. Revoking a user's role from an event. Listing current role assignments for an event.
 - **Out:** Enforcing role-based access on operations (F-1.7), inviting staff by email (F-1.8), audit logging (F-1.9), custom roles.
 
@@ -92,21 +93,23 @@ Reference: `domain-model-specification.md` BC-1 (Identity & Access), BC-2 (Event
 
 **API endpoints (product-level contract):**
 
-| Operation | Method / Path | Request | Response |
-|-----------|---------------|---------|----------|
-| Assign role | `POST /api/events/{eventId}/roles` | `{ "userId": "<id>", "role": "Staff" }` | `201` — the created assignment |
-| Revoke role | `DELETE /api/events/{eventId}/roles/{userId}` | — | `204` — no body |
-| List assignments | `GET /api/events/{eventId}/roles` | — | `200` — array of assignments with user details |
+| Operation        | Method / Path                                 | Request                                 | Response                                       |
+| ---------------- | --------------------------------------------- | --------------------------------------- | ---------------------------------------------- |
+| Assign role      | `POST /api/events/{eventId}/roles`            | `{ "userId": "<id>", "role": "Staff" }` | `201` — the created assignment                 |
+| Revoke role      | `DELETE /api/events/{eventId}/roles/{userId}` | —                                       | `204` — no body                                |
+| List assignments | `GET /api/events/{eventId}/roles`             | —                                       | `200` — array of assignments with user details |
 
 **Ownership transfer:** When the request assigns the Owner role to another user, the API behaves the same as a normal assignment — the caller's role changes to Staff automatically. The response reflects the new state (the caller is now Staff, the target is Owner).
 
 **Error responses (RFC 7807):**
+
 - Caller is not the Owner → `403` with code `INSUFFICIENT_PERMISSIONS`
 - Target user not found → `404` with code `USER_NOT_FOUND`
 - Duplicate assignment (same user, same role) → `409` with code `ROLE_ALREADY_ASSIGNED`
 - Caller tries to revoke themselves as Owner without transferring → `422` with code `CANNOT_REVOKE_OWNER`
 
 **UI (organizer-facing):**
+
 - A "Team" or "Staff" section on the event management page where the Owner can see current assignments and add/remove users.
 - A simple form: enter a user's email (looked up to resolve UserId), select a role (Staff by default, Owner available), confirm.
 - When transferring ownership, a confirmation step explaining that the current owner will become Staff.
@@ -117,8 +120,8 @@ Reference: `domain-model-specification.md` BC-1 (Identity & Access), BC-2 (Event
 
 The `EventUserRole` table introduced in F-1.5 stores role assignments. For F-1.6, this table is actively read and written:
 
-| Table | Columns | Notes |
-|-------|---------|-------|
+| Table             | Columns                                                                   | Notes                                                                                                       |
+| ----------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `event_user_role` | `event_id` (FK), `user_id` (FK), `role` (enum: Owner/Staff), `created_at` | Composite PK on `(event_id, user_id)` — one role per user per event. `created_at` for future audit (F-1.9). |
 
 - **Index:** `(event_id)` for listing all assignments for an event. `(user_id)` for finding all events a user has a role on.
@@ -129,7 +132,7 @@ The `EventUserRole` table introduced in F-1.5 stores role assignments. For F-1.6
 
 **MinIO:** No impact.
 
-**RabbitMQ:** No impact. Role changes could emit integration events for audit logging (F-1.9) in the future, but that is out of scope here.
+**Async workflow:** No impact. Role changes could emit integration events for audit logging (F-1.9) in the future, but that is out of scope here.
 
 ## 6. Real-Time & Consistency
 
@@ -157,7 +160,7 @@ The `EventUserRole` table introduced in F-1.5 stores role assignments. For F-1.6
 
 **EC-03:** GIVEN a user is Staff on an event, WHEN the Owner assigns them the Owner role (ownership transfer), THEN the user's role is updated from Staff to Owner (not a new row inserted), and the previous Owner becomes Staff.
 
-**EC-04:** GIVEN a user has no role on an event, WHEN the Owner revokes that user's role, THEN the operation is a no-op or returns a clear message — there is nothing to revoke.
+**EC-04:** GIVEN a user has no role on an event, WHEN the Owner revokes that user's role, THEN the operation leaves state unchanged or returns a clear message — there is nothing to revoke.
 
 **EC-05:** GIVEN the Owner assigns another user as Owner (transfer), WHEN I check the previous Owner's role, THEN they are now Staff — not removed from the event entirely. They retain Check-in and Reporting permissions.
 
@@ -166,11 +169,13 @@ The `EventUserRole` table introduced in F-1.5 stores role assignments. For F-1.6
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - F-1.1 (Register an organizer account) — the target user must exist.
 - F-1.5 (Define roles and permissions) — the role model (Owner, Staff) and permission sets must be defined.
 - F-2.1 (Create a draft event) — the event must exist and have an Owner (the creator, per F-1.5).
 
 **Risks:**
+
 - **RSK-R1 — Ownership transfer edge cases:** Transferring ownership is a sensitive operation with several edge cases (self-transfer, transfer to non-existent user, concurrent transfers). The spec defines the expected behavior, but implementation must handle these carefully.
 - **RSK-R2 — UI simplicity:** The assignment UI must stay simple (email lookup + role selection). Avoid building a full user management dashboard — that is enterprise scope, not MVP.
 - **RSK-R3 — Coupling with F-1.7:** This feature creates the data (role assignments) that F-1.7 will enforce. If the data model is wrong, F-1.7 enforcement will be awkward. The composite-key design (event_id, user_id, role) is straightforward and should not cause issues.
@@ -195,9 +200,9 @@ The `EventUserRole` table introduced in F-1.5 stores role assignments. For F-1.6
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should the assign-role API accept a UserId (GUID) or an email address to identify the target user? | ❓ Email is more natural for the caller (organizer types an email), but UserId is simpler at the API level. Recommend: accept email, resolve to UserId server-side. |
-| 2 | When ownership is transferred, should the previous Owner receive a notification? | ❓ Out of scope for MVP (Notifications is BC-6). Could be added as a domain event consumer later. |
-| 3 | Should the `EventUserRole` table have a separate unique constraint on `(event_id, role)` where `role = 'Owner'` to enforce one-Owner-per-event at the database level? | ❓ This adds DB-level safety but complicates ownership transfer (must delete + insert in one transaction). The application invariant (BR-02) may be sufficient. |
-| 4 | Should revoking a role be a soft delete (add `revoked_at` column) or a hard delete from the table? | ❓ Hard delete is simpler for MVP. Soft delete is useful for audit (F-1.9) but can be added later without breaking the model. |
+| #   | Question                                                                                                                                                              | Status                                                                                                                                                              |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Should the assign-role API accept a UserId (GUID) or an email address to identify the target user?                                                                    | ❓ Email is more natural for the caller (organizer types an email), but UserId is simpler at the API level. Recommend: accept email, resolve to UserId server-side. |
+| 2   | When ownership is transferred, should the previous Owner receive a notification?                                                                                      | ❓ Out of scope for MVP (Notifications is BC-6). Could be added as a domain event consumer later.                                                                   |
+| 3   | Should the `EventUserRole` table have a separate unique constraint on `(event_id, role)` where `role = 'Owner'` to enforce one-Owner-per-event at the database level? | ❓ This adds DB-level safety but complicates ownership transfer (must delete + insert in one transaction). The application invariant (BR-02) may be sufficient.     |
+| 4   | Should revoking a role be a soft delete (add `revoked_at` column) or a hard delete from the table?                                                                    | ❓ Hard delete is simpler for MVP. Soft delete is useful for audit (F-1.9) but can be added later without breaking the model.                                       |

@@ -38,8 +38,8 @@ github_issue: 11
 
 # Feature: Create a draft event
 
-> Features: F-2.1  |  Status: DRAFT  |  Date: 2026-06-19
-> PRD: DEC-3 (MVP spine), QG-1 (simplicity)  |  DDD: BC-2 · AGG-Event · INV-11  |  Tech: §5–7 (PostgreSQL, session auth)
+> Features: F-2.1 | Status: DRAFT | Date: 2026-06-19
+> PRD: DEC-3 (MVP spine), QG-1 (simplicity) | DDD: BC-2 · AGG-Event · INV-11 | Tech: §5–7 (PostgreSQL, session auth)
 
 ## 1. Problem & Solution
 
@@ -50,6 +50,7 @@ github_issue: 11
 **Personas:** PER-O1 (individual organizer — wants fast, simple setup), PER-O2 (small group / club organizer — wants a structured starting point for their event).
 
 **Scope:**
+
 - **In:** F-2.1 only — create a draft event with core details, validate required fields, persist with Draft status and ownership.
 - **Out:** F-2.2 cover image upload; F-2.3 edit event details; F-2.4 publish (requires ticket types per F-3.1); F-2.5 close/cancel; F-2.6 duplicate; F-2.7 multiple occurrences; ticket type creation (F-3.1); slug generation for published events (INV-15 applies at publish time, not at draft creation).
 
@@ -81,19 +82,19 @@ github_issue: 11
 
 Align with BC-2 Event Management and AGG-Event:
 
-| Rule | Detail |
-|------|--------|
-| **Ownership** | Every event is owned by exactly one organizer, identified by `OrganizerId` (the signed-in user's `UserId`). Ownership is set at creation and cannot be changed. On creation, the organizer is assigned the **Owner role** (F-1.5) via `EventUserRole`, handled by the `EventCreatedEvent` domain event handler. |
-| **Status** | A new event always starts as **Draft**. The Draft → Published transition (F-2.4) requires at least one ticket type (INV-11); that check is out of scope here. |
-| **Title** | Required. Trimmed; 1–200 characters after trim; must not be only whitespace. Not required to be unique — multiple events may share a title. |
-| **Schedule (VO-EventSchedule)** | Required. Start date-time + end date-time + IANA time zone identifier. End must be ≥ start. Both stored as UTC internally; the time zone is preserved for display. |
-| **Location (VO-EventLocation)** | Required. Exactly one of: (a) a physical address with at least venue name and city, or (b) online (a flag). The organizer picks one mode; the form adapts. |
-| **Description** | Optional free-text field for the event description. No length limit enforced at creation (rich editing deferred). |
-| **Slug** | Not generated at draft creation. Slugs are assigned when an event is published (INV-15: unique among published events). A draft has no public URL. |
-| **Cover image** | Not part of this slice (F-2.2). |
-| **Visibility** | A Draft event is visible only to its owner. Queries from other users or anonymous visitors must not return it. |
-| **Behavior** | `CreateDraft` on the aggregate: validate invariants → set ownership and status → raise domain event → persist. |
-| **Event** | On successful creation, emit `EVT-DraftCreated` (domain-scope event; no integration fan-out needed for MVP). |
+| Rule                            | Detail                                                                                                                                                                                                                                                                                                          |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ownership**                   | Every event is owned by exactly one organizer, identified by `OrganizerId` (the signed-in user's `UserId`). Ownership is set at creation and cannot be changed. On creation, the organizer is assigned the **Owner role** (F-1.5) via `EventUserRole`, handled by the `EventCreatedEvent` domain event handler. |
+| **Status**                      | A new event always starts as **Draft**. The Draft → Published transition (F-2.4) requires at least one ticket type (INV-11); that check is out of scope here.                                                                                                                                                   |
+| **Title**                       | Required. Trimmed; 1–200 characters after trim; must not be only whitespace. Not required to be unique — multiple events may share a title.                                                                                                                                                                     |
+| **Schedule (VO-EventSchedule)** | Required. Start date-time + end date-time + IANA time zone identifier. End must be ≥ start. Both stored as UTC internally; the time zone is preserved for display.                                                                                                                                              |
+| **Location (VO-EventLocation)** | Required. Exactly one of: (a) a physical address with at least venue name and city, or (b) online (a flag). The organizer picks one mode; the form adapts.                                                                                                                                                      |
+| **Description**                 | Optional free-text field for the event description. No length limit enforced at creation (rich editing deferred).                                                                                                                                                                                               |
+| **Slug**                        | Not generated at draft creation. Slugs are assigned when an event is published (INV-15: unique among published events). A draft has no public URL.                                                                                                                                                              |
+| **Cover image**                 | Not part of this slice (F-2.2).                                                                                                                                                                                                                                                                                 |
+| **Visibility**                  | A Draft event is visible only to its owner. Queries from other users or anonymous visitors must not return it.                                                                                                                                                                                                  |
+| **Behavior**                    | `CreateDraft` on the aggregate: validate invariants → set ownership and status → raise domain event → persist.                                                                                                                                                                                                  |
+| **Event**                       | On successful creation, emit `EVT-DraftCreated` (domain-scope event; no integration fan-out needed for MVP).                                                                                                                                                                                                    |
 
 ## 4. UI Behavior
 
@@ -120,20 +121,20 @@ Align with BC-2 Event Management and AGG-Event:
 
 ### API contract (product level)
 
-| Operation | Method & path | Success | Failure |
-|-----------|---------------|---------|---------|
+| Operation          | Method & path      | Success                                                                                                            | Failure                                                                                                                                                  |
+| ------------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Create draft event | `POST /api/events` | `201 Created` — body includes event id, title, schedule, location, status (Draft), organizer id, created timestamp | `400` malformed JSON; `401` no session; `422` validation or business rule failure with RFC 7807 problem details including stable `code` and field errors |
 
 The endpoint requires a valid session cookie. The response does not include ticket types, cover image, or slug (those are added in later features).
 
 ## 5. Data & Storage Impact
 
-| Store | Impact |
-|-------|--------|
-| **PostgreSQL** | New row in the event table: stable event id, organizer id (FK to user), title, start time (timestamptz), end time (timestamptz), time zone (text), physical address (nullable when online), is online (bool), status (enum: Draft), created timestamp, updated timestamp, row version (for optimistic concurrency). No slug yet (set at publish). |
-| **Redis** | None for this slice. |
-| **MinIO** | None for this slice (cover image is F-2.2). |
-| **RabbitMQ** | None for this slice. `EVT-DraftCreated` is a domain-scope event handled in-process. |
+| Store              | Impact                                                                                                                                                                                                                                                                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PostgreSQL**     | New row in the event table: stable event id, organizer id (FK to user), title, start time (timestamptz), end time (timestamptz), time zone (text), physical address (nullable when online), is online (bool), status (enum: Draft), created timestamp, updated timestamp, row version (for optimistic concurrency). No slug yet (set at publish). |
+| **Redis**          | None for this slice.                                                                                                                                                                                                                                                                                                                              |
+| **MinIO**          | None for this slice (cover image is F-2.2).                                                                                                                                                                                                                                                                                                       |
+| **Async workflow** | None for this slice. `EVT-DraftCreated` is a domain-scope event handled in-process.                                                                                                                                                                                                                                                               |
 
 ## 6. Real-Time & Consistency
 
@@ -169,11 +170,11 @@ N/A — event creation is a synchronous request/response flow. No SignalR push o
 
 ## 9. Dependencies & Risks
 
-| Type | Item |
-|------|------|
-| **Upstream** | F-1.2 (sign-in) — the organizer must have an active session. |
-| **Downstream** | F-2.2 (cover image), F-2.3 (edit details), F-2.4 (publish — requires ticket types from F-3.1), F-2.5 (close/cancel), F-3.1 (add ticket type to the event). |
-| **Risks** | Scope creep into edit flows (mitigated: edit is F-2.3); ambiguity on physical vs online location UX (mitigated: clear toggle with conditional fields); slug generation timing confusion (mitigated: slug deferred to publish per INV-15). |
+| Type           | Item                                                                                                                                                                                                                                      |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Upstream**   | F-1.2 (sign-in) — the organizer must have an active session.                                                                                                                                                                              |
+| **Downstream** | F-2.2 (cover image), F-2.3 (edit details), F-2.4 (publish — requires ticket types from F-3.1), F-2.5 (close/cancel), F-3.1 (add ticket type to the event).                                                                                |
+| **Risks**      | Scope creep into edit flows (mitigated: edit is F-2.3); ambiguity on physical vs online location UX (mitigated: clear toggle with conditional fields); slug generation timing confusion (mitigated: slug deferred to publish per INV-15). |
 
 ## 10. Assumptions
 
@@ -202,8 +203,8 @@ N/A — event creation is a synchronous request/response flow. No SignalR push o
 
 ## 12. Resolved Decisions
 
-| # | Question | Decision | Date |
-|---|----------|----------|------|
-| 1 | Should the form support "Save as draft" explicitly, or is the only action "Create event" which always creates a draft? | **Single "Create event" action** — always creates a draft. Explicit save-as-draft is redundant when creation always produces a draft. | 2026-06-19 |
-| 2 | What is the maximum allowed duration for an event (start to end)? | **No limit.** Organizer responsibility. | 2026-06-19 |
-| 3 | Should the creation response include a redirect URL to the event detail page, or should the client construct it from the event id? | **Client constructs from event id** (consistent with REST conventions). | 2026-06-19 |
+| #   | Question                                                                                                                           | Decision                                                                                                                              | Date       |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| 1   | Should the form support "Save as draft" explicitly, or is the only action "Create event" which always creates a draft?             | **Single "Create event" action** — always creates a draft. Explicit save-as-draft is redundant when creation always produces a draft. | 2026-06-19 |
+| 2   | What is the maximum allowed duration for an event (start to end)?                                                                  | **No limit.** Organizer responsibility.                                                                                               | 2026-06-19 |
+| 3   | Should the creation response include a redirect URL to the event detail page, or should the client construct it from the event id? | **Client constructs from event id** (consistent with REST conventions).                                                               | 2026-06-19 |
