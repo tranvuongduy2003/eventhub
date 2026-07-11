@@ -1,5 +1,4 @@
-﻿---
-# Component Composition
+﻿# Component Composition
 
 ## Contents
 
@@ -128,7 +127,7 @@ toast("File deleted.", {
 
 ## Card structure
 
-Use full composition — don't dump everything into `CardContent`:
+Use full composition â€” don't dump everything into `CardContent`:
 
 ```tsx
 <Card>
@@ -160,7 +159,7 @@ Compose with `Spinner` + `data-icon` + `disabled`:
 
 ## TabsTrigger must be inside TabsList
 
-Never render `TabsTrigger` directly inside `Tabs` — always wrap in `TabsList`:
+Never render `TabsTrigger` directly inside `Tabs` â€” always wrap in `TabsList`:
 
 ```tsx
 <Tabs defaultValue="account">
@@ -194,3 +193,9 @@ Always include `AvatarFallback` for when the image fails to load:
 | `<hr>` or `<div className="border-t">` | `<Separator />` |
 | `<div className="animate-pulse">` with styled divs | `<Skeleton className="h-4 w-3/4" />` |
 | `<span className="rounded-full bg-green-100 ...">` | `<Badge variant="secondary">` |
+
+
+
+
+
+

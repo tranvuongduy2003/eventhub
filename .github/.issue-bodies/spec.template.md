@@ -1,14 +1,14 @@
 ## Summary
 
-**Spec:** `docs/_memory/specs/<timestamp>-<feature-kebab>.md`
+**Spec:** `docs/specs/<timestamp>-<feature-kebab>.md`
 
 **Features:** <F-* refs>
 
-**Status:** Spec draft — YYYY-MM-DD
+**Status:** Spec draft - YYYY-MM-DD
 
 ---
 
-## Problem & solution
+## Problem & Solution
 
 **Problem:**
 
@@ -18,26 +18,26 @@
 
 ---
 
-## Acceptance criteria
+## Acceptance Criteria
 
-- [ ] AC-01: GIVEN … WHEN … THEN …
-- [ ] AC-02: …
+- [ ] AC-01: GIVEN ... WHEN ... THEN ...
+- [ ] AC-02: ...
 
-(paste full AC list from spec §2)
+Paste the full acceptance-criteria list from the spec.
 
 ---
 
 ## Tracking
 
-- [ ] Plan: `/plan docs/_memory/specs/<file>.md`
-- [ ] Cook: `/cook docs/_memory/specs/<file>.md`
+- [ ] Plan: `/plan docs/specs/<file>.md`
+- [ ] Cook: `/cook docs/specs/<file>.md`
 
 ---
 
-## Out of scope
+## Out Of Scope
 
-(from spec §11)
+From the spec out-of-scope section.
 
-## Open questions
+## Open Questions
 
-(from spec §12)
+From the spec open-questions section.

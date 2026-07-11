@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
   First-time local setup for the EventHub repository.
@@ -494,7 +494,7 @@ Next steps:
        API:    $ApiHttpsUrl  (HTTP $ApiHttpUrl)
        Web UI: $WebHttpsUrl
 
-Docs: README.md, docs/_memory/source/technical-design.md
+Docs: README.md, docs/technical.md
 MCP: shared Codex MCP servers live in .codex/config.toml.
 Re-run with -ForceEnvCopy to refresh .env and web\.env from templates.
 
@@ -503,3 +503,4 @@ Re-run with -ForceEnvCopy to refresh .env and web\.env from templates.
 finally {
     Pop-Location
 }
+

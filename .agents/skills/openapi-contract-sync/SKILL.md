@@ -1,4 +1,4 @@
-﻿---
+---
 name: openapi-contract-sync
 description: Keeps the REST OpenAPI contract and frontend TypeScript types in sync with EventHub.Api. Use when adding or changing HTTP endpoints, updating contracts/openapi/api.v1.yaml, running api:export/api:verify/api:codegen, fixing CI OpenAPI drift, or wiring type-safe API clients from generated paths/components.
 ---
@@ -18,13 +18,13 @@ HTTP contract flow for **EventHub**.
 ## Pipeline
 
 ```
-EventHub.Api  â†’  dotnet build (OpenApiGenerateDocuments=true)
-                      â†’  scripts/openapi/sync-contract.mjs  â†’  api.v1.yaml
-                      â†’  openapi-typescript  â†’  web/src/generated/api-schema.ts
-                      â†’  web app imports via web/src/lib/api/openapi.ts
+EventHub.Api  ->  dotnet build (OpenApiGenerateDocuments=true)
+                      ->  scripts/openapi/sync-contract.mjs  ->  api.v1.yaml
+                      ->  openapi-typescript  ->  web/src/generated/api-schema.ts
+                      ->  web app imports via web/src/lib/api/openapi.ts
 ```
 
-**Stack:** `Microsoft.AspNetCore.OpenApi` + `Microsoft.Extensions.ApiDescription.Server` (Api csproj) â†’ `openapi-typescript` (web).
+**Stack:** `Microsoft.AspNetCore.OpenApi` + `Microsoft.Extensions.ApiDescription.Server` (Api csproj) -> `openapi-typescript` (web).
 
 ## When you change REST endpoints
 
@@ -43,7 +43,7 @@ Copy and track:
 
 ```bash
 yarn --cwd web api:export    # rebuild API + refresh committed YAML
-yarn --cwd web api:codegen   # YAML â†’ TypeScript
+yarn --cwd web api:codegen   # YAML -> TypeScript
 yarn --cwd web api:verify    # CI check: YAML matches API (no write)
 ```
 
@@ -71,7 +71,7 @@ Do not hand-edit `web/src/generated/api-schema.ts`.
 - Export MSBuild props live in `src/Api/EventHub.Api.csproj`:
   - `OpenApiGenerateDocuments=false` by default (export only when requested).
   - Build flag: `-p:OpenApiGenerateDocuments=true`
-  - Output file name must be alphanumeric/`_`/`-` only â†’ **`api-v1`** (not `api.v1`).
+  - Output file name must be alphanumeric/`_`/`-` only -> **`api-v1`** (not `api.v1`).
 - Map DTOs from `EventHub.Contracts`; never expose domain types in OpenAPI.
 
 ## CI
@@ -82,7 +82,7 @@ Include `api:verify` in local PR checks when touching Api or `contracts/openapi/
 
 ## Out of scope
 
-- SignalR hub messages â€” keep `web/src/types/realtime.ts` aligned with `src/Contracts/Realtime/` manually.
+- SignalR hub messages - keep `web/src/types/realtime.ts` aligned with `src/Contracts/Realtime/` manually.
 - No `contracts/signalr/` codegen path.
 
 ## DON'Ts
@@ -94,4 +94,4 @@ Include `api:verify` in local PR checks when touching Api or `contracts/openapi/
 
 ## More detail
 
-Repo README section **API contract (OpenAPI â†’ TypeScript)** and [`contracts/openapi/README.md`](../../../contracts/openapi/README.md) if present.
+Repo README section **API contract (OpenAPI -> TypeScript)** and [`contracts/openapi/README.md`](../../../contracts/openapi/README.md) if present.

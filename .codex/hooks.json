@@ -1,38 +1,51 @@
-{
+﻿{
   "hooks": {
-    "PreToolUse": [
+    "SessionStart": [
       {
-        "matcher": "Write|Edit|Bash|Agent|Delete",
+        "matcher": "startup|resume|clear|compact",
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/Invoke-PreToolGuard.ps1\"",
-            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/Invoke-PreToolGuard.ps1\"",
-            "timeout": 10
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/telemetry-session.ps1\"",
+            "statusMessage": "Recording session telemetry",
+            "timeout": 30
           }
         ]
-      },
+      }
+    ],
+    "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "Bash|exec_command|functions.exec_command|Write|Edit|MultiEdit|apply_patch",
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/Invoke-BeforeShellGuard.ps1\"",
-            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/Invoke-BeforeShellGuard.ps1\"",
-            "timeout": 10
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/guard-dangerous.ps1\"",
+            "statusMessage": "Checking command and file safety",
+            "timeout": 30
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Write|Edit",
+        "matcher": "Write|Edit|MultiEdit|apply_patch",
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/Invoke-PostEditVerify.ps1\"",
-            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/Invoke-PostEditVerify.ps1\"",
-            "timeout": 180
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/format-on-write.ps1\"",
+            "statusMessage": "Checking formatting target",
+            "timeout": 120
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|exec_command|functions.exec_command|Write|Edit|MultiEdit|apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/telemetry-log.ps1\"",
+            "statusMessage": "Recording tool telemetry",
+            "timeout": 30
           }
         ]
       }
@@ -42,9 +55,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/Invoke-StopGate.ps1\"",
-            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/Invoke-StopGate.ps1\"",
-            "timeout": 300
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/verify-on-stop.ps1\"",
+            "statusMessage": "Checking verification evidence",
+            "timeout": 120
           }
         ]
       }

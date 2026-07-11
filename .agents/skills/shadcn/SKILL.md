@@ -1,7 +1,6 @@
-﻿---
+---
 name: shadcn
-description: Manages shadcn components and projects â€” adding, searching, fixing, debugging, styling, and composing UI. Provides project context, component docs, and usage examples. Applies when working with shadcn/ui, component registries, presets, --preset codes, or any project with a components.json file. Also triggers for "shadcn init", "create an app with --preset", or "switch to --preset".
-user-invocable: false
+description: 'Manages shadcn components and projects: adding, searching, fixing, debugging, styling, and composing UI. Provides project context, component docs, and usage examples. Applies when working with shadcn/ui, component registries, presets, --preset codes, or any project with a components.json file. Also triggers for "shadcn init", "create an app with --preset", or "switch to --preset".'
 allowed-tools: Bash(npx shadcn@latest *), Bash(pnpm dlx shadcn@latest *), Bash(bunx --bun shadcn@latest *)
 ---
 
@@ -74,6 +73,7 @@ These rules are **always enforced**. Each links to a file with Incorrect/Correct
 - **Icons in `Button` use `data-icon`.** `data-icon="inline-start"` or `data-icon="inline-end"` on the icon.
 - **No sizing classes on icons inside components.** Components handle icon sizing via CSS. No `size-4` or `w-4 h-4`.
 - **Pass icons as objects, not string keys.** `icon={CheckIcon}`, not a string lookup.
+- **No Unicode text characters as visual markers.** `â€¢`, `â†’`, `âœ“`, `Ã—`, `â€º`, etc. used as bullets/arrows/separators/indicators become icon components (`<Dot />`, `<ArrowRight />`, `<Check />`, `<X />`, `<ChevronRight />`). Real prose punctuation (`â€”`, `â€¦` as sentence ender) is fine.
 
 ### CLI
 
@@ -173,8 +173,9 @@ npx shadcn@latest docs button dialog select
 6. **Fix imports in third-party components** â€” After adding components from community registries (e.g. `@bundui`, `@magicui`), check the added non-UI files for hardcoded import paths like `@/components/ui/...`. These won't match the project's actual aliases. Use `npx shadcn@latest info` to get the correct `ui` alias (e.g. `@workspace/ui/components`) and rewrite the imports accordingly. The CLI rewrites imports for its own UI files, but third-party registry components may use default paths that don't match the project.
 7. **Review added components** â€” After adding a component or block from any registry, **always read the added files and verify they are correct**. Check for missing sub-components (e.g. `SelectItem` without `SelectGroup`), missing imports, incorrect composition, or violations of the [Critical Rules](#critical-rules). Also replace any icon imports with the project's `iconLibrary` from the project context (e.g. if the registry item uses `lucide-react` but the project uses `hugeicons`, swap the imports and icon names accordingly). Fix all issues before moving on.
 8. **Registry must be explicit** â€” When the user asks to add a block or component, **do not guess the registry**. If no registry is specified (e.g. user says "add a login block" without specifying `@shadcn`, `@tailark`, etc.), ask which registry to use. Never default to a registry on behalf of the user.
-9. **Switching presets** â€” Ask the user first: **overwrite**, **merge**, or **skip**?
+9. **Switching presets** â€” Ask the user first: **overwrite**, **partial**, **merge**, or **skip**?
    - **Overwrite**: `npx shadcn@latest apply --preset <code>`. Overwrites detected components, fonts, and CSS variables.
+   - **Partial**: `npx shadcn@latest apply --preset <code> --only theme,font`. Updates only the selected preset parts without reinstalling UI components. Supported values are `theme` and `font`; comma-separated combinations are allowed. `icon` is intentionally not supported, because icon changes may require full component reinstall and transforms.
    - **Merge**: `npx shadcn@latest init --preset <code> --force --no-reinstall`, then run `npx shadcn@latest info` to list installed components, then for each installed component use `--dry-run` and `--diff` to [smart merge](#updating-components) it individually.
    - **Skip**: `npx shadcn@latest init --preset <code> --force --no-reinstall`. Only updates config and CSS, leaves components as-is.
    - **Important**: Always run preset commands inside the user's project directory. `apply` only works in an existing project with a `components.json` file. The CLI automatically preserves the current base (`base` vs `radix`) from `components.json`. If you must use a scratch/temp directory (e.g. for `--dry-run` comparisons), pass `--base <current-base>` explicitly â€” preset codes do not encode the base.
@@ -209,6 +210,9 @@ npx shadcn@latest init --defaults  # shortcut: --template=next --preset=nova (ba
 # Apply a preset to an existing project.
 npx shadcn@latest apply --preset a2r6bw
 npx shadcn@latest apply a2r6bw
+npx shadcn@latest apply --preset a2r6bw --only theme
+npx shadcn@latest apply --preset a2r6bw --only font
+npx shadcn@latest apply --preset a2r6bw --only theme,font
 
 # Add components.
 npx shadcn@latest add button card dialog
@@ -244,4 +248,9 @@ npx shadcn@latest view @shadcn/button
 - [rules/base-vs-radix.md](./rules/base-vs-radix.md) â€” asChild vs render, Select, ToggleGroup, Slider, Accordion
 - [cli.md](./cli.md) â€” Commands, flags, presets, templates
 - [customization.md](./customization.md) â€” Theming, CSS variables, extending components
+
+
+
+
+
 

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Memory Sync"
-  short_description: "Audit and update EventHub long-term memory after completed work."
-  default_prompt: "Use memory-sync to audit and update EventHub docs memory, specs, indexes, harness contracts, and handoff evidence before final handoff."

@@ -1,4 +1,5 @@
-namespace EventHub.Application.Orders;
+﻿namespace EventHub.Application.Orders;
 
-// BC-3 Sales — see docs/_memory/source/domain-model-specification.md
+// BC-3 Sales — see docs/technical.md
 public static class ModuleMarker;
+

@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  Validate harness policy and verification routing guardrails.
+  Validate current EventHub Codex harness guardrails.
 #>
 
 param(
@@ -10,37 +10,35 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-. "$repoRoot\.codex\hooks\lib\Use-HookIO.ps1"
-. "$repoRoot\.codex\hooks\lib\Use-GuardRules.ps1"
-. "$repoRoot\.codex\hooks\lib\Use-VerifyRunner.ps1"
-
-$errors = New-Object System.Collections.Generic.List[string]
+$errors = [System.Collections.Generic.List[string]]::new()
 
 function Add-Error {
     param([string]$Message)
     $script:errors.Add($Message) | Out-Null
 }
 
-function Test-VerifyExpectation {
-    param(
-        [string]$RelativePath,
-        [bool]$Expected
-    )
+function Test-RequiredFile {
+    param([string]$RelativePath)
+    $path = Join-Path $repoRoot ($RelativePath -replace '/', '\')
+    if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+        Add-Error "Missing required file: $RelativePath"
+        return $false
+    }
+    return $true
+}
 
-    $fullPath = Join-Path $repoRoot ($RelativePath -replace '/', '\')
-    $actual = Test-ShouldVerifyFile -FilePath $fullPath -ProjectRoot $repoRoot
-    if ($actual -ne $Expected) {
-        Add-Error "Verify routing for $RelativePath expected $Expected, got $actual"
+function Test-ForbiddenPath {
+    param([string]$RelativePath)
+    $path = Join-Path $repoRoot ($RelativePath -replace '/', '\')
+    if (Test-Path -LiteralPath $path) {
+        Add-Error "Forbidden legacy path exists: $RelativePath"
     }
 }
 
-function Test-PathAbsent {
+function Get-Text {
     param([string]$RelativePath)
-
-    $path = Join-Path $repoRoot ($RelativePath -replace '/', '\')
-    if (Test-Path -LiteralPath $path) {
-        Add-Error "Path must not exist: $RelativePath"
-    }
+    if (-not (Test-RequiredFile $RelativePath)) { return $null }
+    return Get-Content -LiteralPath (Join-Path $repoRoot ($RelativePath -replace '/', '\')) -Raw -Encoding UTF8
 }
 
 function Test-FileContains {
@@ -48,14 +46,8 @@ function Test-FileContains {
         [string]$RelativePath,
         [string[]]$Needles
     )
-
-    $path = Join-Path $repoRoot ($RelativePath -replace '/', '\')
-    if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
-        Add-Error "Missing file for content check: $RelativePath"
-        return
-    }
-
-    $text = Get-Content -LiteralPath $path -Raw -Encoding UTF8
+    $text = Get-Text $RelativePath
+    if ($null -eq $text) { return }
     foreach ($needle in $Needles) {
         if ($text -notmatch [regex]::Escape($needle)) {
             Add-Error "$RelativePath missing required text: $needle"
@@ -63,254 +55,256 @@ function Test-FileContains {
     }
 }
 
-foreach ($path in @(
-    'AGENTS.md',
-    '.agents/skills/cook/SKILL.md',
-    '.agents/skills/harness-evals/SKILL.md',
-    '.agents/skills/harness-orchestrator/SKILL.md',
-    '.agents/skills/harness-policies/SKILL.md',
-    '.agents/skills/harness-telemetry/SKILL.md',
-    '.agents/skills/harness-tools/SKILL.md',
-    '.agents/skills/memory-sync/SKILL.md',
-    '.codex/policies/harness-policy.json',
-    'harness/graph/index.json',
-    'docs/_memory/source/harness-architecture.md',
-    'docs/_memory/specs/README.md',
-    'harness/manifest.json',
-    'harness/orchestrator/routing.json',
-    'harness/orchestrator/task-spec.schema.json',
-    'harness/policies/runtime-policy.json',
-    'harness/telemetry/events.schema.json',
-    'harness/tools/registry.json',
-    'scripts/agent/Get-HarnessStatus.ps1',
-    'scripts/agent/New-HarnessSkill.ps1',
-    'scripts/agent/Test-DocsMemory.ps1',
-    'harness/evals/cases/harness-runtime-status.json',
-    'harness/evals/cases/harness-docs-memory-lifecycle.json'
-)) {
-    Test-VerifyExpectation -RelativePath $path -Expected $true
+function Test-PowerShellParses {
+    param([string]$RelativePath)
+    $path = Join-Path $repoRoot ($RelativePath -replace '/', '\')
+    if (-not (Test-RequiredFile $RelativePath)) { return }
+    $tokens = $null
+    $parseErrors = $null
+    [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$parseErrors) | Out-Null
+    foreach ($error in @($parseErrors)) {
+        Add-Error "$RelativePath parse error: $($error.Message)"
+    }
 }
 
-Test-PathAbsent 'evals'
-Test-PathAbsent '.graph'
-Test-PathAbsent 'harness/README.md'
-Test-PathAbsent 'harness/orchestrator/README.md'
-Test-PathAbsent 'harness/policies/README.md'
-Test-PathAbsent 'harness/telemetry/README.md'
-Test-PathAbsent 'harness/tools/README.md'
+function Invoke-Hook {
+    param(
+        [string]$RelativePath,
+        [string]$Payload
+    )
+    $path = Join-Path $repoRoot ($RelativePath -replace '/', '\')
+    if (-not (Test-RequiredFile $RelativePath)) { return $null }
+    $output = $Payload | powershell -NoProfile -ExecutionPolicy Bypass -File $path 2>&1
+    $exitCode = $LASTEXITCODE
+    return [pscustomobject]@{
+        Output = $output
+        ExitCode = $exitCode
+    }
+}
 
-Test-FileContains '.agents/skills/cook/SKILL.md' @(
-    'intake -> spec -> plan -> checkpoint loop -> verify -> memory sync -> handoff',
-    '## Step 3: Spec Phase',
-    '## Step 4: Plan Phase',
-    '## 7. Harness Impact',
-    '## Memory Sync Inventory',
-    'harness/evals/Invoke-HarnessEvals.ps1 -Layer harness',
-    'harness/telemetry/',
-    'harness/tools/'
+function Invoke-VerifyChangedCodePlan {
+    param([string]$Path)
+
+    $scriptPath = Join-Path $repoRoot 'scripts\agent\Verify-ChangedCode.ps1'
+    if (-not (Test-RequiredFile 'scripts/agent/Verify-ChangedCode.ps1')) { return $null }
+
+    $output = powershell -NoProfile -ExecutionPolicy Bypass -File $scriptPath -Path $Path -PlanOnly -Json 2>&1
+    $exitCode = $LASTEXITCODE
+    return [pscustomobject]@{
+        Output = $output
+        ExitCode = $exitCode
+    }
+}
+
+function Test-GuardAllowsOrDenies {
+    param(
+        [string]$Payload,
+        [bool]$ShouldDeny,
+        [string]$Label
+    )
+
+    $result = Invoke-Hook -RelativePath '.codex/hooks/guard-dangerous.ps1' -Payload $Payload
+    if ($null -eq $result) { return }
+    if ($result.ExitCode -ne 0) {
+        Add-Error "$Label guard hook exited $($result.ExitCode)"
+        return
+    }
+    $text = ($result.Output | Out-String)
+    $denied = $text -match '"permissionDecision"\s*:\s*"deny"'
+    if ($denied -ne $ShouldDeny) {
+        Add-Error "$Label deny expectation expected $ShouldDeny, got $denied. Output: $text"
+    }
+}
+
+function Test-VerifyPlanIncludesHarnessPolicy {
+    param(
+        [string]$Path,
+        [string]$Label
+    )
+
+    $result = Invoke-VerifyChangedCodePlan -Path $Path
+    if ($null -eq $result) { return }
+    if ($result.ExitCode -ne 0) {
+        Add-Error "$Label verify plan exited $($result.ExitCode): $($result.Output | Out-String)"
+        return
+    }
+
+    try {
+        $json = ($result.Output | Out-String) | ConvertFrom-Json
+    }
+    catch {
+        Add-Error "$Label verify plan did not return JSON: $($_.Exception.Message)"
+        return
+    }
+
+    $commands = @($json.commands)
+    if (-not ($commands -contains 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-HarnessPolicy.ps1')) {
+        Add-Error "$Label verify plan does not include Test-HarnessPolicy.ps1"
+    }
+}
+
+$requiredFiles = @(
+    'AGENTS.md',
+    '.codex/config.toml',
+    '.codex/hooks.json',
+    '.codex/hooks/guard-dangerous.ps1',
+    '.codex/hooks/format-on-write.ps1',
+    '.codex/hooks/telemetry-log.ps1',
+    '.codex/hooks/telemetry-session.ps1',
+    '.codex/hooks/verify-on-stop.ps1',
+    '.codex/agents/requirement-analyst.toml',
+    '.codex/agents/spec-brainstormer.toml',
+    '.codex/agents/implementation-planner.toml',
+    '.codex/agents/implementer.toml',
+    '.codex/agents/test-writer.toml',
+    '.codex/agents/code-reviewer.toml',
+    '.codex/agents/security-reviewer.toml',
+    '.codex/agents/acceptance-verifier.toml',
+    '.codex/agents/harness-doctor.toml',
+    'scripts/agent/Verify-ChangedCode.ps1',
+    'scripts/agent/Test-DocsMemory.ps1',
+    'scripts/agent/Test-HarnessPolicy.ps1'
 )
 
-Test-FileContains 'docs/_memory/source/harness-architecture.md' @(
-    'Workflow Harness Contract',
-    'cook-unified',
-    'single entrypoint',
-    'Memory Sync inventory',
-    'memory-sync',
-    'source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data',
-    'docs-memory plus changed-code verification before handoff',
-    'Do not add a root `evals/` tree'
+foreach ($file in $requiredFiles) {
+    Test-RequiredFile $file | Out-Null
+}
+
+foreach ($path in @(
+    'harness',
+    '.codex/hooks/lib',
+    '.codex/policies/harness-policy.json',
+    '.agents/skills/memory-sync',
+    '.agents/skills/harness-evals',
+    '.agents/skills/harness-orchestrator',
+    '.agents/skills/harness-policies',
+    '.agents/skills/harness-telemetry',
+    '.agents/skills/harness-tools',
+    'scripts/Get-AffectedTests.ps1',
+    'scripts/agent/Get-HarnessStatus.ps1',
+    'scripts/agent/New-HarnessSkill.ps1',
+    'scripts/agent/New-PrHandoff.ps1',
+    'scripts/agent/Repo-Bootstrap.ps1',
+    'scripts/agent/Test-CookPlan.ps1'
+)) {
+    Test-ForbiddenPath $path
+}
+
+foreach ($hook in @(
+    '.codex/hooks/guard-dangerous.ps1',
+    '.codex/hooks/format-on-write.ps1',
+    '.codex/hooks/telemetry-log.ps1',
+    '.codex/hooks/telemetry-session.ps1',
+    '.codex/hooks/verify-on-stop.ps1',
+    'scripts/agent/Verify-ChangedCode.ps1',
+    'scripts/agent/Test-DocsMemory.ps1'
+)) {
+    Test-PowerShellParses $hook
+}
+
+try {
+    Get-Content -LiteralPath (Join-Path $repoRoot '.codex/hooks.json') -Raw -Encoding UTF8 | ConvertFrom-Json | Out-Null
+}
+catch {
+    Add-Error ".codex/hooks.json is not valid JSON: $($_.Exception.Message)"
+}
+
+Test-FileContains '.codex/hooks.json' @(
+    'guard-dangerous.ps1',
+    'format-on-write.ps1',
+    'telemetry-log.ps1',
+    'verify-on-stop.ps1',
+    'exec_command'
 )
 
-Test-FileContains 'harness/evals/README.md' @(
-    'harness/evals/',
-    'Do not add root `evals/`'
+Test-FileContains '.codex/hooks/guard-dangerous.ps1' @(
+    'Get-PatchPaths',
+    'functions.exec_command',
+    '.env'
+)
+
+Test-FileContains '.codex/hooks/format-on-write.ps1' @(
+    'dotnet format EventHub.slnx',
+    'yarn --cwd web prettier'
+)
+
+Test-FileContains '.codex/hooks/verify-on-stop.ps1' @(
+    'dotnet build EventHub.slnx',
+    'yarn --cwd web build',
+    'yarn --cwd e2e test',
+    'heavySensorWarnings',
+    'large changed surface without heavy sensors'
 )
 
 Test-FileContains 'AGENTS.md' @(
-    'harness-evals',
-    'harness-orchestrator',
-    'harness-policies',
-    'harness-telemetry',
-    'harness-tools',
-    'memory-sync',
-    'Workflow details belong to the owning skill and harness source docs',
-    'product-surface completeness',
-    'workflow''s own contract, validator, and eval coverage'
+    'docs/product.md',
+    'docs/features.md',
+    'docs/technical.md',
+    '$create-pr',
+    'scripts/agent/Verify-ChangedCode.ps1'
 )
 
-Test-FileContains 'docs/_memory/source/harness-architecture.md' @(
-    'Workflow Harness Contract',
-    'cook-unified',
-    'single entrypoint',
-    'Memory Sync inventory',
-    'memory-sync',
-    'source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data',
-    'docs-memory plus changed-code verification before handoff',
-    'Do not add a root `evals/` tree'
-)
-
-
-Test-FileContains 'docs/_memory/source/harness-operational-policies.md' @(
-    'cook-unified',
-    'Memory Sync inventory',
-    'related spec is marked `implemented`',
-    'every affected long-term memory and harness contract surface is current',
-    'changed-code verification passes'
-)
-
-Test-FileContains 'docs/_memory/mocs/harness-memory.md' @(
-    'Workflow memory sync',
-    'cook-unified',
-    'plans include a `memory-sync` inventory',
-    'completed specs implemented'
-)
-
-
-Test-FileContains 'docs/_memory/long-term-memory-operating-model.md' @(
-    'Completion memory sync',
-    'Do not stop at the first obvious index',
-    'source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data',
-    'GitHub issue/PR status'
-)
-
-Test-FileContains 'docs/_memory/source-of-truth-map.md' @(
-    'Spec completion or workflow handoff',
-    'Related spec, source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data'
-)
-
-Test-FileContains 'docs/_memory/agent-retrieval-guide.md' @(
-    'creates or completes durable knowledge',
-    'specs, MOCs, glossaries, source maps, README/index files, harness contracts, graph/routing data'
-)
-
-Test-FileContains 'docs/README.md' @(
-    'not only the most obvious MOC',
-    'source docs, MOCs, glossaries, retrieval guides, indexes, README files, and harness contracts'
-)
-
-Test-FileContains 'docs/_memory/specs/README.md' @(
-    'Completion Sync',
-    'every affected long-term memory surface',
-    'source docs, MOCs, glossaries, retrieval guides, README/index files, harness contracts, graph/routing data'
-)
-Test-FileContains 'harness/orchestrator/routing.json' @(
-    'cook-unified',
-    'canonicalSkill',
-    'requiresMemorySync',
-    'requiresMemorySyncTable',
-    'requiresMemorySyncGate',
-    'memorySyncSkill',
-    'memory-sync',
-    'related spec status and all affected memory surfaces synchronized before handoff'
-)
-
-Test-FileContains 'README.md' @(
-    'cook-unified',
-    'Harness Impact and `memory-sync` inventory',
-    'mark spec implemented',
-    'refresh all affected long-term memory and harness contract surfaces'
-)
-
-Test-FileContains '.agents/skills/memory-sync/SKILL.md' @(
-    'name: memory-sync',
-    '## Inventory',
-    '## Workflow',
-    '## Validation',
-    '## Do Not',
-    'Do not stop at the first obvious MOC'
-)
-
-Test-FileContains 'docs/_memory/source/harness-architecture.md' @(
-    '## Workflow Skills',
-    '`memory-sync` owns durable docs-memory completion audits',
-    'workflow skill, not a runtime harness lane'
-)
-
-Test-FileContains 'docs/_memory/source/harness-operational-policies.md' @(
-    '`memory-sync` for completion audits',
-    'workflow skill, not a runtime lane'
-)
-
-Test-FileContains 'scripts/agent/Get-HarnessStatus.ps1' @(
-    'defaultWorkflow must be cook-unified',
-    'memorySyncSkill must be memory-sync',
-    'Missing memory-sync skill'
-)
-Test-FileContains 'scripts/agent/New-HarnessSkill.ps1' @(
-    'ValidateSet(''evals'', ''orchestrator'', ''policies'', ''telemetry'', ''tools'')',
-    '.agents\skills\',
-    'harness/evals/'
-)
-
-Test-FileContains 'scripts/agent/Get-HarnessStatus.ps1' @(
-    'harness/manifest.json',
-    'harness/orchestrator/routing.json',
-    'harness/policies/runtime-policy.json',
-    'harness/telemetry/events.schema.json',
-    'harness/tools/registry.json',
-    'Forbidden placeholder path exists'
-)
-
-Test-FileContains 'harness/manifest.json' @(
-    '"statusCommand"',
-    '"evalCommand"',
-    '"verificationGraph"',
-    '"harness/graph/index.json"',
-    '"orchestrator"',
-    '"policies"',
-    '"telemetry"',
-    '"tools"'
-)
-
-foreach ($skill in @(
-    'harness-evals',
-    'harness-orchestrator',
-    'harness-policies',
-    'harness-telemetry',
-    'harness-tools'
+foreach ($agent in @(
+    '.codex/agents/requirement-analyst.toml',
+    '.codex/agents/spec-brainstormer.toml',
+    '.codex/agents/implementation-planner.toml',
+    '.codex/agents/implementer.toml',
+    '.codex/agents/test-writer.toml',
+    '.codex/agents/code-reviewer.toml',
+    '.codex/agents/security-reviewer.toml',
+    '.codex/agents/acceptance-verifier.toml',
+    '.codex/agents/harness-doctor.toml'
 )) {
-    Test-FileContains ".agents/skills/$skill/SKILL.md" @(
-        "name: $skill",
-        '## Read First',
-        '## Workflow',
-        '## Validation',
-        '## Do Not'
-    )
-}
-
-foreach ($path in @(
-    '.github/workflows/ci.yml',
-    'web/src/generated/api.ts',
-    'src/Infrastructure/Migrations/20260601000000_Test.cs'
-)) {
-    Test-VerifyExpectation -RelativePath $path -Expected $false
-}
-
-foreach ($path in @(
-    'web/src/generated/api.ts',
-    'contracts/openapi/.build/api.v1.yaml',
-    '.env.local',
-    '.mcp.json'
-)) {
-    if (-not (Test-BlockedEditPath -Path $path)) {
-        Add-Error "Protected edit path was not blocked: $path"
+    Test-FileContains $agent @('EventHub')
+    $text = Get-Text $agent
+    if ($null -ne $text -and $text -match 'docs/codex|docs/domain|docs/_memory|Solution\.slnx|SQL Server|Orval|local-first|en\.json|de\.json|tracker CLI') {
+        Add-Error "$agent contains stale scaffold or removed-path guidance"
     }
 }
 
-foreach ($command in @(
-    'npm install',
-    'git reset --hard',
-    'git push --force',
-    'Remove-Item -Recurse -Force temp'
-)) {
-    if (-not (Test-DangerousShellCommand -Command $command)) {
-        Add-Error "Dangerous shell command was not blocked: $command"
+$denyEnvPayload = '{"tool_name":"Write","session_id":"policy-test","tool_input":{"file_path":".env.local"}}'
+$denyGeneratedPayload = '{"tool_name":"Write","session_id":"policy-test","tool_input":{"file_path":"web/src/generated/api-schema.ts"}}'
+$denyForcePushPayload = '{"tool_name":"Bash","session_id":"policy-test","tool_input":{"command":"git push --force"}}'
+$denyExecForcePushPayload = '{"tool_name":"exec_command","session_id":"policy-test","tool_input":{"cmd":"git push --force"}}'
+$denyEnvReadPayload = '{"tool_name":"Bash","session_id":"policy-test","tool_input":{"command":"Get-Content .env.local"}}'
+$denyEnvTypePayload = '{"tool_name":"Bash","session_id":"policy-test","tool_input":{"command":"type .env.local"}}'
+$denyEnvCatPayload = '{"tool_name":"Bash","session_id":"policy-test","tool_input":{"command":"cat .env.local"}}'
+$denySecretDirectoryReadPayload = '{"tool_name":"exec_command","session_id":"policy-test","tool_input":{"cmd":"Get-Content secrets/local.txt"}}'
+$denyPatchEnvPayload = @{
+    tool_name = 'apply_patch'
+    session_id = 'policy-test'
+    tool_input = @{
+        patch = "*** Begin Patch`n*** Update File: .env.local`n@@`n+NOPE`n*** End Patch`n"
     }
+} | ConvertTo-Json -Depth 5 -Compress
+$allowBuildPayload = '{"tool_name":"Bash","session_id":"policy-test","tool_input":{"command":"dotnet build EventHub.slnx -c Release"}}'
+$allowExecBuildPayload = '{"tool_name":"exec_command","session_id":"policy-test","tool_input":{"cmd":"dotnet build EventHub.slnx -c Release"}}'
+
+Test-GuardAllowsOrDenies -Payload $denyEnvPayload -ShouldDeny $true -Label 'env write'
+Test-GuardAllowsOrDenies -Payload $denyGeneratedPayload -ShouldDeny $true -Label 'generated write'
+Test-GuardAllowsOrDenies -Payload $denyForcePushPayload -ShouldDeny $true -Label 'force push'
+Test-GuardAllowsOrDenies -Payload $denyExecForcePushPayload -ShouldDeny $true -Label 'exec force push'
+Test-GuardAllowsOrDenies -Payload $denyEnvReadPayload -ShouldDeny $true -Label 'env read'
+Test-GuardAllowsOrDenies -Payload $denyEnvTypePayload -ShouldDeny $true -Label 'env type'
+Test-GuardAllowsOrDenies -Payload $denyEnvCatPayload -ShouldDeny $true -Label 'env cat'
+Test-GuardAllowsOrDenies -Payload $denySecretDirectoryReadPayload -ShouldDeny $true -Label 'secrets directory read'
+Test-GuardAllowsOrDenies -Payload $denyPatchEnvPayload -ShouldDeny $true -Label 'apply_patch env write'
+Test-GuardAllowsOrDenies -Payload $allowBuildPayload -ShouldDeny $false -Label 'dotnet build'
+Test-GuardAllowsOrDenies -Payload $allowExecBuildPayload -ShouldDeny $false -Label 'exec dotnet build'
+
+Test-VerifyPlanIncludesHarnessPolicy -Path '.codex/config.toml' -Label 'config change'
+Test-VerifyPlanIncludesHarnessPolicy -Path 'web/AGENTS.md' -Label 'nested AGENTS change'
+
+$telemetryPayload = '{"session_id":"policy-test","source":"startup"}'
+$telemetryResult = Invoke-Hook -RelativePath '.codex/hooks/telemetry-session.ps1' -Payload $telemetryPayload
+if ($null -ne $telemetryResult -and $telemetryResult.ExitCode -ne 0) {
+    Add-Error "telemetry-session hook exited $($telemetryResult.ExitCode)"
 }
 
-$quoted = ConvertTo-ProcessArgumentString -ArgumentList @('one', 'two words', 'quote"inside')
-if ($quoted -notmatch '"two words"' -or $quoted -notmatch '"quote\\"inside"') {
-    Add-Error "Process argument quoting did not preserve spaces and quotes: $quoted"
+$stopPayload = '{"session_id":"policy-test","stop_hook_active":true}'
+$stopResult = Invoke-Hook -RelativePath '.codex/hooks/verify-on-stop.ps1' -Payload $stopPayload
+if ($null -ne $stopResult -and $stopResult.ExitCode -ne 0) {
+    Add-Error "verify-on-stop active recursion guard exited $($stopResult.ExitCode)"
 }
 
 $result = @{
@@ -335,7 +329,5 @@ else {
     }
 }
 
-if ($errors.Count -gt 0) {
-    exit 1
-}
+if ($errors.Count -gt 0) { exit 1 }
 exit 0

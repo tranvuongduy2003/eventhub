@@ -1,6 +1,6 @@
 ---
 name: Spec (feature tracking)
-description: One GitHub issue for a /spec feature — matches the single-issue workflow
+description: One GitHub issue for a feature spec
 title: "Spec: "
 labels:
   - spec
@@ -10,13 +10,13 @@ assignees: []
 
 ## Summary
 
-**Spec:** `docs/_memory/specs/<YYYYMMDDHHmmss>-<feature-kebab>.md`
+**Spec:** `docs/specs/<YYYYMMDDHHmmss>-<feature-kebab>.md`
 
 **Features:** F-* refs
 
 ---
 
-## Problem & solution
+## Problem & Solution
 
 **Problem:**
 
@@ -24,14 +24,14 @@ assignees: []
 
 ---
 
-## Acceptance criteria
+## Acceptance Criteria
 
-- [ ] AC-01: …
-- [ ] AC-02: …
+- [ ] AC-01: ...
+- [ ] AC-02: ...
 
 ---
 
 ## Tracking
 
-- [ ] Plan: `/plan docs/_memory/specs/<file>.md`
-- [ ] Cook: `/cook docs/_memory/specs/<file>.md`
+- [ ] Plan: `/plan docs/specs/<file>.md`
+- [ ] Cook: `/cook docs/specs/<file>.md`

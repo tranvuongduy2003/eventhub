@@ -1,4 +1,5 @@
-namespace EventHub.Application.Events;
+﻿namespace EventHub.Application.Events;
 
-// BC-2 Event Management — see docs/_memory/source/domain-model-specification.md
+// BC-2 Event Management — see docs/technical.md
 public static class ModuleMarker;
+

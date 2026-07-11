@@ -1,4 +1,0 @@
-interface:
-  display_name: "Harness Telemetry"
-  short_description: "Design EventHub harness traces, logs, metrics, and evidence."
-  default_prompt: "Use harness-telemetry to add or update EventHub harness observability and improvement-loop evidence."

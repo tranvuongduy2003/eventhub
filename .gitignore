@@ -77,7 +77,6 @@ pnpm-debug.log*
 .codex/state/
 
 # Harness eval run output (cases/fixtures are committed)
-harness/evals/results/
 
 # Subagent worker memory (local)
 .codex/agent-memory/*.md

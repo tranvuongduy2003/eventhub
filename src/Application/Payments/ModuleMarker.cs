@@ -1,4 +1,5 @@
-namespace EventHub.Application.Payments;
+﻿namespace EventHub.Application.Payments;
 
-// BC-4 Payments — see docs/_memory/source/domain-model-specification.md
+// BC-4 Payments — see docs/technical.md
 public static class ModuleMarker;
+

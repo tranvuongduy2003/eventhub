@@ -1,4 +1,0 @@
-interface:
-  display_name: "Harness Orchestrator"
-  short_description: "Design EventHub harness orchestration runtime contracts."
-  default_prompt: "Use harness-orchestrator to plan or update EventHub harness runtime orchestration."
