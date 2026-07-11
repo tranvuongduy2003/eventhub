@@ -125,12 +125,11 @@ The accepted-order summary contains only the attendee's own just-created order d
 
 N/A - product slice only; no harness behavior changes.
 
-| Lane | Impact |
-|------|--------|
-| `scripts/agent/` | N/A |
-| `.codex/agents/` | N/A |
-| `.codex/policies/` or `.codex/hooks/` | N/A |
-| `.codex/tmp/telemetry/` | N/A |
-| `scripts/agent/` | N/A |
-| Workflow surfaces | N/A |
-
+| Lane                                  | Impact |
+| ------------------------------------- | ------ |
+| `scripts/agent/`                      | N/A    |
+| `.codex/agents/`                      | N/A    |
+| `.codex/policies/` or `.codex/hooks/` | N/A    |
+| `.codex/tmp/telemetry/`               | N/A    |
+| `scripts/agent/`                      | N/A    |
+| Workflow surfaces                     | N/A    |

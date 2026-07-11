@@ -37,8 +37,8 @@ github_issue: 38
 
 # Feature: Transparent, All-Inclusive Pricing
 
-> Features: F-3.3  |  Status: DRAFT  |  Date: 2026-06-25
-> PRD: DEC-1, QG-2, QG-3  |  DDD: BC-2, BC-3, VO-Money, INV-25  |  Tech: §5, §6
+> Features: F-3.3 | Status: DRAFT | Date: 2026-06-25
+> PRD: DEC-1, QG-2, QG-3 | DDD: BC-2, BC-3, VO-Money, INV-25 | Tech: §5, §6
 
 ## 1. Problem & Solution
 
@@ -47,6 +47,7 @@ github_issue: 38
 **Solution:** EventHub guarantees that the price an attendee sees at every touchpoint — the public event page, the ticket selection screen, and the checkout summary — is the exact amount they will be charged. No platform fee, service fee, or hidden charge is ever added. The organizer sets a price; the attendee pays that price. This is a core product principle (`product-requirements.md` DEC-1, QG-2) and a key differentiator.
 
 **Personas:**
+
 - **PER-A1** (General attendee) — wants a clear, honest price with no surprises.
 - **PER-A2** (Group buyer) — buying multiple tickets; needs to trust the total before committing.
 
@@ -77,6 +78,7 @@ github_issue: 38
 **Price snapshot at order placement:** When an order is placed (`AGG-Order`, BC-3), each order line captures a `VO-Money UnitPriceSnapshot` — the price of the ticket type at the moment of placement (`INV-25`). This ensures that even if the organizer later changes a ticket type's price, existing orders are unaffected. The order total is computed from these snapshots (`INV-20`: `Total = Σ line totals`).
 
 **Price consistency guarantee:** The same price must appear at every stage of the purchase journey:
+
 1. Public event page (EP-4) — reads from `ENT-TicketType.Price` on the `AGG-Event`.
 2. Checkout summary (F-5.4) — reads from the snapshotted price on the `AGG-Order` line.
 3. Payment amount — equals the order total.
@@ -88,24 +90,29 @@ If the price changes between the attendee viewing the event page and placing the
 ## 4. UI Behavior
 
 **Public event page (EP-4):**
+
 - Each ticket type row shows: name, final price (e.g., "50,000 ₫"), and availability.
 - No "fees added at checkout" notice. No asterisks. No "from X" phrasing — the price shown is the price.
 
 **Checkout summary (F-5.4):**
+
 - Line items: ticket type name × quantity = unit price × quantity.
 - Total: sum of line items.
 - No "service fee," "processing fee," or "convenience fee" line — these do not exist in EventHub.
 - For free tickets: total shows "0 ₫" (or equivalent) and no payment step is presented.
 
 **Order confirmation:**
+
 - Displays the total that was charged, matching the checkout summary.
 
 **Error states:**
+
 - If a price cannot be determined (e.g., ticket type deleted between selection and checkout), the checkout is blocked with a clear message asking the attendee to return to the event page.
 
 ## 5. Data & Storage Impact
 
 **PostgreSQL (authoritative):**
+
 - `ENT-TicketType.Price` — the current price set by the organizer, stored as `VO-Money` (amount in minor units + currency code). Already defined in F-3.1.
 - `ENT-OrderLine.UnitPriceSnapshot` — the price at order placement. Already defined in the Order aggregate.
 - No new tables or columns required for F-3.3 — this feature is a **consistency guarantee** enforced by the existing data model.
@@ -143,6 +150,7 @@ If the price changes between the attendee viewing the event page and placing the
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - **F-3.1** (Define a ticket type) — must exist; the price originates here.
 - **F-3.2** (Free tickets) — free ticket behavior (zero price → no payment step) is a prerequisite.
 - **EP-4** (Public event page) — where the price is first displayed to the attendee.
@@ -150,6 +158,7 @@ If the price changes between the attendee viewing the event page and placing the
 - **F-6.2** (Free-order auto-confirm) — zero-total order behavior.
 
 **Risks:**
+
 - **R-01:** If price snapshotting is not correctly implemented in the Order aggregate, post-placement price changes could affect confirmed orders. Mitigation: `INV-25` is a core invariant; verify via domain unit tests.
 - **R-02:** If the checkout summary reads the current ticket type price instead of the snapshotted order line price, a price change between placement and confirmation could cause a mismatch. Mitigation: checkout summary reads from the Order, not from the Event.
 
@@ -171,7 +180,7 @@ If the price changes between the attendee viewing the event page and placing the
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should the event page show a "no hidden fees" badge or trust indicator to reinforce the all-inclusive guarantee? | ✅ Yes — "All-inclusive — no hidden fees" badge on ticket list and checkout summary |
-| 2 | If a tax-compliant receipt mechanism is added later (DEP-3), should the tax amount be shown separately or remain included in the displayed price? | ✅ Tax remains included in the displayed price. A "Price includes applicable taxes" note is shown. Tax is never broken out separately — the all-inclusive guarantee means the attendee sees one price, period. |
+| #   | Question                                                                                                                                          | Status                                                                                                                                                                                                         |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Should the event page show a "no hidden fees" badge or trust indicator to reinforce the all-inclusive guarantee?                                  | ✅ Yes — "All-inclusive — no hidden fees" badge on ticket list and checkout summary                                                                                                                            |
+| 2   | If a tax-compliant receipt mechanism is added later (DEP-3), should the tax amount be shown separately or remain included in the displayed price? | ✅ Tax remains included in the displayed price. A "Price includes applicable taxes" note is shown. Tax is never broken out separately — the all-inclusive guarantee means the attendee sees one price, period. |

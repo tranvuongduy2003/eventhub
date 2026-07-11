@@ -113,12 +113,11 @@ Public guest checkout remains allowed. Contact validation and ticket selection v
 
 N/A - product slice only; no harness behavior changes.
 
-| Lane | Impact |
-|------|--------|
-| `scripts/agent/` | N/A |
-| `.codex/agents/` | N/A |
-| `.codex/policies/` or `.codex/hooks/` | N/A |
-| `.codex/tmp/telemetry/` | N/A |
-| `scripts/agent/` | N/A |
-| Workflow surfaces | N/A |
-
+| Lane                                  | Impact |
+| ------------------------------------- | ------ |
+| `scripts/agent/`                      | N/A    |
+| `.codex/agents/`                      | N/A    |
+| `.codex/policies/` or `.codex/hooks/` | N/A    |
+| `.codex/tmp/telemetry/`               | N/A    |
+| `scripts/agent/`                      | N/A    |
+| Workflow surfaces                     | N/A    |

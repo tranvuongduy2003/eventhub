@@ -38,8 +38,8 @@ github_issue: 34
 
 # Feature: Define a ticket type
 
-> Features: F-3.1  |  Status: DRAFT  |  Date: 2026-06-24
-> PRD: DEC-1 (no platform fee), DEC-3 (MVP scope), QG-1 (simplicity), QG-2 (transparent pricing), QG-5 (no oversell)  |  DDD: BC-2 AGG-Event, ENT-TicketType, INV-10, INV-12, INV-13  |  Tech: §4, §6, §7
+> Features: F-3.1 | Status: DRAFT | Date: 2026-06-24
+> PRD: DEC-1 (no platform fee), DEC-3 (MVP scope), QG-1 (simplicity), QG-2 (transparent pricing), QG-5 (no oversell) | DDD: BC-2 AGG-Event, ENT-TicketType, INV-10, INV-12, INV-13 | Tech: §4, §6, §7
 
 ## 1. Problem & Solution
 
@@ -90,25 +90,25 @@ Referenced from `domain-model-specification.md`:
 
 **Request body:**
 
-| Field | Type | Required | Constraints |
-|-------|------|----------|-------------|
-| name | string | yes | Non-empty, trimmed |
-| price | object | yes | `{ amount: number, currency: string }` — amount ≥ 0; currency matches the configured single currency |
-| capacity | integer | yes | ≥ 1 |
+| Field    | Type    | Required | Constraints                                                                                          |
+| -------- | ------- | -------- | ---------------------------------------------------------------------------------------------------- |
+| name     | string  | yes      | Non-empty, trimmed                                                                                   |
+| price    | object  | yes      | `{ amount: number, currency: string }` — amount ≥ 0; currency matches the configured single currency |
+| capacity | integer | yes      | ≥ 1                                                                                                  |
 
 **Success (201):** Returns the created ticket type with its generated identity, name, price, capacity, and zero sold/reserved counts.
 
 **Error responses:**
 
-| Status | Code | Condition |
-|--------|------|-----------|
-| 401 | `UNAUTHORIZED` | No active session |
-| 403 | `FORBIDDEN` | Caller does not hold the Owner role for this event |
-| 404 | `NOT_FOUND` | Event does not exist |
-| 422 | `INVALID_TICKET_TYPE_NAME` | Name is empty or blank |
-| 422 | `INVALID_TICKET_TYPE_PRICE` | Price amount is negative |
-| 422 | `INVALID_TICKET_TYPE_CAPACITY` | Capacity is zero or negative |
-| 422 | `INVALID_EVENT_STATUS` | Event is Published, Closed, or Cancelled |
+| Status | Code                           | Condition                                          |
+| ------ | ------------------------------ | -------------------------------------------------- |
+| 401    | `UNAUTHORIZED`                 | No active session                                  |
+| 403    | `FORBIDDEN`                    | Caller does not hold the Owner role for this event |
+| 404    | `NOT_FOUND`                    | Event does not exist                               |
+| 422    | `INVALID_TICKET_TYPE_NAME`     | Name is empty or blank                             |
+| 422    | `INVALID_TICKET_TYPE_PRICE`    | Price amount is negative                           |
+| 422    | `INVALID_TICKET_TYPE_CAPACITY` | Capacity is zero or negative                       |
+| 422    | `INVALID_EVENT_STATUS`         | Event is Published, Closed, or Cancelled           |
 
 ## 5. Data & Storage Impact
 
@@ -147,10 +147,12 @@ Referenced from `domain-model-specification.md`:
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - F-2.1 (Create a draft event) — the event must exist before ticket types can be added
 - F-1.5 / F-1.6 (Roles) — Owner role must be assignable and checkable
 
 **Risks:**
+
 - Coupling ticket types to the Event aggregate means adding a ticket type increments the event's row version. If the organizer is editing event details (F-2.3) and adding ticket types concurrently, they may hit optimistic concurrency conflicts. This is acceptable at MVP scale.
 - No validation that a ticket type name is meaningful or non-duplicate. This is a deliberate simplicity choice (QG-1) and can be tightened later.
 
@@ -176,8 +178,8 @@ Referenced from `domain-model-specification.md`:
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should ticket type names be unique within an event, or are duplicates allowed? **Decision:** Duplicates are allowed for MVP simplicity (QG-1). The organizer is responsible for meaningful naming. | ✅ |
-| 2 | Should there be an upper bound on capacity? **Decision:** No upper bound for MVP. The organizer sets whatever capacity makes sense for their venue. | ✅ |
-| 3 | Should adding a ticket type to a Draft event be restricted to Draft only, or also allowed on Published events? **Decision:** Draft only for this feature slice. Adding ticket types to live events is deferred to F-3.5, which handles the additional complexity (inventory impact, display updates). | ✅ |
+| #   | Question                                                                                                                                                                                                                                                                                              | Status |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| 1   | Should ticket type names be unique within an event, or are duplicates allowed? **Decision:** Duplicates are allowed for MVP simplicity (QG-1). The organizer is responsible for meaningful naming.                                                                                                    | ✅     |
+| 2   | Should there be an upper bound on capacity? **Decision:** No upper bound for MVP. The organizer sets whatever capacity makes sense for their venue.                                                                                                                                                   | ✅     |
+| 3   | Should adding a ticket type to a Draft event be restricted to Draft only, or also allowed on Published events? **Decision:** Draft only for this feature slice. Adding ticket types to live events is deferred to F-3.5, which handles the additional complexity (inventory impact, display updates). | ✅     |

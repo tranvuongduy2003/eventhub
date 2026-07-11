@@ -36,8 +36,8 @@ github_issue: 8
 
 # Feature: Manage organizer profile
 
-> Features: F-1.3  |  Status: DRAFT  |  Date: 2026-06-16
-> PRD: DEC-1, QG-1, QG-6  |  DDD: BC-1, AGG-User  |  Tech: §5, §6, §7
+> Features: F-1.3 | Status: DRAFT | Date: 2026-06-16
+> PRD: DEC-1, QG-1, QG-6 | DDD: BC-1, AGG-User | Tech: §5, §6, §7
 
 ## 1. Problem & Solution
 
@@ -48,6 +48,7 @@ github_issue: 8
 **Personas:** PER-O1 (individual organizer), PER-O2 (small group/club organizer)
 
 **Scope:**
+
 - **In:** F-1.3 — edit display name, edit contact email, upload/remove avatar
 - **Out:** F-1.4 (attendee account — Later), password change (separate concern), profile visibility settings
 
@@ -80,11 +81,13 @@ github_issue: 8
 **Aggregate:** AGG-User
 
 **Value objects involved:**
+
 - `VO-DisplayName` — 1–64 characters, trimmed, Unicode allowed, non-unique (already exists)
 - `VO-EmailAddress` — well-formed, normalized, unique across accounts (already exists)
 - `VO-AvatarImageRef` — object key/URL into object storage; never the bytes; nullable (new)
 
 **Invariants:**
+
 - `INV-1` — Email must be unique across all users. An update to an email already held by another user is rejected.
 - Display name follows the same rules as at registration (1–64 chars, trimmed).
 - Avatar is optional; at most one avatar reference per user.
@@ -98,6 +101,7 @@ github_issue: 8
 ## 4. UI Behavior
 
 **Profile page / settings screen:**
+
 - Accessible from the organizer area (requires sign-in).
 - Displays current display name, contact email, and avatar (or placeholder).
 - Each field is editable; changes are submitted together or individually.
@@ -106,12 +110,14 @@ github_issue: 8
 - Error feedback: inline field-level messages for validation failures; toast/banner for server errors.
 
 **API contract:**
+
 - `PATCH /api/users/me` — partial update. Only include fields that should change. Omitted fields remain unchanged. Request body: `{ displayName?, email? }`.
 - `POST /api/users/me/avatar` — multipart file upload for the avatar. Replaces any existing avatar.
 - `DELETE /api/users/me/avatar` — removes the current avatar.
 - `GET /api/auth/me` — already exists; updated to include `avatarUrl` in the response.
 
 **Avatar upload flow:**
+
 1. Organizer selects a file from their device.
 2. Client validates file type (JPEG, PNG, WebP) and size (≤ 5 MB) before upload; rejects immediately with a message if invalid.
 3. On valid selection, the file is uploaded to the server; the server stores it in MinIO and returns the reference.
@@ -122,10 +128,12 @@ github_issue: 8
 ## 5. Data & Storage Impact
 
 **PostgreSQL (app schema):**
+
 - `users` table: add `avatar_image_ref` column (nullable text, stores the MinIO object key). No schema change to existing columns.
 - Migration: append-only; new migration adds the column.
 
 **MinIO (object storage):**
+
 - New bucket or prefix for avatars (e.g., `avatars/{userId}/`).
 - Object key pattern: `avatars/{userId}/{unique-filename}.{ext}`.
 - Old avatar is deleted from MinIO when replaced or removed (cleanup; no orphaned objects).
@@ -149,6 +157,7 @@ Consistency is strong within the User aggregate (single transaction). The sessio
 **Email uniqueness (INV-1):** Enforced at the domain level and backed by a unique database constraint. Prevents account takeover via email collision.
 
 **Avatar uploads (QG-6):**
+
 - File type is validated on both client and server (content-type check; optionally magic-byte verification).
 - File size is capped at 5 MB to prevent abuse.
 - Stored in MinIO with appropriate access control; public read for display, write only through the application.
@@ -175,11 +184,13 @@ Consistency is strong within the User aggregate (single transaction). The sessio
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - F-1.1 (register organizer account) — must be complete. ✅ Done.
 - F-1.2 (sign in) — must be complete for session-based auth. ✅ Done.
 - MinIO adapter — implemented as the object storage adapter for this feature's build scope. ✅ Resolved — in scope.
 
 **Risks:**
+
 - **Email re-verification.** The spec accepts email changes without re-verification (MVP simplicity). This is acceptable for a pet project (ASM-1) but would need revisiting for production.
 
 ## 10. Assumptions
@@ -203,7 +214,7 @@ Consistency is strong within the User aggregate (single transaction). The sessio
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should the MinIO adapter be implemented as part of this feature, or should avatar upload be deferred until MinIO is wired for another feature (e.g., F-2.2 cover image)? | ✅ Resolved — implement MinIO in this feature |
-| 2 | Should the API support partial updates (PATCH — only send changed fields) or full replacement (PUT — send all fields)? | ✅ Resolved — partial updates (PATCH) |
+| #   | Question                                                                                                                                                                 | Status                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
+| 1   | Should the MinIO adapter be implemented as part of this feature, or should avatar upload be deferred until MinIO is wired for another feature (e.g., F-2.2 cover image)? | ✅ Resolved — implement MinIO in this feature |
+| 2   | Should the API support partial updates (PATCH — only send changed fields) or full replacement (PUT — send all fields)?                                                   | ✅ Resolved — partial updates (PATCH)         |

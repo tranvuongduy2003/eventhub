@@ -9,12 +9,12 @@ Use this single skill for commit writing, PR description writing, and PR creatio
 
 ## Modes
 
-| User intent | Do |
-| --- | --- |
-| "write a commit message" | Analyze staged diff and propose a Conventional Commit message. Commit only when asked. |
-| "commit this" | Stage intentionally if requested, write the message, and commit. |
-| "write a PR description" | Analyze `main...HEAD` and produce the PR body without pushing. |
-| "create/open PR", "ship it" | Run the full workflow below. |
+| User intent                 | Do                                                                                     |
+| --------------------------- | -------------------------------------------------------------------------------------- |
+| "write a commit message"    | Analyze staged diff and propose a Conventional Commit message. Commit only when asked. |
+| "commit this"               | Stage intentionally if requested, write the message, and commit.                       |
+| "write a PR description"    | Analyze `main...HEAD` and produce the PR body without pushing.                         |
+| "create/open PR", "ship it" | Run the full workflow below.                                                           |
 
 ## Full Workflow
 

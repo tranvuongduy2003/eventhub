@@ -25,6 +25,7 @@ Look up current documentation for any library, framework, technology, or program
 ### 1. Identify Library/Language and Question
 
 Extract from user query:
+
 - **Library/Language name**: The framework, package, or language (e.g., "React", "Playwright", "C#", "Python")
 - **Specific question**: What they need to know (e.g., "form validation", "page locators", "new features in version X")
 
@@ -38,18 +39,19 @@ query: the user's original question (helps rank results)
 ```
 
 **Selection criteria** (in order):
+
 1. Exact name match
 2. Highest benchmark score
 3. Most code snippets available
 
 **If ambiguous**: Pick the most relevant match based on context. Common naming patterns:
 
-| User says | Try resolving as |
-|-----------|------------------|
-| Language versions (C# 14, Python 3.12) | Language name (dotnet, python) |
-| Framework + version (React 19, .NET 10) | Framework name (react, dotnet) |
-| Abbreviated names (TS, EF, RHF) | Full name (typescript, efcore, react-hook-form) |
-| Alternative names (Golang) | Canonical name (go) |
+| User says                               | Try resolving as                                |
+| --------------------------------------- | ----------------------------------------------- |
+| Language versions (C# 14, Python 3.12)  | Language name (dotnet, python)                  |
+| Framework + version (React 19, .NET 10) | Framework name (react, dotnet)                  |
+| Abbreviated names (TS, EF, RHF)         | Full name (typescript, efcore, react-hook-form) |
+| Alternative names (Golang)              | Canonical name (go)                             |
 
 **Tip**: If the first resolution fails, try alternative names or search with the full library name.
 
@@ -63,6 +65,7 @@ query: specific, detailed question
 ```
 
 **Query tips**:
+
 - Be specific: "cleanup function pattern" not "hooks"
 - Include context: "JWT authentication middleware"
 - Ask for examples: "mutation with optimistic updates example"
@@ -88,15 +91,9 @@ Format the answer:
 
 ## Edge Cases
 
-| Situation | Action |
-|-----------|--------|
-| Library/language not found | Try alternative names, then use WebSearch as fallback |
-| Multiple versions | Prefer latest stable unless user specifies version |
-| Vague question | Ask user to clarify before querying |
-| No useful results | Summarize what was found, suggest refining the query or use WebSearch |
-
-
-
-
-
-
+| Situation                  | Action                                                                |
+| -------------------------- | --------------------------------------------------------------------- |
+| Library/language not found | Try alternative names, then use WebSearch as fallback                 |
+| Multiple versions          | Prefer latest stable unless user specifies version                    |
+| Vague question             | Ask user to clarify before querying                                   |
+| No useful results          | Summarize what was found, suggest refining the query or use WebSearch |

@@ -43,8 +43,8 @@ github_issue: https://github.com/tranvuongduy2003/eventhub/issues/61
 
 # Feature: Select tickets and start checkout
 
-> Features: F-5.1  |  Status: IMPLEMENTED  |  Date: 2026-07-03
-> PRD: DEC-1, DEC-3, QG-1, QG-2, QG-4, QG-5, QG-6  |  DDD: BC-2 AGG-Event, BC-3 AGG-Order, INV-10, INV-14, INV-21, INV-24  |  Tech: Sections 4-7
+> Features: F-5.1 | Status: IMPLEMENTED | Date: 2026-07-03
+> PRD: DEC-1, DEC-3, QG-1, QG-2, QG-4, QG-5, QG-6 | DDD: BC-2 AGG-Event, BC-3 AGG-Order, INV-10, INV-14, INV-21, INV-24 | Tech: Sections 4-7
 
 ## 1. Problem & Solution
 
@@ -179,8 +179,8 @@ Real-time updates are not required for F-5.1. Availability shown to the attendee
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should the quantity control show exact remaining availability, or only states such as Available, Limited, and Sold out? | Answered: only states such as Available, Limited, and Sold out. |
-| 2 | Should valid selections be preserved in the URL, browser session, or only in the current client state before F-5.3 creates an order? | Answered: preserve valid selections in the URL and browser session. |
-| 3 | Should mixed free and paid ticket selections continue through one unified checkout flow in MVP? | Answered: yes. |
+| #   | Question                                                                                                                             | Status                                                              |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| 1   | Should the quantity control show exact remaining availability, or only states such as Available, Limited, and Sold out?              | Answered: only states such as Available, Limited, and Sold out.     |
+| 2   | Should valid selections be preserved in the URL, browser session, or only in the current client state before F-5.3 creates an order? | Answered: preserve valid selections in the URL and browser session. |
+| 3   | Should mixed free and paid ticket selections continue through one unified checkout flow in MVP?                                      | Answered: yes.                                                      |

@@ -36,7 +36,7 @@ github_issue: 19
 
 # Feature: Invite staff to an event
 
-> Features: F-1.8  |  Status: DRAFT  |  Date: 2026-06-20
+> Features: F-1.8 | Status: DRAFT | Date: 2026-06-20
 > PRD: DEC-3 (Next scope), QG-1 (simplicity), QG-5 (correct at small scale), QG-6 (responsible with data)
 > DDD: BC-1 (Identity & Access), BC-6 (Notifications), AGG-User, AGG-Event
 > Tech: §4 (CQRS pipeline), §5 (messaging/email), §6 (persistence), §7 (API conventions)
@@ -50,6 +50,7 @@ github_issue: 19
 **Personas:** PER-O1 (individual organizer), PER-O2 (small group/club organizer)
 
 **Scope:**
+
 - **In:** Inviting a person by email to the Staff role. Invitation email delivery. Acceptance flow (with or without existing account). Revocation of pending invitations. Expiry of invitations. Listing pending invitations for an event.
 - **Out:** Inviting for the Owner role (ownership transfer remains a direct assignment per F-1.6). Custom roles. Bulk invitations. Resending invitation emails. Audit logging (F-1.9).
 
@@ -99,24 +100,27 @@ Reference: `domain-model-specification.md` BC-1 (Identity & Access), BC-6 (Notif
 
 **API endpoints (product-level contract):**
 
-| Operation | Method / Path | Request | Response |
-|-----------|---------------|---------|----------|
-| Send invitation | `POST /api/events/{eventId}/invitations` | `{ "email": "alice@example.com", "expiresInDays": 7 }` (expiresInDays optional, default 7) | `201` — the created invitation (id, email, status, expiresAt) |
-| Revoke invitation | `DELETE /api/events/{eventId}/invitations/{invitationId}` | — | `204` — no body |
-| List invitations | `GET /api/events/{eventId}/invitations` | — | `200` — array of invitations with status and dates |
-| Accept invitation | `POST /api/invitations/{invitationId}/accept` | `{ "token": "<token>" }` | `200` — confirmation of role assignment |
+| Operation         | Method / Path                                             | Request                                                                                    | Response                                                      |
+| ----------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| Send invitation   | `POST /api/events/{eventId}/invitations`                  | `{ "email": "alice@example.com", "expiresInDays": 7 }` (expiresInDays optional, default 7) | `201` — the created invitation (id, email, status, expiresAt) |
+| Revoke invitation | `DELETE /api/events/{eventId}/invitations/{invitationId}` | —                                                                                          | `204` — no body                                               |
+| List invitations  | `GET /api/events/{eventId}/invitations`                   | —                                                                                          | `200` — array of invitations with status and dates            |
+| Accept invitation | `POST /api/invitations/{invitationId}/accept`             | `{ "token": "<token>" }`                                                                   | `200` — confirmation of role assignment                       |
 
 **Invitation email content:**
+
 - Subject: "You've been invited to help run [Event Title]"
 - Body: Organizer name, event title, event date, a clear CTA button/link to accept.
 - The link points to a dedicated acceptance page that handles both registered and unregistered users.
 
 **Acceptance page behavior:**
+
 - If the user is signed in: show event details and an "Accept invitation" button.
 - If the user is not signed in and has an account: prompt to sign in, then show the accept button.
 - If the user has no account: redirect to registration with the invitation context preserved; after registration, auto-accept and redirect to the event.
 
 **Error responses (RFC 7807):**
+
 - Caller is not the Owner → `403` with code `INSUFFICIENT_PERMISSIONS`
 - Email already has a Pending invitation → `409` with code `INVITATION_ALREADY_PENDING`
 - Invitation not found → `404` with code `INVITATION_NOT_FOUND`
@@ -124,6 +128,7 @@ Reference: `domain-model-specification.md` BC-1 (Identity & Access), BC-6 (Notif
 - Invitee already has a role on the event → `409` with code `ROLE_ALREADY_ASSIGNED`
 
 **UI (organizer-facing):**
+
 - A "Team" section on the event management page (extending F-1.6's assignment list) with an "Invite by email" input field.
 - Pending invitations appear alongside current role assignments, with a "Revoke" action.
 - Status badges: Pending (with countdown to expiry), Accepted, Revoked, Expired.
@@ -132,8 +137,8 @@ Reference: `domain-model-specification.md` BC-1 (Identity & Access), BC-6 (Notif
 
 **PostgreSQL (`app` schema):**
 
-| Table | Columns | Notes |
-|-------|---------|-------|
+| Table              | Columns                                                                                                                                                                                                                               | Notes                                                             |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | `event_invitation` | `id` (PK, UUID), `event_id` (FK), `email` (text), `role` (enum), `token_hash` (text, unique), `status` (enum: Pending/Accepted/Revoked/Expired), `inviter_id` (FK to user), `created_at`, `expires_at`, `accepted_at?`, `revoked_at?` | New table for invitation lifecycle. Token stored as SHA-256 hash. |
 
 - **Index:** `(event_id)` for listing invitations per event. `(token_hash)` unique index for acceptance link lookup. `(event_id, email, status)` for duplicate-pending check.
@@ -141,6 +146,7 @@ Reference: `domain-model-specification.md` BC-1 (Identity & Access), BC-6 (Notif
 - **Enum:** `status` column uses a PostgreSQL enum or string check constraint with values `Pending`, `Accepted`, `Revoked`, `Expired`.
 
 **Existing table impact:**
+
 - `event_user_role` — no schema change. When an invitation is accepted, a row is inserted here (same as F-1.6 direct assignment).
 
 **Redis:** No impact for this slice. Invitation tokens are looked up from PostgreSQL (low volume, no caching needed).
@@ -154,6 +160,7 @@ Reference: `domain-model-specification.md` BC-1 (Identity & Access), BC-6 (Notif
 **N/A** for this slice. Invitations are request-scoped operations; no SignalR push is required.
 
 **Consistency:**
+
 - Creating an invitation and publishing the email event: the invitation record is written in the current transaction; the Async workflow workflow is invoked after commit (standard integration event pattern per `technical-design.md` §4/§5).
 - Accepting an invitation and assigning the role: both happen in the same transaction (the invitation status changes to Accepted and the `event_user_role` row is inserted in one unit of work).
 
@@ -194,12 +201,14 @@ Reference: `domain-model-specification.md` BC-1 (Identity & Access), BC-6 (Notif
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - F-1.1 (Register an organizer account) — invitees without accounts must be able to register.
 - F-1.5 (Define roles and permissions) — the Staff role and its permissions must be defined.
 - F-1.6 (Assign roles to users per event) — acceptance creates a role assignment using the same mechanism.
 - F-7.2 (Deliver tickets by email) — establishes the email delivery infrastructure (BC-6, `IEmailSender` via Async workflow) that invitation emails reuse.
 
 **Risks:**
+
 - **RSK-I1 — Email delivery reliability:** If the email provider is down or the email bounces, the invitation is created but the invitee never receives it. Mitigation: the invitation list shows Pending status so the Owner can see it was not accepted; retry logic on the Async workflow consumer.
 - **RSK-I2 — Token leakage:** If an invitation link is forwarded or leaked, anyone with the link can accept it (if they can register with that email). Mitigation: the token is single-use and time-limited; the email is fixed at creation.
 - **RSK-I3 — Stale invitations:** Owners may forget to revoke old invitations. Mitigation: automatic expiry handles this; the default 7-day window is short enough to limit exposure.
@@ -225,10 +234,10 @@ Reference: `domain-model-specification.md` BC-1 (Identity & Access), BC-6 (Notif
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should the invitation acceptance page live at a dedicated URL (e.g., `/invitations/:id/accept?token=...`) or be integrated into the existing auth flow? | ✅ Dedicated URL — cleaner for the email link and handles the register-then-accept flow naturally. |
-| 2 | Should the Owner be able to set a custom expiry window when sending an invitation, or is the 7-day default sufficient for all cases? | ✅ Configurable — default 7 days, optional override with min/max bounds. |
-| 3 | If an invitation expires, should the system send a notification to the Owner? | ✅ Out of scope for this slice. The Owner can see expired invitations in the list. |
-| 4 | Should the `event_invitation` table store the token in plaintext or as a hash? | ✅ Implement hash — store a SHA-256 hash of the token; accept by hashing the incoming token and comparing. |
-| 5 | When an invitee without an account registers via the invitation link, should the registration happen on a special "invitation registration" page or the standard registration page with the invitation context passed through? | ✅ The standard registration page with context (invitation ID + token passed as query params). |
+| #   | Question                                                                                                                                                                                                                       | Status                                                                                                     |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| 1   | Should the invitation acceptance page live at a dedicated URL (e.g., `/invitations/:id/accept?token=...`) or be integrated into the existing auth flow?                                                                        | ✅ Dedicated URL — cleaner for the email link and handles the register-then-accept flow naturally.         |
+| 2   | Should the Owner be able to set a custom expiry window when sending an invitation, or is the 7-day default sufficient for all cases?                                                                                           | ✅ Configurable — default 7 days, optional override with min/max bounds.                                   |
+| 3   | If an invitation expires, should the system send a notification to the Owner?                                                                                                                                                  | ✅ Out of scope for this slice. The Owner can see expired invitations in the list.                         |
+| 4   | Should the `event_invitation` table store the token in plaintext or as a hash?                                                                                                                                                 | ✅ Implement hash — store a SHA-256 hash of the token; accept by hashing the incoming token and comparing. |
+| 5   | When an invitee without an account registers via the invitation link, should the registration happen on a special "invitation registration" page or the standard registration page with the invitation context passed through? | ✅ The standard registration page with context (invitation ID + token passed as query params).             |

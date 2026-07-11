@@ -38,8 +38,8 @@ github_issue: 49
 
 # Feature: Shareable public event page
 
-> Features: F-4.1  |  Status: DRAFT  |  Date: 2026-06-27
-> PRD: DEC-3 (MVP scope), QG-1 (simplicity), QG-2 (transparent pricing), QG-4 (mobile-friendly), QG-5 (correctness)  |  DDD: BC-2 AGG-Event, INV-14  |  Tech: §5, §7
+> Features: F-4.1 | Status: DRAFT | Date: 2026-06-27
+> PRD: DEC-3 (MVP scope), QG-1 (simplicity), QG-2 (transparent pricing), QG-4 (mobile-friendly), QG-5 (correctness) | DDD: BC-2 AGG-Event, INV-14 | Tech: §5, §7
 
 ## 1. Problem & Solution
 
@@ -96,24 +96,24 @@ Referenced from `domain-model-specification.md`:
 
 **Success (200):** Returns the event's public representation:
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `title` | string | Event title |
-| `description` | string | Full description |
-| `startDateTime` | ISO-8601 | With time zone |
-| `endDateTime` | ISO-8601 | With time zone |
-| `location` | object | Physical address or `Online` marker |
-| `coverImageUrl` | string (nullable) | URL to the cover image in object storage; null if not set |
-| `status` | string | `Published`, `Closed`, or `Cancelled` |
-| `ticketTypes` | array | Each entry: `id`, `name`, `finalPrice` (amount + currency), `status` (`available`, `soldOut`, `notYetOnSale`) |
-| `purchasable` | boolean | `true` only if event is `Published` and at least one ticket type is available for purchase |
+| Field           | Type              | Notes                                                                                                         |
+| --------------- | ----------------- | ------------------------------------------------------------------------------------------------------------- |
+| `title`         | string            | Event title                                                                                                   |
+| `description`   | string            | Full description                                                                                              |
+| `startDateTime` | ISO-8601          | With time zone                                                                                                |
+| `endDateTime`   | ISO-8601          | With time zone                                                                                                |
+| `location`      | object            | Physical address or `Online` marker                                                                           |
+| `coverImageUrl` | string (nullable) | URL to the cover image in object storage; null if not set                                                     |
+| `status`        | string            | `Published`, `Closed`, or `Cancelled`                                                                         |
+| `ticketTypes`   | array             | Each entry: `id`, `name`, `finalPrice` (amount + currency), `status` (`available`, `soldOut`, `notYetOnSale`) |
+| `purchasable`   | boolean           | `true` only if event is `Published` and at least one ticket type is available for purchase                    |
 
 **Error responses:**
 
-| Status | Code | Condition |
-|--------|------|-----------|
-| 404 | `EVENT_NOT_FOUND` | No published/closed/cancelled event exists for this slug |
-| 404 | `EVENT_NOT_FOUND` | Event exists but is in `Draft` status (not public) — same response as not found to avoid leaking draft events |
+| Status | Code              | Condition                                                                                                     |
+| ------ | ----------------- | ------------------------------------------------------------------------------------------------------------- |
+| 404    | `EVENT_NOT_FOUND` | No published/closed/cancelled event exists for this slug                                                      |
+| 404    | `EVENT_NOT_FOUND` | Event exists but is in `Draft` status (not public) — same response as not found to avoid leaking draft events |
 
 **Note:** Draft events return 404 (not a distinct "not available" response) to prevent information leakage about unpublished events. The UI maps 404 to an "event not found" page.
 
@@ -159,11 +159,13 @@ Referenced from `domain-model-specification.md`:
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - F-2.4 (Publish an event) — the event must be published and have a slug before the public page exists
 - F-3.3 (Transparent pricing) — the final all-inclusive price must be available to display
 - F-3.1 (Define a ticket type) — published events have at least one ticket type (per F-2.4's publish gate)
 
 **Risks:**
+
 - **Low:** The public endpoint is read-only and simple. The main risk is caching correctness — showing stale data after an organizer edits the event. A short TTL (30–60s) mitigates this for MVP.
 - **Low:** Cover image availability depends on MinIO. If MinIO is down, the page degrades gracefully (no image, but all other content loads).
 
@@ -188,8 +190,8 @@ Referenced from `domain-model-specification.md`:
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should Draft events return a distinct "coming soon" page instead of 404, to allow organizers to preview their link before publishing? **Resolved:** No — 404 for Draft events to prevent information leakage. Organizers can preview via the authenticated edit view. | ✅ |
-| 2 | Should the public page response include a `ticketTypes` entry with `remainingCount` (tickets left), or only `soldOut` / `available` status? **Resolved:** Only status (`available`, `soldOut`, `notYetOnSale`) — exact remaining counts are not exposed on the public page for MVP. | ✅ |
-| 3 | Should the cover image be served through the API (proxy) or directly from MinIO? **Resolved:** The API returns the MinIO URL and the browser fetches directly — no proxy needed for public assets. | ✅ |
+| #   | Question                                                                                                                                                                                                                                                                            | Status |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| 1   | Should Draft events return a distinct "coming soon" page instead of 404, to allow organizers to preview their link before publishing? **Resolved:** No — 404 for Draft events to prevent information leakage. Organizers can preview via the authenticated edit view.               | ✅     |
+| 2   | Should the public page response include a `ticketTypes` entry with `remainingCount` (tickets left), or only `soldOut` / `available` status? **Resolved:** Only status (`available`, `soldOut`, `notYetOnSale`) — exact remaining counts are not exposed on the public page for MVP. | ✅     |
+| 3   | Should the cover image be served through the API (proxy) or directly from MinIO? **Resolved:** The API returns the MinIO URL and the browser fetches directly — no proxy needed for public assets.                                                                                  | ✅     |

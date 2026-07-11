@@ -37,9 +37,3 @@ Re-run guardrail sensors after changing hooks or repository structure:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/agent/Test-HarnessPolicy.ps1
 ```
-
-
-
-
-
-

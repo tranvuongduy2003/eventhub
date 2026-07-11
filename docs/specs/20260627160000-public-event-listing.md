@@ -35,8 +35,8 @@ github_issue: 55
 
 # Feature: Public event listing
 
-> Features: F-4.4  |  Status: DRAFT  |  Date: 2026-06-27
-> PRD: G-4 (smooth mobile purchase), QG-1 (simplicity), QG-4 (mobile-friendly)  |  DDD: BC-2 AGG-Event, VO-EventStatus, VO-Slug  |  Tech: §5, §7
+> Features: F-4.4 | Status: DRAFT | Date: 2026-06-27
+> PRD: G-4 (smooth mobile purchase), QG-1 (simplicity), QG-4 (mobile-friendly) | DDD: BC-2 AGG-Event, VO-EventStatus, VO-Slug | Tech: §5, §7
 
 ## 1. Problem & Solution
 
@@ -45,9 +45,11 @@ github_issue: 55
 **Solution:** A public listing page at a stable URL (e.g., `/events`) that shows all currently published, upcoming events. Each event appears as a card with enough information (title, date, location, cover image, starting price) for the attendee to decide whether to click through to the full event page. The listing is accessible to anyone — no account required — and works well on mobile. Only events that are both `Published` and have a start date in the future appear; past events, drafts, closed, and cancelled events are excluded.
 
 **Personas:**
+
 - **PER-A1** (General attendee) — discovers events by browsing the platform rather than relying on a shared link.
 
 **Scope:**
+
 - **In scope:** F-4.4 — a simple browsable listing of published, upcoming events.
 - **Out of scope:** Search, filtering by keyword/date/category/location (F-4.5), pagination or infinite scroll refinements, event recommendations, map view, category browsing, organizer-specific listing pages.
 
@@ -87,44 +89,44 @@ Referenced from `domain-model-specification.md`:
 
 ### 4.1 Listing page
 
-| Aspect | Behavior |
-|--------|----------|
-| **URL** | `/events` (public, no auth required) |
-| **Content** | Cards for each published, upcoming event |
-| **Sort order** | Start date ascending (soonest first) |
-| **Empty state** | Friendly message when no events match |
-| **Mobile** | Responsive card layout; single column on small screens, grid on larger screens |
+| Aspect          | Behavior                                                                       |
+| --------------- | ------------------------------------------------------------------------------ |
+| **URL**         | `/events` (public, no auth required)                                           |
+| **Content**     | Cards for each published, upcoming event                                       |
+| **Sort order**  | Start date ascending (soonest first)                                           |
+| **Empty state** | Friendly message when no events match                                          |
+| **Mobile**      | Responsive card layout; single column on small screens, grid on larger screens |
 
 ### 4.2 Event card
 
 Each card in the listing displays:
 
-| Field | Source | Notes |
-|-------|--------|-------|
-| Cover image | `VO-CoverImageRef` | Shown as thumbnail; fallback placeholder if not set |
-| Title | Event title | Truncated with ellipsis if too long for the card |
-| Start date/time | `VO-EventSchedule` start | Formatted in the event's time zone; human-readable (e.g., "Sat, Jun 28, 7:00 PM") |
-| Location summary | `VO-EventLocation` | City or "Online"; not the full address |
-| Starting price | Lowest ticket type price | "From {price}" or "Free" for zero-price events; "Sold out" if no availability |
+| Field            | Source                   | Notes                                                                             |
+| ---------------- | ------------------------ | --------------------------------------------------------------------------------- |
+| Cover image      | `VO-CoverImageRef`       | Shown as thumbnail; fallback placeholder if not set                               |
+| Title            | Event title              | Truncated with ellipsis if too long for the card                                  |
+| Start date/time  | `VO-EventSchedule` start | Formatted in the event's time zone; human-readable (e.g., "Sat, Jun 28, 7:00 PM") |
+| Location summary | `VO-EventLocation`       | City or "Online"; not the full address                                            |
+| Starting price   | Lowest ticket type price | "From {price}" or "Free" for zero-price events; "Sold out" if no availability     |
 
 ### 4.3 API endpoint
 
 A public read endpoint that returns the listing data:
 
-| Aspect | Detail |
-|--------|--------|
-| **Method / path** | `GET /api/events` (or `GET /api/events/public`) |
-| **Auth** | None required (public) |
-| **Query params** | None for the initial implementation (F-4.5 adds search/filter later) |
-| **Response** | Array of event listing items, each containing: slug, title, start date, location summary, cover image URL, lowest ticket price, sold-out flag |
-| **Status codes** | `200` with array (empty array if no events match) |
+| Aspect            | Detail                                                                                                                                        |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Method / path** | `GET /api/events` (or `GET /api/events/public`)                                                                                               |
+| **Auth**          | None required (public)                                                                                                                        |
+| **Query params**  | None for the initial implementation (F-4.5 adds search/filter later)                                                                          |
+| **Response**      | Array of event listing items, each containing: slug, title, start date, location summary, cover image URL, lowest ticket price, sold-out flag |
+| **Status codes**  | `200` with array (empty array if no events match)                                                                                             |
 
 ### 4.4 Frontend routing
 
-| Route | Component | Notes |
-|-------|-----------|-------|
-| `/events` | Event listing page | Public; no auth guard |
-| `/events/:slug` | Event detail page | Existing F-4.1 page |
+| Route           | Component          | Notes                 |
+| --------------- | ------------------ | --------------------- |
+| `/events`       | Event listing page | Public; no auth guard |
+| `/events/:slug` | Event detail page  | Existing F-4.1 page   |
 
 ## 5. Data & Storage Impact
 
@@ -167,11 +169,13 @@ A public read endpoint that returns the listing data:
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - F-4.1 (Shareable public event page) — the full event page that each listing card links to must exist.
 - F-2.4 (Publish an event) — events must be publishable with a status and slug.
 - F-3.1 (Define a ticket type) — ticket types with prices must exist to show the starting price.
 
 **Risks:**
+
 - **R-01 (Low):** Query performance — joining events with ticket types to compute the lowest price could be slow with many events. Mitigation: at the intended scale (small events), this is acceptable; index on `Status` + `StartDate` for efficient filtering.
 - **R-02 (Low):** Stale cache — an event sells out or is cancelled, but the listing still shows it. Mitigation: 30–60 second cache TTL keeps staleness brief; event page (F-4.1) always shows current state.
 - **R-03 (Low):** Empty listing for new platforms — a brand-new EventHub instance has no published events, making the listing page feel empty. Mitigation: the empty state message (AC-06) handles this gracefully; the primary discovery path remains the shared link (F-4.1).
@@ -200,8 +204,8 @@ A public read endpoint that returns the listing data:
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should the listing page URL be `/events` or `/` (homepage as the listing)? **Resolved:** `/events`. | ✅ |
-| 2 | Should sold-out events appear in the listing with a "Sold out" badge, or should they be hidden? **Resolved:** Show them with a "Sold out" indicator. | ✅ |
-| 3 | Should the listing include a simple count of remaining tickets per type, or just the "Sold out" indicator? **Resolved:** Just the price and sold-out indicator — detailed availability is for the event page. | ✅ |
+| #   | Question                                                                                                                                                                                                      | Status |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| 1   | Should the listing page URL be `/events` or `/` (homepage as the listing)? **Resolved:** `/events`.                                                                                                           | ✅     |
+| 2   | Should sold-out events appear in the listing with a "Sold out" badge, or should they be hidden? **Resolved:** Show them with a "Sold out" indicator.                                                          | ✅     |
+| 3   | Should the listing include a simple count of remaining tickets per type, or just the "Sold out" indicator? **Resolved:** Just the price and sold-out indicator — detailed availability is for the event page. | ✅     |

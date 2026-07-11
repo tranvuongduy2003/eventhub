@@ -26,22 +26,15 @@ For non-trivial changes, handoff should include enough evidence for another engi
 
 ## Example
 
-| Area | Command | Result |
-| --- | --- | --- |
-| Backend | `dotnet test EventHub.slnx -c Release` | pass |
-| Frontend | `yarn --cwd web build` | pass |
-| Contract | `yarn --cwd web api:verify` | pass |
-| E2E | `yarn --cwd e2e test` | not run: local stack unavailable |
+| Area     | Command                                | Result                           |
+| -------- | -------------------------------------- | -------------------------------- |
+| Backend  | `dotnet test EventHub.slnx -c Release` | pass                             |
+| Frontend | `yarn --cwd web build`                 | pass                             |
+| Contract | `yarn --cwd web api:verify`            | pass                             |
+| E2E      | `yarn --cwd e2e test`                  | not run: local stack unavailable |
 
 ## Rules
 
 - Do not claim a check passed unless it was run in this workspace.
 - Prefer exact commands over vague labels.
 - Include skipped checks when they are relevant to the risk of the change.
-
-
-
-
-
-
-

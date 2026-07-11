@@ -29,10 +29,10 @@ Codex loads `AGENTS.md` files from the project root down to the session working 
 
 Read the smallest relevant set before acting. These are the only durable EventHub product/feature/technical specifications:
 
-| Document | Authority |
-|---|---|
-| `docs/product.md` | Product intent, personas, scope, non-goals, decisions (`DEC-*`), guardrails (`QG-*`) |
-| `docs/features.md` | Epics (`EP-*`), features (`F-*`), dependencies, acceptance criteria, delivery status |
+| Document            | Authority                                                                                                                   |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `docs/product.md`   | Product intent, personas, scope, non-goals, decisions (`DEC-*`), guardrails (`QG-*`)                                        |
+| `docs/features.md`  | Epics (`EP-*`), features (`F-*`), dependencies, acceptance criteria, delivery status                                        |
 | `docs/technical.md` | Architecture (`ARCH-*`), bounded contexts, aggregates, invariants (`INV-*`), data, integrations, security, and verification |
 
 Harness documents, skills, agents, hooks, and policies may define workflow mechanics, but they MUST NOT become competing sources of product behavior or architecture.
@@ -95,21 +95,21 @@ Reference workflow mechanics from the active harness documents discovered in the
 
 Skills hold current how-to, templates, references, and scripts. Invoke the relevant one(s) at the start of a task. Do not load broad or overlapping skills when one narrower skill owns the work.
 
-| Trigger | Skill |
-|---|---|
-| Full idea/spec/task loop | `$cook` |
-| Backend: aggregate, value object, DbContext, migration, EF query, endpoint, ProblemDetails, backend test, coverage | `$backend` |
-| Frontend: component, hook, module, data fetching, form, styling, route guard | `$frontend` |
-| E2E/API tests: Playwright, page object, API client, test plan, step/verifyPoint | `$e2e` |
-| shadcn UI primitives / `components.json` | `$shadcn` |
-| Zustand stores | `$zustand-web` |
-| Browser automation / verify UI / console / network / performance | `$chrome-devtools` |
-| Aspire AppHost inspection | `$aspire-mcp` |
-| Library/framework/API docs | `$context7-research` |
-| Create/update a skill | `$skill-creator` |
-| Agentic loop state | `$loop-init` -> `$loop-next` |
-| Open a PR handoff | `$create-pr` |
-| Harness review | `$harness-review` using `harness-doctor` |
+| Trigger                                                                                                            | Skill                                    |
+| ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| Full idea/spec/task loop                                                                                           | `$cook`                                  |
+| Backend: aggregate, value object, DbContext, migration, EF query, endpoint, ProblemDetails, backend test, coverage | `$backend`                               |
+| Frontend: component, hook, module, data fetching, form, styling, route guard                                       | `$frontend`                              |
+| E2E/API tests: Playwright, page object, API client, test plan, step/verifyPoint                                    | `$e2e`                                   |
+| shadcn UI primitives / `components.json`                                                                           | `$shadcn`                                |
+| Zustand stores                                                                                                     | `$zustand-web`                           |
+| Browser automation / verify UI / console / network / performance                                                   | `$chrome-devtools`                       |
+| Aspire AppHost inspection                                                                                          | `$aspire-mcp`                            |
+| Library/framework/API docs                                                                                         | `$context7-research`                     |
+| Create/update a skill                                                                                              | `$skill-creator`                         |
+| Agentic loop state                                                                                                 | `$loop-init` -> `$loop-next`             |
+| Open a PR handoff                                                                                                  | `$create-pr`                             |
+| Harness review                                                                                                     | `$harness-review` using `harness-doctor` |
 
 If a skill name exists only as a planned migration target and is not present in the repo yet, stop and report the missing skill instead of substituting an unrelated workflow.
 
@@ -117,19 +117,19 @@ If a skill name exists only as a planned migration target and is not present in 
 
 Before editing a scoped area, read the nearest matching `AGENTS.md` even when the current Codex session was started at the repository root.
 
-| Instructions | Applies to |
-|---|---|
-| `src/AGENTS.md` | All backend and host code under `src/**` |
-| `src/Domain/AGENTS.md` | Aggregates, entities, value objects, domain services, domain events |
-| `src/Application/AGENTS.md` | Commands, queries, handlers, validators, behaviors, ports, authorization orchestration |
-| `src/Infrastructure/AGENTS.md` | EF Core, repositories, migrations, cache, storage, messaging, payment/email adapters |
-| `src/Api/AGENTS.md` | Endpoints, HTTP mapping, auth/session transport, ProblemDetails, webhooks, SignalR |
-| `src/Contracts/AGENTS.md` | Explicit request/response contract types |
-| `contracts/AGENTS.md` | Committed OpenAPI source and contract-generation workflow |
-| `tests/AGENTS.md` | Domain unit, application/component, API/consumer integration tests and shared fixtures |
-| `web/AGENTS.md` | React/Vite frontend, forms, server/client state, accessibility, route guards |
-| `web/src/generated/AGENTS.md` | Generated API output; source-only changes are forbidden here |
-| `e2e/AGENTS.md` | Playwright journeys, page objects, fixtures, browser-level verification |
+| Instructions                   | Applies to                                                                             |
+| ------------------------------ | -------------------------------------------------------------------------------------- |
+| `src/AGENTS.md`                | All backend and host code under `src/**`                                               |
+| `src/Domain/AGENTS.md`         | Aggregates, entities, value objects, domain services, domain events                    |
+| `src/Application/AGENTS.md`    | Commands, queries, handlers, validators, behaviors, ports, authorization orchestration |
+| `src/Infrastructure/AGENTS.md` | EF Core, repositories, migrations, cache, storage, messaging, payment/email adapters   |
+| `src/Api/AGENTS.md`            | Endpoints, HTTP mapping, auth/session transport, ProblemDetails, webhooks, SignalR     |
+| `src/Contracts/AGENTS.md`      | Explicit request/response contract types                                               |
+| `contracts/AGENTS.md`          | Committed OpenAPI source and contract-generation workflow                              |
+| `tests/AGENTS.md`              | Domain unit, application/component, API/consumer integration tests and shared fixtures |
+| `web/AGENTS.md`                | React/Vite frontend, forms, server/client state, accessibility, route guards           |
+| `web/src/generated/AGENTS.md`  | Generated API output; source-only changes are forbidden here                           |
+| `e2e/AGENTS.md`                | Playwright journeys, page objects, fixtures, browser-level verification                |
 
 When a change spans multiple scopes, read every applicable file. The most specific file governs local implementation details; cross-scope behavior still has to satisfy all applicable specifications and verification requirements.
 
@@ -137,17 +137,17 @@ When a change spans multiple scopes, read every applicable file. The most specif
 
 Project-scoped agents live under `.codex/agents/`.
 
-| Agent | Use | Writes? |
-|---|---|---|
-| `requirement-analyst` | First read-only idea/spec clarity gate; returns `CLEAR` or `NEEDS-CLARIFICATION` | no |
-| `spec-brainstormer` | Strong-reasoning product/spec synthesis into `docs/specs/` | specs only |
-| `implementation-planner` | Strong-reasoning plan and slice contract generation under `.codex/tmp/` | scratch plan only |
-| `implementer` | Medium-reasoning implementation of one scoped spec slice | yes |
-| `test-writer` | Writes focused tests | tests only |
-| `code-reviewer` | Path-aware, evidence-based read-only review | no |
-| `security-reviewer` | Auth/session/sensitive-data/injection/dependency review | no |
-| `acceptance-verifier` | Final read-only gate; diffs implementation against spec acceptance criteria | no |
-| `harness-doctor` | Diagnoses harness behavior from telemetry, hooks, skills, agents, scripts, and validation evidence | no |
+| Agent                    | Use                                                                                                | Writes?           |
+| ------------------------ | -------------------------------------------------------------------------------------------------- | ----------------- |
+| `requirement-analyst`    | First read-only idea/spec clarity gate; returns `CLEAR` or `NEEDS-CLARIFICATION`                   | no                |
+| `spec-brainstormer`      | Strong-reasoning product/spec synthesis into `docs/specs/`                                         | specs only        |
+| `implementation-planner` | Strong-reasoning plan and slice contract generation under `.codex/tmp/`                            | scratch plan only |
+| `implementer`            | Medium-reasoning implementation of one scoped spec slice                                           | yes               |
+| `test-writer`            | Writes focused tests                                                                               | tests only        |
+| `code-reviewer`          | Path-aware, evidence-based read-only review                                                        | no                |
+| `security-reviewer`      | Auth/session/sensitive-data/injection/dependency review                                            | no                |
+| `acceptance-verifier`    | Final read-only gate; diffs implementation against spec acceptance criteria                        | no                |
+| `harness-doctor`         | Diagnoses harness behavior from telemetry, hooks, skills, agents, scripts, and validation evidence | no                |
 
 Reviewers, gates, and `harness-doctor` are read-only. Use subagents for parallel read-heavy work such as exploration, test-gap analysis, security review, and acceptance verification. Coordinate write-heavy work in the main thread unless files are explicitly independent.
 

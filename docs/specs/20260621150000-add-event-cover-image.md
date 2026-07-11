@@ -32,7 +32,7 @@ github_issue: 23
 
 # Feature: Add an event cover image
 
-> Features: F-2.2  |  Status: DRAFT  |  Date: 2026-06-21
+> Features: F-2.2 | Status: DRAFT | Date: 2026-06-21
 > PRD: DEC-3 (MVP scope), QG-1 (simplicity), QG-4 (mobile-friendly)
 > DDD: BC-2 Event Management, AGG-Event, VO-CoverImageRef
 > Tech: §5 (MinIO object storage)
@@ -46,6 +46,7 @@ github_issue: 23
 **Personas:** PER-O1 (individual organizer), PER-O2 (small group/club organizer).
 
 **Scope:**
+
 - **In scope (F-2.2):** Upload a cover image for a draft or published event; replace an existing cover image; reject invalid files.
 - **Out of scope:** Cropping/resizing in the browser (deferred); multiple images/gallery (not in roadmap); image CDN optimization (not in scope for MVP).
 
@@ -74,21 +75,25 @@ github_issue: 23
 ## 3. Domain & Business Rules
 
 **Domain model alignment (domain-model-specification.md):**
+
 - The `Event` aggregate (AGG-Event) in BC-2 owns the `VO-CoverImageRef` value object — an object key/URL into object storage, never the bytes themselves.
 - The `SetCoverImage` behavior on `Event` is the domain-level operation that updates the cover image reference.
 
 **Invariants:**
+
 - Only the event owner (Owner role per F-1.5) can set or change the cover image. This is an authorization check in the Application handler, not a domain invariant.
 - The domain does not validate file format, size, or resolution — that is an application/infrastructure concern (validating before storing).
 - Cover image upload is restricted to Draft or Published events. Cancelled events cannot have their cover image changed. This is enforced in the Application handler as a status guard.
 
 **Ownership model:**
+
 - F-1.5 defines that each event has exactly one Owner. The cover image upload checks the caller holds the Owner role for the target event.
 - Staff users (F-1.6) cannot upload cover images.
 
 ## 4. UI Behavior
 
 **Organizer — upload flow:**
+
 1. On the event edit page (both Draft and Published states), the organizer sees a cover image section.
 2. If no cover image exists, a prominent upload area is shown (drag-and-drop or click to browse).
 3. If a cover image already exists, the current image is shown with an option to replace it.
@@ -96,11 +101,13 @@ github_issue: 23
 5. On upload, a progress indicator is shown. On success, the new image is displayed. On failure (server rejection), the error message from the API is shown inline.
 
 **Public event page (EP-4):**
+
 - The cover image is displayed prominently at the top of the event page, above the title and details.
 - On mobile (QG-4), the image scales to fill the viewport width with appropriate aspect ratio.
 - If no cover image is set, a default placeholder is shown.
 
 **Design notes (design-system.md):**
+
 - Use Tailwind semantic tokens; no raw hex.
 - Image should use `object-cover` for consistent aspect ratio across screen sizes.
 - Loading skeleton while image fetches.
@@ -125,9 +132,11 @@ github_issue: 23
 ## 6. Data & Storage Impact
 
 **PostgreSQL (Tech §6):**
+
 - The `Events` table already stores `CoverImageKey` (or equivalent column) — a string holding the MinIO object key. No schema change needed if the column exists from F-2.1; otherwise, a migration adds it.
 
 **MinIO (Tech §5):**
+
 - Uploaded images are stored in the configured bucket under a path like `events/{eventId}/cover/{filename}`.
 - Only the object key is persisted in PostgreSQL; the bytes live in MinIO.
 - Old cover images are not immediately deleted on replacement (cleanup can be a deferred background task).
@@ -170,11 +179,13 @@ If the event is cached in Redis, the cache entry should be invalidated when the 
 ## 10. Dependencies & Risks
 
 **Dependencies:**
+
 - F-2.1 (Create a draft event) — the event must exist before a cover image can be uploaded.
 - F-1.5 (Define roles and permissions) — the Owner role must be defined and assignable.
 - MinIO provisioning via Aspire AppHost (Tech §5) — must be running and accessible.
 
 **Risks:**
+
 - **MinIO not running:** If the object storage container is down, uploads fail. Mitigation: health check in Aspire dashboard; clear error message to the user.
 - **Large file uploads on slow connections:** Mitigation: client-side validation catches obviously oversized files early; server-side limit prevents abuse.
 - **Image format detection ambiguity:** Some files may have mismatched extensions and content types. Mitigation: use content-type detection (magic bytes), not just the declared type.
@@ -199,8 +210,8 @@ If the event is cached in Redis, the cache entry should be invalidated when the 
 
 ## 13. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should cover image upload be allowed on Cancelled events, or only Draft/Published? | ✅ Resolved — Draft/Published only. Status guard enforced in handler. |
-| 2 | What is the exact maximum resolution? Should the server reject extremely large dimensions? | ✅ Resolved — Max 1920×1080 (HD). Server rejects images exceeding this. |
-| 3 | Should old cover images be deleted from MinIO immediately on replacement? | ✅ Resolved — Deleted immediately on replacement. |
+| #   | Question                                                                                   | Status                                                                  |
+| --- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| 1   | Should cover image upload be allowed on Cancelled events, or only Draft/Published?         | ✅ Resolved — Draft/Published only. Status guard enforced in handler.   |
+| 2   | What is the exact maximum resolution? Should the server reject extremely large dimensions? | ✅ Resolved — Max 1920×1080 (HD). Server rejects images exceeding this. |
+| 3   | Should old cover images be deleted from MinIO immediately on replacement?                  | ✅ Resolved — Deleted immediately on replacement.                       |

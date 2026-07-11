@@ -1,4 +1,4 @@
-﻿name = "security-reviewer"
+name = "security-reviewer"
 description = "Use this read-only subagent to security-review a change, especially when it touches authentication, authorization, protected record data, sensitive user data, SQL/EF queries, logging, or external integrations. It audits the change against the OWASP Top 10 (2021) mapped to this stack — broken access control, cryptographic failures, injection, insecure design, security misconfiguration, vulnerable components, authentication failures, data-integrity failures, logging/monitoring gaps, and SSRF — plus sensitive-data leakage, and the OWASP LLM Top 10 if the change adds an AI/LLM surface. It reports concrete file-and-line findings with severity and remediation. It does not edit code. Run it in addition to `code-reviewer` for security-sensitive changes."
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"

@@ -32,17 +32,17 @@ Prefer this over guessing about browser behavior. Do NOT use it for backend-only
 
 ## Tool categories
 
-| Category | Tools | Use for |
-|----------|-------|---------|
-| **Navigation** | `navigate_page`, `new_page`, `list_pages`, `select_page`, `close_page`, `wait_for` | Open/switch tabs, go to a URL, wait for expected text/state |
-| **Snapshots & screenshots** | `take_snapshot`, `take_screenshot` | Get a structured accessibility snapshot with element **uids** (before interacting); capture a visual image |
-| **Input automation** | `click`, `fill`, `fill_form`, `hover`, `drag`, `type_text`, `press_key`, `upload_file`, `handle_dialog` | Drive the page - all element targeting is by the **uid** from the latest snapshot |
-| **Console & network** | `list_console_messages`, `get_console_message`, `list_network_requests`, `get_network_request` | Read console output and network activity to debug |
-| **Scripting** | `evaluate_script` | Run JavaScript in the page to read/assert DOM or app state |
-| **Emulation** | `emulate`, `resize_page` | Emulate device/network/CPU conditions; set viewport size |
-| **Performance** | `performance_start_trace`, `performance_stop_trace`, `performance_analyze_insight` | Record a trace and extract insights |
-| **Audit** | `lighthouse_audit` | Full Lighthouse assessment of a page |
-| **Memory** | `take_heapsnapshot` | Capture a heap snapshot for memory investigation |
+| Category                    | Tools                                                                                                   | Use for                                                                                                    |
+| --------------------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Navigation**              | `navigate_page`, `new_page`, `list_pages`, `select_page`, `close_page`, `wait_for`                      | Open/switch tabs, go to a URL, wait for expected text/state                                                |
+| **Snapshots & screenshots** | `take_snapshot`, `take_screenshot`                                                                      | Get a structured accessibility snapshot with element **uids** (before interacting); capture a visual image |
+| **Input automation**        | `click`, `fill`, `fill_form`, `hover`, `drag`, `type_text`, `press_key`, `upload_file`, `handle_dialog` | Drive the page - all element targeting is by the **uid** from the latest snapshot                          |
+| **Console & network**       | `list_console_messages`, `get_console_message`, `list_network_requests`, `get_network_request`          | Read console output and network activity to debug                                                          |
+| **Scripting**               | `evaluate_script`                                                                                       | Run JavaScript in the page to read/assert DOM or app state                                                 |
+| **Emulation**               | `emulate`, `resize_page`                                                                                | Emulate device/network/CPU conditions; set viewport size                                                   |
+| **Performance**             | `performance_start_trace`, `performance_stop_trace`, `performance_analyze_insight`                      | Record a trace and extract insights                                                                        |
+| **Audit**                   | `lighthouse_audit`                                                                                      | Full Lighthouse assessment of a page                                                                       |
+| **Memory**                  | `take_heapsnapshot`                                                                                     | Capture a heap snapshot for memory investigation                                                           |
 
 ## Recommended workflow
 
@@ -54,6 +54,7 @@ Prefer this over guessing about browser behavior. Do NOT use it for backend-only
 6. **Performance (optional)** - `performance_start_trace`, exercise the flow, `performance_stop_trace`, then `performance_analyze_insight`; or run `lighthouse_audit` for a one-shot audit.
 
 Guidelines:
+
 - Snapshot uids are the reliable way to target elements - do not hand-craft selectors when a snapshot uid exists.
 - Re-take a snapshot after navigation or any action that mutates the DOM; stale uids fail.
 - Keep interactions minimal and driven by what the snapshot actually shows.
@@ -64,11 +65,3 @@ Guidelines:
 - Use this to confirm a web change renders and behaves correctly end-to-end, to read console/network detail while debugging, and as the browser-driving backend for the `verify` acceptance gate.
 - User data (names, sensitive identifiers) must never be copied into logs, comments, or persistent files - the browser exposes real data, so treat screenshots and network bodies as sensitive (sensitive data policy).
 - For scripted, committed browser tests use Playwright and the `e2e` skill instead; this MCP server is for interactive verification and debugging during development.
-
-
-
-
-
-
-
-

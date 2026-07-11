@@ -42,7 +42,7 @@ github_issue: 2
 
 # Feature: Multiple ticket types per event
 
-> Features: F-3.5  |  Status: DRAFT  |  Date: 2026-06-26
+> Features: F-3.5 | Status: DRAFT | Date: 2026-06-26
 > PRD: DEC-1 (no platform fee), QG-1 (simplicity), QG-2 (transparent pricing), QG-5 (correct at small scale)
 > DDD: BC-2 Event Management, AGG-Event, ENT-TicketType, INV-10 (no-oversell)
 
@@ -55,6 +55,7 @@ github_issue: 2
 **Personas:** PER-O1 (individual organizer) — wants simple multi-tier setup. PER-O2 (small group/club) — needs structured tiers like VIP vs General for pricing differentiation.
 
 **Scope:**
+
 - **In:** Adding, editing, and removing multiple ticket types on a single event; independent inventory per type; all types visible on the public event page; all types selectable during checkout; per-type sold-out state.
 - **Out:** Discount codes (F-3.7), per-order purchase limits (F-3.6), scheduled on-sale windows (F-3.8) — these are separate features that build on the multi-type foundation.
 
@@ -87,26 +88,31 @@ github_issue: 2
 **Bounded context:** BC-2 — Event Management. Ticket types are entities within the Event aggregate (ENT-TicketType).
 
 **Invariants (from domain-model-specification.md):**
+
 - **INV-10:** `Reserved + Sold ≤ Capacity` per ticket type — the no-oversell guarantee applies independently to each type.
 - **INV-12:** Capacity cannot be reduced below `Reserved + Sold` for that type.
 - **INV-13:** Price ≥ 0 per ticket type (zero = free ticket per F-3.2).
 - **INV-11:** An event must have at least one ticket type to be published (F-2.4). Removing the last type from a published event is not allowed.
 
 **Constraints:**
+
 - Maximum of 10 ticket types per event.
 
 **Lifecycle rules:**
+
 - Each ticket type tracks its own `Sold` and `Reserved` counts independently.
 - When a ticket type's `Available` (= Capacity − Reserved − Sold) reaches zero, that specific type is marked **sold out**; other types on the same event continue selling normally.
 - Price changes on a ticket type do not affect already-placed orders (INV-25 — price snapshot at order placement).
 
 **Events (domain/integration):**
+
 - `EVT-TicketTypeAdded` — raised when a new type is added to an event.
 - `EVT-EventSoldOut` — raised per type when availability hits zero. If all types are sold out, the event itself is effectively sold out.
 
 ## 4. UI Behavior
 
 **Organizer — Event edit screen:**
+
 - The ticket types section shows a list of all types defined on the event.
 - Each type displays: name, price, capacity, sold count, reserved count, and availability.
 - An "Add ticket type" action creates a new entry in the list (disabled when 10 types exist, with a tooltip explaining the limit).
@@ -114,10 +120,12 @@ github_issue: 2
 - Validation messages appear inline: capacity below sold+reserved, duplicate name, negative price.
 
 **Public event page (EP-4):**
+
 - All ticket types are rendered as a list or card set, each showing: name, final all-inclusive price, and availability status ("X remaining" or "Sold out").
 - Sold-out types are visually distinct (e.g., greyed out, "Sold out" badge) but still visible so attendees can see what was offered.
 
 **Checkout (EP-5):**
+
 - The ticket selection step shows all available types with quantity selectors.
 - Sold-out types are not selectable but are shown as sold out.
 - Each selected type becomes a separate line item in the order summary with its own unit price and quantity.
@@ -125,6 +133,7 @@ github_issue: 2
 ## 5. Data & Storage Impact
 
 **PostgreSQL (app schema):**
+
 - The `ticket_types` table (child of `events`) already exists from F-3.1. Each row represents one type with its own `name`, `price`, `capacity`, `sold`, `reserved` columns.
 - No schema change required — the table already supports multiple rows per event.
 - An index on `(event_id, name)` for uniqueness of type names within an event is recommended if not already present.
@@ -138,10 +147,12 @@ github_issue: 2
 ## 6. Real-Time & Consistency
 
 **Consistency:**
+
 - Inventory per ticket type is strongly consistent within the Event aggregate (optimistic concurrency + retry, INV-10). The existing mechanism from F-3.4 applies per type without modification.
 - Cross-context consistency (Sales, Ticketing, Reporting) remains eventual via integration events.
 
 **Real-time (EP-11 — future):**
+
 - When live sales monitoring (F-11.1) is built, it should show sold/remaining per type, not just per event. This spec does not implement the realtime push; it ensures the data model supports it.
 
 ## 7. Security & Privacy
@@ -152,23 +163,24 @@ github_issue: 2
 
 ## 8. Edge Cases
 
-**EC-01:** An organizer adds two ticket types with the same name. *Resolution:* Type names must be unique within an event. The system rejects the duplicate with a clear message.
+**EC-01:** An organizer adds two ticket types with the same name. _Resolution:_ Type names must be unique within an event. The system rejects the duplicate with a clear message.
 
-**EC-02:** An organizer edits a ticket type's price after some orders have been placed at the old price. *Resolution:* Already-placed orders retain their snapshotted price (INV-25). Only future orders use the new price. No retroactive change.
+**EC-02:** An organizer edits a ticket type's price after some orders have been placed at the old price. _Resolution:_ Already-placed orders retain their snapshotted price (INV-25). Only future orders use the new price. No retroactive change.
 
-**EC-03:** An organizer tries to remove the only remaining ticket type from a published event. *Resolution:* Blocked — INV-11 requires at least one ticket type for a published event. The organizer must unpublish or cancel first.
+**EC-03:** An organizer tries to remove the only remaining ticket type from a published event. _Resolution:_ Blocked — INV-11 requires at least one ticket type for a published event. The organizer must unpublish or cancel first.
 
-**EC-04:** An organizer reduces a ticket type's capacity to exactly the number sold (no remaining). *Resolution:* Allowed. The type immediately shows as sold out; no further purchases possible for that type.
+**EC-04:** An organizer reduces a ticket type's capacity to exactly the number sold (no remaining). _Resolution:_ Allowed. The type immediately shows as sold out; no further purchases possible for that type.
 
-**EC-05:** All ticket types on an event sell out. *Resolution:* The event page shows all types as sold out. The event itself is effectively sold out — no tickets can be purchased. The event status does not automatically change to Closed; the organizer must close or cancel explicitly.
+**EC-05:** All ticket types on an event sell out. _Resolution:_ The event page shows all types as sold out. The event itself is effectively sold out — no tickets can be purchased. The event status does not automatically change to Closed; the organizer must close or cancel explicitly.
 
-**EC-06:** A free ticket type (price = 0) coexists with paid types. *Resolution:* Allowed per F-3.2. The free type auto-confirms on checkout (F-6.2); paid types go through payment (F-6.1). Each type is handled according to its own price.
+**EC-06:** A free ticket type (price = 0) coexists with paid types. _Resolution:_ Allowed per F-3.2. The free type auto-confirms on checkout (F-6.2); paid types go through payment (F-6.1). Each type is handled according to its own price.
 
-**EC-07:** An attendee selects quantities from multiple types in a single order. *Resolution:* Allowed. Each type becomes a separate order line with its own unit price snapshot. The order total is the sum of all line totals.
+**EC-07:** An attendee selects quantities from multiple types in a single order. _Resolution:_ Allowed. Each type becomes a separate order line with its own unit price snapshot. The order total is the sum of all line totals.
 
 ## 9. Dependencies & Risks
 
 **Dependencies (from feature-specification.md):**
+
 - **F-3.1 (Define a ticket type):** Must exist — this feature extends the single-type model to multiple types.
 - **F-3.3 (Transparent pricing):** Each type must show its all-inclusive price.
 - **F-3.4 (Inventory and no-oversell):** The per-type inventory mechanism must work independently for each type.
@@ -176,6 +188,7 @@ github_issue: 2
 - **F-5.1 (Select tickets and start checkout):** Must support multi-type selection.
 
 **Risks:**
+
 - **R-1: UI complexity.** Multiple types add visual weight to the event page and checkout. Mitigation: keep the default to one type (the common case); additional types are opt-in.
 - **R-2: Inventory hot-spot amplification.** More types means more concurrent reservations on the same Event aggregate. At small-event scale (ASM-2), this is acceptable; the optimistic concurrency mechanism handles it.
 - **R-3: Naming confusion.** If type names are unclear, attendees may be confused. Mitigation: organizers are responsible for clear names; the system enforces uniqueness but not descriptiveness.
@@ -196,7 +209,7 @@ github_issue: 2
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should there be a maximum number of ticket types per event? | ✅ Resolved: 10 types max |
-| 2 | Should the system support reordering ticket types on the public page? | ✅ Resolved: creation-order sufficient |
+| #   | Question                                                              | Status                                 |
+| --- | --------------------------------------------------------------------- | -------------------------------------- |
+| 1   | Should there be a maximum number of ticket types per event?           | ✅ Resolved: 10 types max              |
+| 2   | Should the system support reordering ticket types on the public page? | ✅ Resolved: creation-order sufficient |

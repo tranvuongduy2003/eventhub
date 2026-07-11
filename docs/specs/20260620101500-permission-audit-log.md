@@ -32,7 +32,7 @@ github_issue: 21
 
 # Feature: Permission Audit Log
 
-> Features: F-1.9  |  Status: DRAFT  |  Date: 2026-06-20
+> Features: F-1.9 | Status: DRAFT | Date: 2026-06-20
 > PRD: G-5 (organizer clarity and ownership), QG-1 (simplicity), QG-5 (correctness)
 > DDD: BC-1 (Identity & Access), BC-7 (Reporting & Audience)
 > Tech: §4 (CQRS pipeline), §6 (persistence), §7 (API conventions)
@@ -46,6 +46,7 @@ github_issue: 21
 **Personas:** PER-O1 (individual organizer), PER-O2 (small group/club organizer)
 
 **Scope:**
+
 - **In:** F-1.9 — audit entries for role assignments, revocations, and transfers; viewing and filtering the audit log.
 - **Out:** Audit for non-role operations (event edits, ticket changes); attendee-side visibility; export of audit data.
 
@@ -76,16 +77,19 @@ github_issue: 21
 **Bounded context:** The audit log is a supporting capability in **BC-1 (Identity & Access)**. It records changes to event-level role assignments managed by F-1.6. The read-side projection for viewing the log may live in **BC-7 (Reporting & Audience)** as a read model, consistent with how other reporting features are structured.
 
 **Invariants:**
+
 - An audit entry, once written, cannot be modified or deleted. This is a hard immutability constraint.
 - Every role-changing operation (assign, revoke, transfer) must produce at least one audit entry in the same transaction. No role change without a record.
 - Only the event's Owner can view the audit log. Staff and other roles are excluded.
 
 **Action types (enum):**
+
 - `Assigned` — a user received a role for an event.
 - `Revoked` — a user's role was removed for an event.
 - `Transferred` — ownership moved from one user to another (the previous owner is demoted, the new owner is promoted).
 
 **Relationship to existing aggregates:**
+
 - The audit entry references a `UserId` (actor), a `UserId` (target), and an `EventId` — all by identity, never by holding aggregate instances (per `domain-model-specification.md` §3).
 - The audit entry is not part of the `User` or `Event` aggregate; it is its own record type, written as a side effect of role-changing operations.
 
@@ -93,11 +97,12 @@ github_issue: 21
 
 **Endpoints (REST):**
 
-| Method | Path | Purpose | Auth |
-|--------|------|---------|------|
-| `GET` | `/api/events/{eventId}/audit-log` | View the audit log for an event | Owner role required |
+| Method | Path                              | Purpose                         | Auth                |
+| ------ | --------------------------------- | ------------------------------- | ------------------- |
+| `GET`  | `/api/events/{eventId}/audit-log` | View the audit log for an event | Owner role required |
 
 **Query parameters for `GET /api/events/{eventId}/audit-log`:**
+
 - `from` (optional, ISO-8601 datetime) — start of date range filter (inclusive).
 - `to` (optional, ISO-8601 datetime) — end of date range filter (inclusive).
 - `action` (optional, enum: `assigned`, `revoked`, `transferred`) — filter by action type.
@@ -105,6 +110,7 @@ github_issue: 21
 - `pageSize` (optional, integer, default 20, max 100) — entries per page.
 
 **Response (200):** A paginated list of audit entries, each containing:
+
 - `id` — unique identifier for the audit entry.
 - `actorName` — display name of the user who performed the action.
 - `targetName` — display name of the user whose role was changed.
@@ -114,6 +120,7 @@ github_issue: 21
 - `occurredAt` — UTC timestamp of the change.
 
 **Error responses:**
+
 - `401` — not signed in.
 - `403` — signed in but not the Owner of the event.
 - `404` — event not found.
@@ -121,6 +128,7 @@ github_issue: 21
 ## 5. Data & Storage Impact
 
 **PostgreSQL (`app` schema):**
+
 - A new table for permission audit entries. Each row is an immutable record with foreign-key references to the acting user, the target user, and the event.
 - Index on `(event_id, occurred_at)` to support efficient filtering and pagination.
 - No `row_version` needed — entries are insert-only, never updated.
@@ -158,10 +166,12 @@ github_issue: 21
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - F-1.6 (assign roles to users per event) — the operations being audited.
 - F-1.7 (role-based access control) — the permission model that the audit log's access control builds on.
 
 **Risks:**
+
 - **Storage growth:** For a pet project with small events, this is negligible. Audit entries are small rows; even hundreds of role changes per event would not be a concern.
 - **Transaction coupling:** Writing the audit entry in the same transaction as the role change adds a small amount of complexity to those handlers, but this is the correct trade-off for AC-09 (no orphaned role changes).
 
@@ -182,7 +192,7 @@ github_issue: 21
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should the transfer action produce one audit entry ("transferred") or two separate entries ("revoked" for old owner + "assigned" for new owner)? A single entry is simpler; two entries are more granular. | ✅ **Two entries** — `Transferred` for demoted old owner + `Assigned` for new owner. More granular audit trail. Implemented in `AssignRoleCommandHandler`. |
-| 2 | Should the audit log be accessible to Staff with a specific permission (e.g., a "View Audit" permission), or strictly Owner-only? Current spec assumes Owner-only for simplicity (QG-1). | ✅ **Owner-only** — uses `Permission.EventManagement` (Owner has all permissions, Staff has CheckIn + Reporting only). Implemented in `ListAuditLogQuery`. |
+| #   | Question                                                                                                                                                                                                   | Status                                                                                                                                                     |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Should the transfer action produce one audit entry ("transferred") or two separate entries ("revoked" for old owner + "assigned" for new owner)? A single entry is simpler; two entries are more granular. | ✅ **Two entries** — `Transferred` for demoted old owner + `Assigned` for new owner. More granular audit trail. Implemented in `AssignRoleCommandHandler`. |
+| 2   | Should the audit log be accessible to Staff with a specific permission (e.g., a "View Audit" permission), or strictly Owner-only? Current spec assumes Owner-only for simplicity (QG-1).                   | ✅ **Owner-only** — uses `Permission.EventManagement` (Owner has all permissions, Staff has CheckIn + Reporting only). Implemented in `ListAuditLogQuery`. |

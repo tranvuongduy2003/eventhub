@@ -34,8 +34,8 @@ github_issue: 53
 
 # Feature: Rich link previews
 
-> Features: F-4.3  |  Status: DRAFT  |  Date: 2026-06-27
-> PRD: QG-1 (simplicity), QG-2 (transparency), QG-4 (mobile-friendly)  |  DDD: BC-2 AGG-Event, VO-Slug, VO-CoverImageRef  |  Tech: §5, §7
+> Features: F-4.3 | Status: DRAFT | Date: 2026-06-27
+> PRD: QG-1 (simplicity), QG-2 (transparency), QG-4 (mobile-friendly) | DDD: BC-2 AGG-Event, VO-Slug, VO-CoverImageRef | Tech: §5, §7
 
 ## 1. Problem & Solution
 
@@ -44,10 +44,12 @@ github_issue: 53
 **Solution:** When a link to a published event page is shared, the platform serves Open Graph (OG) and Twitter Card meta tags that describe the event. Social platforms and chat apps crawl these tags and render a rich preview card showing the event title, cover image, and date. The preview is generated server-side so that crawler user-agents (which typically do not execute JavaScript) receive the meta tags in the initial HTML response.
 
 **Personas:**
+
 - **PER-O1** (Individual organizer) — shares their event link on personal social media to attract attendees.
 - **PER-O2** (Small group organizer) — shares event links in group chats, community pages, and messaging apps to promote their event.
 
 **Scope:**
+
 - **In scope:** F-4.3 — Open Graph and Twitter Card meta tags for published event pages, served to crawler user-agents.
 - **Out of scope:** SEO optimization beyond OG tags (structured data, sitemap), social sharing buttons or share UI, analytics on link clicks, custom preview images per platform, dynamic preview rendering for non-published events.
 
@@ -111,6 +113,7 @@ The following meta tags are injected into the HTML `<head>` of the event page wh
 The EventHub frontend is a React SPA (Vite). Social media crawlers and chat apps typically do not execute JavaScript — they read only the raw HTML response. Therefore, OG tags must be present in the initial HTML response, not injected client-side.
 
 **Approach: Vite SSR (server-side rendering).** The Vite frontend uses SSR to render the event page on the server, producing HTML that includes the OG and Twitter Card meta tags in `<head>`. Regular browser users receive the same server-rendered HTML and then the React app hydrates on the client. This ensures:
+
 1. Crawlers and chat apps see OG tags in the raw HTML response.
 2. Browser extensions and tools that read OG tags also work (AC-07).
 3. A single rendering path — no separate API-side HTML generation needed.
@@ -118,6 +121,7 @@ The EventHub frontend is a React SPA (Vite). Social media crawlers and chat apps
 ### 4.3 Crawler detection
 
 Major crawlers identify themselves via the `User-Agent` header:
+
 - Facebook: `facebookexternalhit`
 - Twitter/X: `Twitterbot`
 - LinkedIn: `LinkedInBot`
@@ -170,11 +174,13 @@ The implementation should serve OG tags to **all requests** (not just crawlers) 
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - F-4.1 (Shareable public event page) — the public event page and its API endpoint must exist. The OG tags are an enhancement to this page.
 - F-2.2 (Add an event cover image) — the cover image must be stored in MinIO for `og:image` to have a valid URL.
 - F-2.4 (Publish an event) — the event must be published with a slug for the public URL to exist.
 
 **Risks:**
+
 - **R-01 (Low):** SPA rendering — if OG tags are injected client-side only, crawlers will not see them. Mitigation: serve OG tags in the initial HTML response (server-side approach).
 - **R-02 (Low):** Social platform cache staleness — platforms cache preview data for 24–48 hours. After an event update, old previews may persist. Mitigation: document that organizers can use platform-specific debug tools to refresh.
 - **R-03 (Low):** Image format compatibility — some platforms may not support certain image formats (e.g., WebP). Mitigation: MinIO serves images with standard MIME types; the cover upload process should accept common formats (JPEG, PNG).
@@ -199,8 +205,8 @@ The implementation should serve OG tags to **all requests** (not just crawlers) 
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should OG tags be served to all requests (simpler) or only to crawler user-agents (slightly more complex but avoids unnecessary HTML for regular browsers)? **Resolved:** Serve to all requests — simpler implementation, supports browser extensions and tools. | ✅ |
-| 2 | Should `og:description` include ticket pricing information (e.g., "From 150,000₫") or only date + location? **Resolved:** Only date and location — pricing is for the page itself, not the preview card. | ✅ |
-| 3 | Should the implementation use server-side rendering (Vite SSR) or API-side HTML generation for crawler responses? **Resolved:** SSR (Vite server-side rendering). | ✅ |
+| #   | Question                                                                                                                                                                                                                                                         | Status |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| 1   | Should OG tags be served to all requests (simpler) or only to crawler user-agents (slightly more complex but avoids unnecessary HTML for regular browsers)? **Resolved:** Serve to all requests — simpler implementation, supports browser extensions and tools. | ✅     |
+| 2   | Should `og:description` include ticket pricing information (e.g., "From 150,000₫") or only date + location? **Resolved:** Only date and location — pricing is for the page itself, not the preview card.                                                         | ✅     |
+| 3   | Should the implementation use server-side rendering (Vite SSR) or API-side HTML generation for crawler responses? **Resolved:** SSR (Vite server-side rendering).                                                                                                | ✅     |

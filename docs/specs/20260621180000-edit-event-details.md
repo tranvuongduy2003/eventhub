@@ -37,8 +37,8 @@ github_issue: 25
 
 # Feature: Edit event details
 
-> Features: F-2.3  |  Status: DRAFT  |  Date: 2026-06-21
-> PRD: DEC-3 (MVP spine), QG-1 (simplicity), QG-5 (correctness)  |  DDD: BC-2 · AGG-Event · INV-12  |  Tech: §5–7
+> Features: F-2.3 | Status: DRAFT | Date: 2026-06-21
+> PRD: DEC-3 (MVP spine), QG-1 (simplicity), QG-5 (correctness) | DDD: BC-2 · AGG-Event · INV-12 | Tech: §5–7
 
 ## 1. Problem & Solution
 
@@ -49,6 +49,7 @@ github_issue: 25
 **Personas:** PER-O1 (individual organizer — wants to quickly fix mistakes), PER-O2 (small group organizer — wants to update event information as plans evolve).
 
 **Scope:**
+
 - **In:** F-2.3 only — edit an existing event's core details (title, description, schedule, location), with status-dependent guards on destructive changes.
 - **Out:** F-2.2 cover image upload (separate feature); F-2.4 publish; F-2.5 close/cancel; F-2.6 duplicate; ticket type editing (F-3.1, F-3.5); discount codes (F-3.7); slug changes (slug is set at publish time, INV-15).
 
@@ -75,11 +76,13 @@ github_issue: 25
 **Aggregate:** AGG-Event. Editing operates through the `UpdateDetails` behavior on the aggregate.
 
 **Invariants enforced:**
+
 - **INV-10 (no-oversell):** `Reserved + Sold ≤ Capacity` per ticket type. When the organizer edits a Published event, any change to capacity must respect this. Reducing capacity below `Reserved + Sold` is rejected.
 - **INV-12 (capacity guard):** Capacity cannot drop below `Reserved + Sold`. This is the specific guard that protects published events from destructive edits.
 - **INV-13 (price ≥ 0):** If price editing is in scope for a future ticket-type edit flow, prices must remain non-negative. Not directly triggered by this feature (ticket type editing is F-3.1/F-3.5), but the invariant exists on the aggregate.
 
 **Status-dependent behavior:**
+
 - **Draft:** `UpdateDetails` applies freely — all fields mutable, no guards beyond basic validation (non-empty title, valid schedule, valid location).
 - **Published:** `UpdateDetails` applies to descriptive fields; inventory-related fields (ticket type capacity) are guarded by INV-12. The aggregate rejects changes that would violate the guard.
 - **Closed / Cancelled:** `UpdateDetails` is rejected — terminal states are immutable (per the lifecycle in domain-model-specification.md §7).
@@ -93,19 +96,23 @@ github_issue: 25
 **Screen:** The organizer opens an event they own from their dashboard (F-9.4, when available) or directly. The event detail/edit form displays the current values of all editable fields.
 
 **Draft events:**
+
 - All fields are editable: title, description, start date-time, end date-time, time zone, location type (physical/online), physical address.
 - A "Save" button submits changes. On success, the form reflects the updated values.
 - On validation failure, inline error messages appear next to the relevant fields.
 
 **Published events:**
+
 - Descriptive fields remain editable (title, description, location, schedule).
-- Ticket type capacity fields, if shown on this form, are editable but guarded: if the organizer enters a value below sold + reserved, the save is rejected with an inline message: *"Capacity cannot be reduced below [number] — [number] tickets are already sold or reserved."*
+- Ticket type capacity fields, if shown on this form, are editable but guarded: if the organizer enters a value below sold + reserved, the save is rejected with an inline message: _"Capacity cannot be reduced below [number] — [number] tickets are already sold or reserved."_
 - The form clearly indicates the event is Published, so the organizer understands they are editing a live event.
 
 **Closed / Cancelled events:**
-- The edit form is read-only or shows a banner: *"This event is closed/cancelled and cannot be edited."*
+
+- The edit form is read-only or shows a banner: _"This event is closed/cancelled and cannot be edited."_
 
 **Permission denied:**
+
 - A user without the Owner role who navigates to the edit form sees an "insufficient permissions" message and cannot make changes.
 
 **Mobile:** The edit form is usable on a phone (QG-4) — single-column layout, full-width inputs, no horizontal scrolling.
@@ -113,6 +120,7 @@ github_issue: 25
 ## 5. Data & Storage Impact
 
 **PostgreSQL (app schema):**
+
 - The `Event` table's mutable columns (title, description, schedule start/end, time zone, location type, address) are updated in place.
 - No schema changes required — the columns already exist from F-2.1.
 - Optimistic concurrency via `row_version` on the `Event` aggregate root prevents lost updates when two editors save simultaneously (Tech §6).
@@ -158,11 +166,13 @@ Optimistic concurrency (`row_version`) ensures two simultaneous edits do not cor
 ## 9. Dependencies & Risks
 
 **Dependencies:**
+
 - **F-2.1 (Create a draft event):** The event must exist before it can be edited. This feature is a direct follow-on.
 - **F-1.5 (Define roles and permissions):** The Owner role must exist for authorization checks.
 - **F-1.2 (Sign in and sign out):** The organizer must be authenticated.
 
 **Risks:**
+
 - **RSK-1 (Scope creep):** The boundary between "descriptive field edit" and "ticket type edit" must be kept clean. This feature covers event-level details only; ticket type changes (name, price, capacity) are handled by F-3.1/F-3.5, not here.
 - **RSK-5 (Oversell):** The capacity guard (INV-12) is the critical safety mechanism. If the guard is missing or bypassed, the no-oversell guarantee breaks. This must be tested with concurrent scenarios.
 
@@ -185,7 +195,7 @@ Optimistic concurrency (`row_version`) ensures two simultaneous edits do not cor
 
 ## 12. Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| 1 | Should editing a Published event's schedule trigger a notification to existing ticket holders? | ✅ No — not for MVP |
-| 2 | Should the edit form show ticket type capacity fields with current sold/reserved counts to help the organizer understand guard limits? | ✅ Yes — show sold/reserved counts alongside capacity fields on the edit form |
+| #   | Question                                                                                                                               | Status                                                                        |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| 1   | Should editing a Published event's schedule trigger a notification to existing ticket holders?                                         | ✅ No — not for MVP                                                           |
+| 2   | Should the edit form show ticket type capacity fields with current sold/reserved counts to help the organizer understand guard limits? | ✅ Yes — show sold/reserved counts alongside capacity fields on the edit form |

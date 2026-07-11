@@ -42,7 +42,7 @@ Use this MCP once the AppHost is **already running** (started via `$aspire-mcp` 
 - **Inspect the app model** - enumerate resources and their relationships/configuration as the AppHost sees them.
 - **Run resource commands** - trigger resource-level actions (e.g. restart) exposed by the running app.
 
-Reach for it whenever a question is about the *running* orchestration ("is it up?", "why did X fail to start?", "what URL is the backend on?", "show me the fake API's logs").
+Reach for it whenever a question is about the _running_ orchestration ("is it up?", "why did X fail to start?", "what URL is the backend on?", "show me the fake API's logs").
 
 ## How it complements `$aspire-mcp`
 
@@ -64,10 +64,3 @@ If the MCP tools report no running AppHost or cannot connect, the stack is not u
 - Match the resource names above when referring to resources.
 - Logs and endpoints may surface real request/response data; never copy sensitive user data into committed files, comments, or reports.
 - For building/configuring the AppHost or backend code, follow `docs/technical.md and src/AGENTS.md`; this skill is only about interacting with the running instance.
-
-
-
-
-
-
-
