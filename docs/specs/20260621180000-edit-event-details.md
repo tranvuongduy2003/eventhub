@@ -121,7 +121,7 @@ github_issue: 25
 
 **MinIO:** No impact — cover image editing is F-2.2, separate from this feature.
 
-**RabbitMQ:** No integration events emitted for a simple detail edit (see §3 — no domain events for routine mutations).
+**Async workflow:** No integration events emitted for a simple detail edit (see §3 — no domain events for routine mutations).
 
 ## 6. Real-Time & Consistency
 

@@ -134,7 +134,7 @@ The implementation should serve OG tags to **all requests** (not just crawlers) 
 - **PostgreSQL:** No changes. The OG tag data (title, description, start date, location, cover image URL) is already available from the public event query (F-4.1). No new columns or tables.
 - **Redis:** The OG tag HTML can be cached alongside the public event data (same cache key pattern). A 30–60 second TTL is sufficient.
 - **MinIO:** The cover image URL is already stored as `VO-CoverImageRef`. The `og:image` tag uses the same URL. No new objects or references.
-- **RabbitMQ:** No impact — this is a read-only concern.
+- **Async workflow:** No impact — this is a read-only concern.
 
 ## 6. Real-Time & Consistency
 
@@ -183,7 +183,7 @@ The implementation should serve OG tags to **all requests** (not just crawlers) 
 
 - The public event page URL is `/events/{slug}` (established in F-4.1).
 - The cover image URL from MinIO is publicly accessible without authentication.
-- Social platforms and chat apps are the primary consumers of OG tags; SEO-focused structured data (JSON-LD) is out of scope.
+- Social platforms and chat apps are the primary handlers of OG tags; SEO-focused structured data (JSON-LD) is out of scope.
 - The single configured currency is used if pricing is mentioned in the preview description (no multi-currency — `product-requirements.md` §6.2).
 - The API or frontend can detect crawler user-agents, or OG tags are served to all requests (preferred — simpler, supports browser extensions).
 - The OG tag implementation does not require a separate rendering service — it is handled within the existing API or Vite SSR capability.

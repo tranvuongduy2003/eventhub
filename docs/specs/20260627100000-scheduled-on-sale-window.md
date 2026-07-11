@@ -112,7 +112,7 @@ github_issue: 47
 - No new tables required; the sales window is an attribute of the existing ticket type entity.
 - Migration is additive (new nullable columns) — backward-compatible.
 
-**Redis / MinIO / RabbitMQ:** No impact. The sales window is a domain attribute checked at reservation time; no caching, storage, or messaging changes required.
+**Redis / MinIO / Async workflow:** No impact. The sales window is a domain attribute checked at reservation time; no caching, storage, or messaging changes required.
 
 ## 6. Real-Time & Consistency
 

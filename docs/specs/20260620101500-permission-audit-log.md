@@ -128,7 +128,7 @@ github_issue: 21
 
 **Write path:** The audit entry is written in the same unit of work as the role assignment/revocation/transfer operation (AC-09), ensuring atomicity.
 
-**No MinIO or RabbitMQ impact.** Audit entries are written synchronously alongside role changes and read directly from PostgreSQL.
+**No MinIO or Async workflow impact.** Audit entries are written synchronously alongside role changes and read directly from PostgreSQL.
 
 ## 6. Real-Time & Consistency
 

@@ -133,7 +133,7 @@ The endpoint requires a valid session cookie. The response does not include tick
 | **PostgreSQL** | New row in the event table: stable event id, organizer id (FK to user), title, start time (timestamptz), end time (timestamptz), time zone (text), physical address (nullable when online), is online (bool), status (enum: Draft), created timestamp, updated timestamp, row version (for optimistic concurrency). No slug yet (set at publish). |
 | **Redis** | None for this slice. |
 | **MinIO** | None for this slice (cover image is F-2.2). |
-| **RabbitMQ** | None for this slice. `EVT-DraftCreated` is a domain-scope event handled in-process. |
+| **Async workflow** | None for this slice. `EVT-DraftCreated` is a domain-scope event handled in-process. |
 
 ## 6. Real-Time & Consistency
 

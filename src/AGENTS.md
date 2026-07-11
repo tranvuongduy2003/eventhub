@@ -39,7 +39,7 @@ Treat these as high risk whenever affected:
 - Do not add hand-authored Docker Compose.
 - PostgreSQL is authoritative; Redis and read projections are rebuildable.
 - MinIO stores binary assets by object key and metadata, never expiring presigned URLs in relational state.
-- RabbitMQ consumers and external callbacks must be retry-safe and idempotent.
+- Channel-based consumers and external callbacks must be retry-safe and idempotent.
 - Configure shared telemetry, service discovery, resilience, and health through `ServiceDefaults` rather than duplicating setup.
 
 ## Verification

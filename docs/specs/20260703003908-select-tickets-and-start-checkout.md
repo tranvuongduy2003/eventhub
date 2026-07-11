@@ -116,7 +116,7 @@ github_issue: https://github.com/tranvuongduy2003/eventhub/issues/61
 - **PostgreSQL:** Authoritative event, ticket type, sold, reserved, and sales-window state is read from PostgreSQL. No durable order or reservation record is required by F-5.1 alone.
 - **Redis:** May cache public event or availability reads only if the cached data is rebuildable from PostgreSQL and revalidation protects against stale selections.
 - **MinIO:** No new binary storage impact. Existing cover images on the event page may continue to be displayed.
-- **RabbitMQ:** No integration event is required for quantity selection alone. Order and inventory events begin in F-5.3.
+- **Async workflow:** No integration event is required for quantity selection alone. Order and inventory events begin in F-5.3.
 - **Payment provider:** No payment provider interaction occurs in this slice.
 
 ## 6. Real-Time & Consistency

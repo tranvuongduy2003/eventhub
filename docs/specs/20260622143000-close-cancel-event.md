@@ -121,9 +121,9 @@ github_issue: 29
 - The `Event` aggregate's status field transitions as described. No new columns needed — `VO-EventStatus` already includes `Closed` and `Cancelled` states.
 - A `CancelledAt` timestamp may be added to the Event record for audit and downstream reference (aligns with Tech §6 timestamp conventions).
 
-**Redis / MinIO / RabbitMQ:**
+**Redis / MinIO / Async workflow:**
 - No direct storage changes.
-- `EVT-EventCancelled` will be published to RabbitMQ when downstream consumers (F-6.6, F-9.5) are built. For this slice, the domain event is raised in-process and the integration event infrastructure is prepared but consumers are not yet active.
+- `EVT-EventCancelled` will be emitted when messaging infrastructure exists when downstream workflows (F-6.6, F-9.5) are built. For this slice, the domain event is raised in-process and the integration event infrastructure is prepared but consumers are not yet active.
 
 ## 6. Real-Time & Consistency
 
@@ -167,7 +167,7 @@ github_issue: 29
 
 **Risks:**
 - **Scope creep into refunds:** The Cancel action is meaningful only when refunds eventually happen. This slice must clearly record the cancellation intent without implementing the refund flow. Risk of partial implementation confusing users if Cancel is visible but refunds are not yet built.
-- **Downstream consumer readiness:** `EVT-EventCancelled` integration event should be published even if no consumers exist yet, to avoid a later migration. Consumers (Sales, Payments, Ticketing, Notifications) should handle the event idempotently when they are built.
+- **Downstream workflow readiness:** `EVT-EventCancelled` integration event should be raised even if no downstream workflows exist yet, to avoid a later migration. Consumers (Sales, Payments, Ticketing, Notifications) should handle the event idempotently when they are built.
 
 ## 10. Assumptions
 

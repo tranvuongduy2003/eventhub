@@ -158,7 +158,7 @@ The `Event` aggregate currently owns a single `VO-EventSchedule`. With F-2.7, oc
 
 **Redis:** No new cache concerns; existing cache invalidation patterns apply.
 
-**MinIO / RabbitMQ:** No changes.
+**MinIO / Async workflow:** No changes.
 
 ## 6. Real-Time & Consistency
 
@@ -170,7 +170,7 @@ The `Event` aggregate currently owns a single `VO-EventSchedule`. With F-2.7, oc
 - When F-11.1 (live sales) is implemented, it should support per-occurrence counts. This is out of scope for this spec but the data model supports it.
 
 **Integration events:**
-- `EVT-OccurrenceAdded`, `EVT-OccurrenceUpdated`, `EVT-OccurrenceRemoved` are published for downstream consumers (Reporting, Notifications).
+- `EVT-OccurrenceAdded`, `EVT-OccurrenceUpdated`, `EVT-OccurrenceRemoved` are raised for downstream workflows (Reporting, Notifications).
 - Idempotent consumption per existing patterns.
 
 ## 7. Security & Privacy

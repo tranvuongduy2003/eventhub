@@ -79,7 +79,7 @@ github_issue: 40
 
 **AC-10:** GIVEN a ticket type with capacity 100, WHEN the capacity is reduced by the organizer, THEN the new capacity must be greater than or equal to Reserved + Sold (the reduction is rejected if it would violate this constraint).
 
-**AC-11:** GIVEN inventory operations (reserve, commit, release, return), WHEN any operation completes, THEN domain events are raised for downstream consumers (inventory reserved, reservation committed, reservation released, inventory returned to pool).
+**AC-11:** GIVEN inventory operations (reserve, commit, release, return), WHEN any operation completes, THEN domain events are raised for downstream workflows (inventory reserved, reservation committed, reservation released, inventory returned to pool).
 
 **AC-12:** GIVEN a ticket type whose availability just reached 0, WHEN the sold-out condition is detected, THEN an integration event is emitted so realtime dashboards and notification systems can react.
 
@@ -181,7 +181,7 @@ The Reservation entity is an owned entity within the Event aggregate — it live
 
 No direct Redis impact. Availability is computed from PostgreSQL state. Read-side caching of availability (if any) is rebuildable and out of scope for this feature.
 
-### RabbitMQ
+### Async workflow
 
 Integration events (`ReservationReleased`, `EventSoldOut`) are published after successful commit. Consumers are idempotent.
 
@@ -191,7 +191,7 @@ Integration events (`ReservationReleased`, `EventSoldOut`) are published after s
 
 - **Strong consistency** inside the Event aggregate — all inventory mutations (reserve, commit, release, return) are transactional with optimistic concurrency retry.
 - **Pragmatic two-aggregate write** — `PlaceOrder` mutates both Event (reserve) and Order (create) in one transaction. This is the documented exception to one-aggregate-per-transaction, justified by the no-oversell hard requirement.
-- **Eventual consistency** for cross-context notifications — `ReservationReleased` and `EventSoldOut` are integration events delivered via RabbitMQ after commit. Consumers are idempotent.
+- **Eventual consistency** for cross-context notifications — `ReservationReleased` and `EventSoldOut` are integration events handled by local workflows after commit. Consumers are idempotent.
 
 ### Realtime (F-11.1, F-11.3 — out of scope but data provided)
 

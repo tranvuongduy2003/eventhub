@@ -117,7 +117,7 @@ github_issue: null
 
 **MinIO:** No changes. Attendee accounts have no avatar in this feature (avatar is part of F-1.3 for organizers; attendee avatar is out of scope).
 
-**RabbitMQ:** No changes. `EVT-UserRegistered` is already an integration event; consumers handle it regardless of role.
+**Async workflow:** No changes. `EVT-UserRegistered` is already an integration event; consumers handle it regardless of role.
 
 ## 6. Real-Time & Consistency
 

@@ -8,7 +8,5 @@ public static class ApplicationSectionNames
 
     public const string Storage = Options.StorageOptions.SectionName;
 
-    public const string Messaging = Options.MessagingOptions.SectionName;
-
     public const string Realtime = Options.RealtimeOptions.SectionName;
 }

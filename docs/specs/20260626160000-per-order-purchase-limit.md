@@ -128,7 +128,7 @@ github_issue: 43
 
 **MinIO:** No impact.
 
-**RabbitMQ:** No new messages. The limit is a passive validation rule, not an event-producing state change.
+**Async workflow:** No new messages. The limit is a passive validation rule, not an event-producing state change.
 
 ## 6. Real-Time & Consistency
 

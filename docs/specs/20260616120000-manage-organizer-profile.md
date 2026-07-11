@@ -132,7 +132,7 @@ github_issue: 8
 
 **Redis:** Session cache (`/api/auth/me`) is invalidated/updated after a successful profile change so the next read reflects the new values. Handled by the existing `PostCommitSessionCacheBehavior` pipeline.
 
-**No changes to RabbitMQ or other stores.**
+**No changes to Async workflow or other stores.**
 
 ## 6. Real-Time & Consistency
 
@@ -158,11 +158,11 @@ Consistency is strong within the User aggregate (single transaction). The sessio
 
 ## 8. Edge Cases
 
-**EC-01:** Organizer updates email to the same email they already have. → Treated as a no-op; no error, no uniqueness violation (the existing record is the same user).
+**EC-01:** Organizer updates email to the same email they already have. → Treated as an idempotent update with no state change; no error, no uniqueness violation (the existing record is the same user).
 
 **EC-02:** Organizer uploads a very large image (close to 5 MB). → Server accepts if within limit; MinIO handles it. Client-side resize/compression is a future enhancement, not MVP.
 
-**EC-03:** Organizer removes avatar they never had. → The remove action is a no-op or disabled in the UI; no error.
+**EC-03:** Organizer removes avatar they never had. → The remove action leaves state unchanged or is disabled in the UI; no error.
 
 **EC-04:** Two organizers try to update to the same email simultaneously. → One succeeds; the other gets "email taken" on the uniqueness constraint. Optimistic concurrency on the User aggregate handles the write race.
 
@@ -177,7 +177,7 @@ Consistency is strong within the User aggregate (single transaction). The sessio
 **Dependencies:**
 - F-1.1 (register organizer account) — must be complete. ✅ Done.
 - F-1.2 (sign in) — must be complete for session-based auth. ✅ Done.
-- MinIO adapter — currently a `NoOpObjectStorage` stub. Will be replaced with a real MinIO adapter as part of this feature's build scope. ✅ Resolved — in scope.
+- MinIO adapter — implemented as the object storage adapter for this feature's build scope. ✅ Resolved — in scope.
 
 **Risks:**
 - **Email re-verification.** The spec accepts email changes without re-verification (MVP simplicity). This is acceptable for a pet project (ASM-1) but would need revisiting for production.
@@ -190,7 +190,7 @@ Consistency is strong within the User aggregate (single transaction). The sessio
 4. Old avatar objects are cleaned up from MinIO when replaced or removed (no retention policy needed).
 5. The `PostCommitSessionCacheBehavior` pipeline handles session cache invalidation after profile updates — no custom cache logic needed.
 6. Display name uniqueness is not required (already decided in F-1.1 — `DisplayName` is non-unique).
-7. The MinIO adapter is implemented as part of this feature (resolved OQ-1). It replaces the `NoOpObjectStorage` stub and will also serve future features that need object storage (e.g., F-2.2 cover image).
+7. The MinIO adapter is implemented as part of this feature (resolved OQ-1). It also serves future features that need object storage (e.g., F-2.2 cover image).
 
 ## 11. Out of Scope
 

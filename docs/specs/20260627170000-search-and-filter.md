@@ -143,7 +143,7 @@ The `/events` route from F-4.4 is enhanced. No new routes are introduced. Query 
 - **PostgreSQL:** The search/filter query extends the existing listing query with `WHERE` clauses. Keyword search uses `ILIKE` (case-insensitive) on title and description columns. Date filtering uses the `StartDate` column. Location filtering uses the location summary column. An index on `(Status, StartDate)` supports the base query; additional indexes may be added if query performance requires it.
 - **Redis:** The filtered listing response can be cached per filter combination. However, the number of possible filter combinations makes full caching impractical. A simpler approach: cache the unfiltered listing and apply filters in-memory, or skip caching for filtered results and rely on database query performance (acceptable at the project's intended scale — ASM-2).
 - **MinIO:** No impact.
-- **RabbitMQ:** No impact.
+- **Async workflow:** No impact.
 
 ## 6. Real-Time & Consistency
 

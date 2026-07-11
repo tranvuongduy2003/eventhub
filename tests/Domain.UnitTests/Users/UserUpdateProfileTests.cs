@@ -35,7 +35,7 @@ public class UserUpdateProfileTests
     }
 
     [Fact]
-    public void UpdateProfile_WithSameEmail_ShouldBeNoOp()
+    public void UpdateProfile_WithSameEmail_ShouldLeaveEmailUnchanged()
     {
         var user = CreateTestUser();
         user.ClearDomainEvents();
@@ -134,7 +134,7 @@ public class UserUpdateProfileTests
     }
 
     [Fact]
-    public void RemoveAvatar_WithoutAvatar_ShouldBeNoOp()
+    public void RemoveAvatar_WithoutAvatar_ShouldLeaveAvatarUnchanged()
     {
         var user = CreateTestUser();
         user.ClearDomainEvents();

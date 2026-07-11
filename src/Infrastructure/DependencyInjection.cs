@@ -6,6 +6,7 @@ using EventHub.Application.Abstractions.Payments;
 using EventHub.Application.Abstractions.Persistence;
 using EventHub.Application.Abstractions.Storage;
 using EventHub.Application.Abstractions.Tickets;
+using EventHub.Domain.Events;
 using EventHub.Infrastructure.Auth;
 using EventHub.Infrastructure.BackgroundJobs;
 using EventHub.Infrastructure.Cache;
@@ -67,10 +68,6 @@ public static class DependencyInjection
                 ConnectionMultiplexer.Connect(redisConnectionString));
             services.AddSingleton<ICacheService, CacheService>();
         }
-        else
-        {
-            services.AddSingleton<ICacheService, NoOpCacheService>();
-        }
 
         services.AddScoped<IApplicationDatabaseContext>(serviceProvider =>
             serviceProvider.GetRequiredService<ApplicationDatabaseContext>());
@@ -102,11 +99,17 @@ public static class DependencyInjection
                 return new MinioObjectStorage(storageConnectionString);
             }
 
-            return new NoOpObjectStorage();
+            throw new InvalidOperationException(
+                "Connection string 'storage' is required. Configure MinIO object storage.");
         });
-        services.AddSingleton<IIntegrationEventPublisher, NoOpIntegrationEventPublisher>();
-        services.AddSingleton<IEmailSender, NoOpEmailSender>();
-        services.AddSingleton<IPaymentGateway, NoOpPaymentGateway>();
+        services.AddSingleton<ChannelIntegrationEventQueue>();
+        services.AddSingleton<IIntegrationEventPublisher, ChannelIntegrationEventPublisher>();
+        services.AddHostedService<ChannelIntegrationEventConsumerService>();
+        services.AddScoped<
+            IIntegrationEventConsumer<InvitationCreatedIntegrationEvent>,
+            InvitationCreatedIntegrationEventConsumer>();
+        services.AddSingleton<IEmailSender, LocalEmailSender>();
+        services.AddSingleton<IPaymentGateway, LocalPaymentGateway>();
 
         services.AddHostedService<ReservationHoldExpiryJob>();
         services.AddHostedService<EventReminderDispatchJob>();

@@ -87,13 +87,13 @@ Reference: `domain-model-specification.md` BC-1 (Identity & Access), BC-6 (Notif
 
 **BR-04 — Expiry is configurable per-invitation:** The default expiry window is 7 days. The Owner may specify a different window when creating the invitation via `expiresInDays` (within system-imposed bounds: min 1 day, max 30 days).
 
-**BR-05 — Acceptance is idempotent with respect to role assignment:** If the invitee already holds the Staff role on the event (assigned via F-1.6 before the invitation was sent), accepting the invitation is a no-op or is rejected — not a duplicate assignment.
+**BR-05 — Acceptance is idempotent with respect to role assignment:** If the invitee already holds the Staff role on the event (assigned via F-1.6 before the invitation was sent), accepting the invitation leaves role state unchanged or is rejected — not a duplicate assignment.
 
 **BR-06 — Invitation token is unguessable and hashed:** The acceptance link contains a cryptographically random token. The token is stored as a SHA-256 hash in the database; acceptance works by hashing the incoming token and comparing. The token is single-use: once the invitation is accepted, revoked, or expired, the token is invalidated.
 
 **BR-07 — Registration-then-accept is atomic from the user's perspective:** When an invitee without an account registers via the invitation link, the registration and role assignment happen in sequence — the user sees themselves as Staff on the event immediately after completing registration.
 
-**BR-08 — Invitation email is a side effect:** Sending the invitation email is an asynchronous side effect (via BC-6 Notifications / RabbitMQ). The invitation record is created first; if email delivery fails, the invitation still exists and can be retried.
+**BR-08 — Invitation email is a side effect:** Sending the invitation email is an asynchronous side effect (via BC-6 Notifications / Async workflow). The invitation record is created first; if email delivery fails, the invitation still exists and can be retried.
 
 ## 4. UI Behavior **or** API Contract
 
@@ -147,14 +147,14 @@ Reference: `domain-model-specification.md` BC-1 (Identity & Access), BC-6 (Notif
 
 **MinIO:** No impact.
 
-**RabbitMQ:** An integration event (`EVT-InvitationCreated`) is published when a new invitation is created, consumed by BC-6 (Notifications) to send the email. If email delivery fails, the invitation record persists and the message can be retried.
+**Async workflow:** An integration event (`EVT-InvitationCreated`) is published when a new invitation is created, consumed by BC-6 (Notifications) to send the email. If email delivery fails, the invitation record persists and the message can be retried.
 
 ## 6. Real-Time & Consistency
 
 **N/A** for this slice. Invitations are request-scoped operations; no SignalR push is required.
 
 **Consistency:**
-- Creating an invitation and publishing the email event: the invitation record is written in the current transaction; the RabbitMQ message is published after commit (standard integration event pattern per `technical-design.md` §4/§5).
+- Creating an invitation and publishing the email event: the invitation record is written in the current transaction; the Async workflow workflow is invoked after commit (standard integration event pattern per `technical-design.md` §4/§5).
 - Accepting an invitation and assigning the role: both happen in the same transaction (the invitation status changes to Accepted and the `event_user_role` row is inserted in one unit of work).
 
 ## 7. Security & Privacy
@@ -175,7 +175,7 @@ Reference: `domain-model-specification.md` BC-1 (Identity & Access), BC-6 (Notif
 
 **EC-01:** GIVEN an invitation is Pending for alice@example.com, WHEN the Owner sends another invitation to the same email for the same event, THEN the operation is rejected with `INVITATION_ALREADY_PENDING`.
 
-**EC-02:** GIVEN an invitation is Pending, WHEN the invitee independently registers an account (not via the invitation link) and the Owner assigns them Staff via F-1.6, THEN the invitation can still be accepted but becomes a no-op (the user already has the role) — or the system rejects the acceptance with `ROLE_ALREADY_ASSIGNED`.
+**EC-02:** GIVEN an invitation is Pending, WHEN the invitee independently registers an account (not via the invitation link) and the Owner assigns them Staff via F-1.6, THEN the invitation can still be accepted without changing role state (the user already has the role) — or the system rejects the acceptance with `ROLE_ALREADY_ASSIGNED`.
 
 **EC-03:** GIVEN an invitation is Pending, WHEN the invitee's email is assigned the Owner role via F-1.6 (ownership transfer), THEN the invitation can still be accepted but the acceptance is rejected because the user already has a role (Owner) on the event.
 
@@ -197,16 +197,16 @@ Reference: `domain-model-specification.md` BC-1 (Identity & Access), BC-6 (Notif
 - F-1.1 (Register an organizer account) — invitees without accounts must be able to register.
 - F-1.5 (Define roles and permissions) — the Staff role and its permissions must be defined.
 - F-1.6 (Assign roles to users per event) — acceptance creates a role assignment using the same mechanism.
-- F-7.2 (Deliver tickets by email) — establishes the email delivery infrastructure (BC-6, `IEmailSender` via RabbitMQ) that invitation emails reuse.
+- F-7.2 (Deliver tickets by email) — establishes the email delivery infrastructure (BC-6, `IEmailSender` via Async workflow) that invitation emails reuse.
 
 **Risks:**
-- **RSK-I1 — Email delivery reliability:** If the email provider is down or the email bounces, the invitation is created but the invitee never receives it. Mitigation: the invitation list shows Pending status so the Owner can see it was not accepted; retry logic on the RabbitMQ consumer.
+- **RSK-I1 — Email delivery reliability:** If the email provider is down or the email bounces, the invitation is created but the invitee never receives it. Mitigation: the invitation list shows Pending status so the Owner can see it was not accepted; retry logic on the Async workflow consumer.
 - **RSK-I2 — Token leakage:** If an invitation link is forwarded or leaked, anyone with the link can accept it (if they can register with that email). Mitigation: the token is single-use and time-limited; the email is fixed at creation.
 - **RSK-I3 — Stale invitations:** Owners may forget to revoke old invitations. Mitigation: automatic expiry handles this; the default 7-day window is short enough to limit exposure.
 
 ## 10. Assumptions
 
-- **ASM-I1:** The invitation system reuses the existing email delivery infrastructure from F-7.2 (RabbitMQ → Notifications BC → `IEmailSender`). If F-7.2's email pipeline is not yet available, this feature cannot be fully completed.
+- **ASM-I1:** The invitation system reuses the existing email delivery infrastructure from F-7.2 (Async workflow → Notifications BC → `IEmailSender`). If F-7.2's email pipeline is not yet available, this feature cannot be fully completed.
 - **ASM-I2:** Invitations are limited to the Staff role only. The Owner role is never assigned via invitation — always via direct assignment (F-1.6).
 - **ASM-I3:** The invitation acceptance page is a simple web page served by the frontend (web/). It is not a deep link into a mobile app.
 - **ASM-I4:** There is no concept of "invitation groups" or "bulk invitations." Each invitation is for one email address.

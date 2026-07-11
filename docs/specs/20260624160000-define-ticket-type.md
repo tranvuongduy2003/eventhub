@@ -115,12 +115,12 @@ Referenced from `domain-model-specification.md`:
 - **PostgreSQL:** A new row is inserted in the ticket types table (within the `app` schema), linked to the event via a foreign key. Fields: `id`, `event_id`, `name`, `price_amount`, `price_currency`, `capacity`, `sold` (default 0), `reserved` (default 0). The event's `row_version` optimistic concurrency token is incremented.
 - **Redis:** No direct cache impact. Ticket type data becomes visible through the event query path, which may cache independently.
 - **MinIO:** No change — no binary assets involved in ticket type creation.
-- **RabbitMQ:** No integration events emitted for ticket type creation at this stage. `EVT-TicketTypeAdded` is a domain event handled in-process if needed by future features.
+- **Async workflow:** No integration events emitted for ticket type creation at this stage. `EVT-TicketTypeAdded` is a domain event handled in-process if needed by future features.
 
 ## 6. Real-Time & Consistency
 
 - **Strong consistency:** Adding a ticket type is a single-transaction mutation on the Event aggregate. Optimistic concurrency prevents conflicting edits (e.g., two users adding ticket types to the same event simultaneously — one will get a 409 conflict and must retry).
-- **No integration events:** Ticket type creation does not cross bounded context boundaries. No RabbitMQ message is emitted.
+- **No integration events:** Ticket type creation does not cross bounded context boundaries. No asynchronous message is emitted.
 - **N/A for SignalR (MVP):** Real-time push for ticket type changes is not required. It becomes relevant in EP-11 (live sales monitoring).
 
 ## 7. Security & Privacy

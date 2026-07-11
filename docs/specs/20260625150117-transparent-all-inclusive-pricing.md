@@ -112,7 +112,7 @@ If the price changes between the attendee viewing the event page and placing the
 
 **Redis:** No caching of prices for the write path. Read-side caching of event page data (ticket types + prices) is permitted since it is rebuildable from PostgreSQL.
 
-**RabbitMQ:** No new integration events. Price transparency is enforced at the point of display and calculation, not through messaging.
+**Async workflow:** No new integration events. Price transparency is enforced at the point of display and calculation, not through messaging.
 
 ## 6. Real-Time & Consistency
 

@@ -22,7 +22,7 @@ Agents should read the smallest relevant set of `docs/product.md`, `docs/feature
 
 - Modular monolith with bounded contexts and invariants in `docs/technical.md`.
 - PostgreSQL is authoritative; Redis is rebuildable cache; MinIO stores binary assets.
-- RabbitMQ is the integration-event broker for asynchronous bounded-context work.
+- `System.Threading.Channels` backs in-process integration events for asynchronous bounded-context work.
 - React 19 + Vite frontend consumes generated OpenAPI types.
 - .NET Aspire AppHost is the local topology source of truth. Do not add hand-authored Docker Compose.
 
@@ -58,7 +58,7 @@ Create local `.env` files from the examples when needed. Do not commit secrets o
 dotnet run --project src/AppHost/EventHub.AppHost.csproj
 ```
 
-Aspire exposes the API, web app, PostgreSQL, Redis, MinIO, RabbitMQ, Seq, and seeder resources through the dashboard.
+Aspire exposes the API, web app, PostgreSQL, Redis, MinIO, seeder, and OpenTelemetry signals through the dashboard.
 
 ## MCP Servers
 

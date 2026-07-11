@@ -129,7 +129,7 @@ The `EventUserRole` table introduced in F-1.5 stores role assignments. For F-1.6
 
 **MinIO:** No impact.
 
-**RabbitMQ:** No impact. Role changes could emit integration events for audit logging (F-1.9) in the future, but that is out of scope here.
+**Async workflow:** No impact. Role changes could emit integration events for audit logging (F-1.9) in the future, but that is out of scope here.
 
 ## 6. Real-Time & Consistency
 
@@ -157,7 +157,7 @@ The `EventUserRole` table introduced in F-1.5 stores role assignments. For F-1.6
 
 **EC-03:** GIVEN a user is Staff on an event, WHEN the Owner assigns them the Owner role (ownership transfer), THEN the user's role is updated from Staff to Owner (not a new row inserted), and the previous Owner becomes Staff.
 
-**EC-04:** GIVEN a user has no role on an event, WHEN the Owner revokes that user's role, THEN the operation is a no-op or returns a clear message — there is nothing to revoke.
+**EC-04:** GIVEN a user has no role on an event, WHEN the Owner revokes that user's role, THEN the operation leaves state unchanged or returns a clear message — there is nothing to revoke.
 
 **EC-05:** GIVEN the Owner assigns another user as Owner (transfer), WHEN I check the previous Owner's role, THEN they are now Staff — not removed from the event entirely. They retain Check-in and Reporting permissions.
 

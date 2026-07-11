@@ -106,7 +106,7 @@ This feature is primarily a domain model concern. The UI and API surface is mini
 
 **MinIO:** No impact.
 
-**RabbitMQ:** No impact.
+**Async workflow:** No impact.
 
 ## 6. Real-Time & Consistency
 

@@ -133,7 +133,7 @@ github_issue: 2
 
 **MinIO:** No impact.
 
-**RabbitMQ:** `EVT-TicketTypeAdded` and per-type `EVT-EventSoldOut` are published as integration events for downstream consumers (Reporting, Realtime).
+**Async workflow:** `EVT-TicketTypeAdded` and per-type `EVT-EventSoldOut` are published as integration events for downstream workflows (Reporting, Realtime).
 
 ## 6. Real-Time & Consistency
 

@@ -122,7 +122,7 @@ Referenced from `domain-model-specification.md`:
 - **PostgreSQL:** Read-only query against the `events` table, joining `ticket_types` for the event. Uses the `slug` index for lookup. `AsNoTracking` since this is a read query. No writes.
 - **Redis:** The public event page is a candidate for response caching (TTL of 30–60 seconds) since event data changes infrequently. Cache invalidation on event update/publish/close/cancel can be addressed in a follow-up; for MVP, a short TTL is sufficient.
 - **MinIO:** The cover image URL is resolved from the stored object reference. The API returns the URL; the browser fetches the image directly from MinIO.
-- **RabbitMQ:** No impact — this is a pure read.
+- **Async workflow:** No impact — this is a pure read.
 
 ## 6. Real-Time & Consistency
 

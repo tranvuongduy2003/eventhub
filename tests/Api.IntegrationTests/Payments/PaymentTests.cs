@@ -46,7 +46,7 @@ public sealed class PaymentTests(IntegrationTestFixture fixture)
         payment!.Amount.Should().Be(order.TotalAmount);
         payment.Currency.Should().Be(order.TotalCurrency);
         payment.RedirectUrl.Should().Be("https://example.test/success");
-        payment.ProviderReference.Should().StartWith($"noop-{order.OrderId}-");
+        payment.ProviderReference.Should().StartWith($"local-payment-{order.OrderId}-");
 
         await using var scope = factory.Services.CreateAsyncScope();
         var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();

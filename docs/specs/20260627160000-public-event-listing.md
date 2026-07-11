@@ -131,7 +131,7 @@ A public read endpoint that returns the listing data:
 - **PostgreSQL:** No schema changes. The listing query reads from the existing `Event` and `TicketType` tables. A query filters on `Status = Published` and `StartDate > now()`, ordered by `StartDate asc`. The lowest ticket price is derived from the `TicketType` entities associated with each event.
 - **Redis:** The listing response is a good candidate for caching — the data changes infrequently (only when an event is published, edited, or tickets sell out). A 30–60 second TTL is appropriate. Cache invalidation can be driven by the same events that affect the public event page cache.
 - **MinIO:** No impact — cover image URLs are already stored; the listing reuses them.
-- **RabbitMQ:** No impact — this is a read-only concern.
+- **Async workflow:** No impact — this is a read-only concern.
 
 ## 6. Real-Time & Consistency
 

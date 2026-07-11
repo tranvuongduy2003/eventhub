@@ -12,7 +12,7 @@ Backend topology:
 - PostgreSQL as authoritative persistence
 - Redis as rebuildable cache
 - MinIO for binary assets
-- RabbitMQ for integration events across bounded contexts
+- `System.Threading.Channels` for in-process integration events across bounded contexts
 
 Frontend topology:
 
@@ -59,7 +59,7 @@ When lower-level instructions or code drift from a higher-level source, follow t
 6. Aspire AppHost is the local topology source of truth. Do not add hand-authored `docker-compose.yml`.
 7. `EventHub.ServiceDefaults` is mandatory for `Api`.
 8. PostgreSQL is authoritative. Redis is rebuildable cache only. MinIO stores binary assets.
-9. Domain model follows `technical.md`: modular-monolith boundaries, aggregate invariants, typed identities, and idempotent RabbitMQ integration events across bounded contexts.
+9. Domain model follows `technical.md`: modular-monolith boundaries, aggregate invariants, typed identities, and idempotent Channel-based integration events across bounded contexts.
 10. Tests must be meaningful and selective: Domain unit tests, Api integration tests, and Playwright e2e only when behavior crosses the UI boundary or needs browser verification.
 11. Frontend route guards are UX support only. Protected operations must be enforced on the backend.
 12. Do not add production dependencies without explicit approval and a license check.

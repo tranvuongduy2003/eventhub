@@ -134,7 +134,7 @@ After `200` on login, the browser holds a session cookie usable for `GET /api/au
 | **PostgreSQL** | No schema changes. Sessions may be stored server-side (PostgreSQL or Redis) per Tech §7 configuration. The user table is read-only for this slice (credential verification). |
 | **Redis** | If sessions are stored in Redis: session record created on sign-in, deleted on sign-out, auto-expires per TTL. Redis is rebuildable; the authoritative user record stays in PostgreSQL. |
 | **MinIO** | None. |
-| **RabbitMQ** | None. Sign-in/sign-out are synchronous request/response flows with no integration events. |
+| **Async workflow** | None. Sign-in/sign-out are synchronous request/response flows with no integration events. |
 
 ## 6. Real-Time & Consistency
 

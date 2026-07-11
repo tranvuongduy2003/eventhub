@@ -91,7 +91,7 @@ No live updates are required in this slice. Realtime monitoring remains in EP-11
 - Mixed free and paid tickets count toward sold and attendance; revenue only sums captured/confirmed gross amounts.
 - Cancelled or refunded orders must not inflate active attendance or revenue once those states exist.
 - CSV fields that contain commas, quotes, or line breaks are escaped.
-- A message to an event with no attendees is accepted only if the product deliberately treats it as a no-op; otherwise it returns a clear validation message.
+- A message to an event with no attendees is accepted only if the product deliberately treats it as an idempotent request with no delivery targets; otherwise it returns a clear validation message.
 - Reminder lead times that would schedule after the event starts are rejected.
 
 ## Dependencies
@@ -103,7 +103,7 @@ No live updates are required in this slice. Realtime monitoring remains in EP-11
 ## Assumptions
 
 - This slice may use current authoritative tables directly if persistent reporting projections are not yet present, while preserving the Reporting & Audience bounded-context language at the Application/API boundary.
-- The MVP email adapter may be no-op in local development, but the Application behavior still queues/sends through the email port.
+- The MVP email adapter records delivery intent in local development, and the Application behavior still queues/sends through the email port.
 - Reminder background scheduling can be implemented with the repository's existing background-job style rather than adding a new infrastructure dependency.
 
 ## Out Of Scope
@@ -128,4 +128,3 @@ No live updates are required in this slice. Realtime monitoring remains in EP-11
 - `.codex/tmp/telemetry/`: N/A - product slice only; no harness behavior changes.
 - `scripts/agent/`: N/A - product slice only; no harness behavior changes.
 - Workflow surfaces (`scripts/agent/`, `.agents/skills/`, `.codex/hooks/`, `scripts/agent/`, `AGENTS.md`): N/A - product slice only; no harness behavior changes.
-

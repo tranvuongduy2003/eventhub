@@ -126,7 +126,7 @@ After `201`, the browser holds a session cookie usable for `GET /api/auth/me` (s
 | **PostgreSQL** | New row in authoritative user table: stable user id, normalized email (unique index), display name (no uniqueness constraint), password hash, organizer role, created timestamp. |
 | **Redis** | Session record written after successful commit (rebuildable cache; not source of truth). |
 | **MinIO** | None for this slice. |
-| **RabbitMQ** | None required for MVP registration; EVT-UserRegistered may be handled in-process initially. |
+| **Async workflow** | None required for MVP registration; EVT-UserRegistered may be handled in-process initially. |
 
 ## 6. Real-Time & Consistency
 
