@@ -78,10 +78,7 @@ export type SearchCheckInTicketsResponse = ApiJsonResponse<
   'get'
 >
 export type DoorCountsResponse = ApiJsonResponse<'/api/events/{eventId}/check-ins/counts', 'get'>
-export type BatchCheckInTicketsRequest = ApiJsonBody<
-  '/api/events/{eventId}/check-ins/sync',
-  'post'
->
+export type BatchCheckInTicketsRequest = ApiJsonBody<'/api/events/{eventId}/check-ins/sync', 'post'>
 export type BatchCheckInTicketsResponse = ApiJsonResponse<
   '/api/events/{eventId}/check-ins/sync',
   'post'
@@ -105,7 +102,11 @@ export function searchCheckInTickets(eventId: number, query: string, signal?: Ab
   )
 }
 
-export function checkInByTicketId(eventId: number, ticketId: number | string, signal?: AbortSignal) {
+export function checkInByTicketId(
+  eventId: number,
+  ticketId: number | string,
+  signal?: AbortSignal,
+) {
   return apiClient.post<CheckInTicketResponse>(
     `/api/events/${eventId}/check-ins/tickets/${ticketId}`,
     undefined,
