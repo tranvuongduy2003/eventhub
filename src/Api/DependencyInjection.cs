@@ -1,8 +1,10 @@
 using System.Net;
 using EventHub.Api.Auth;
+using EventHub.Api.Hubs;
 using EventHub.Api.Middleware;
 using EventHub.Api.Options;
 using EventHub.Application.Abstractions.Auth;
+using EventHub.Application.Realtime;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 
@@ -14,15 +16,17 @@ public static class DependencyInjection
         this IServiceCollection services,
         IHostEnvironment environment)
     {
+        services.AddOptions<CorsOptions>()
+            .BindConfiguration(CorsOptions.SectionName);
+
         if (environment.IsDevelopment())
         {
-            services.AddOptions<CorsOptions>()
-                .BindConfiguration(CorsOptions.SectionName);
             services.AddCors();
         }
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserAccessor, CurrentUserAccessor>();
+        services.AddScoped<IRealtimeSalesInventoryNotifier, SignalRRealtimeSalesInventoryNotifier>();
 
         services.AddAuthentication(SessionAuthenticationDefaults.Scheme)
             .AddScheme<AuthenticationSchemeOptions, SessionAuthenticationHandler>(
@@ -60,6 +64,7 @@ public static class DependencyInjection
         application.UseMiddleware<ExceptionHandlingMiddleware>();
         application.UseMiddleware<OpenGraphMiddleware>();
         application.UseMiddleware<InvalidRequestMiddleware>();
+        application.UseEventMonitoringHubOriginProtection();
 
         application.UseAuthentication();
         application.UseAuthorization();
@@ -93,4 +98,52 @@ public static class DependencyInjection
         return IPAddress.TryParse(uri.Host, out var address)
             && IPAddress.IsLoopback(address);
     }
+
+    private static IApplicationBuilder UseEventMonitoringHubOriginProtection(
+        this IApplicationBuilder application) =>
+        application.Use(async (context, next) =>
+        {
+            if (!context.Request.Path.StartsWithSegments("/hubs/events")
+                || !context.WebSockets.IsWebSocketRequest
+                || !context.Request.Headers.TryGetValue("Origin", out var originValues))
+            {
+                await next(context);
+                return;
+            }
+
+            if (IsAllowedHubOrigin(context, originValues.ToString()))
+            {
+                await next(context);
+                return;
+            }
+
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        });
+
+    private static bool IsAllowedHubOrigin(HttpContext context, string origin)
+    {
+        if (!Uri.TryCreate(origin, UriKind.Absolute, out var originUri))
+        {
+            return false;
+        }
+
+        if (string.Equals(originUri.Scheme, context.Request.Scheme, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(originUri.Host, context.Request.Host.Host, StringComparison.OrdinalIgnoreCase)
+            && originUri.Port == (context.Request.Host.Port ?? DefaultPort(context.Request.Scheme)))
+        {
+            return true;
+        }
+
+        var allowedOrigins = context.RequestServices
+            .GetRequiredService<IOptions<CorsOptions>>()
+            .Value
+            .AllowedOrigins;
+
+        return allowedOrigins.Any(allowedOrigin =>
+            string.Equals(allowedOrigin, origin, StringComparison.OrdinalIgnoreCase)
+            && IsAllowedDevelopmentOrigin(allowedOrigin));
+    }
+
+    private static int DefaultPort(string scheme) =>
+        string.Equals(scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ? 443 : 80;
 }

@@ -58,6 +58,12 @@ public sealed class AudienceResultsTests(IntegrationTestFixture fixture)
         results.RootElement.GetProperty("noShowCount").GetInt32().Should().Be(2);
         results.RootElement.GetProperty("checkInRate").GetDecimal().Should().BeApproximately(0.3333m, 0.0001m);
         results.RootElement.GetProperty("ticketsSoldByType").GetArrayLength().Should().Be(2);
+        var generalSales = results.RootElement.GetProperty("ticketsSoldByType")[0];
+        generalSales.GetProperty("ticketTypeName").GetString().Should().Be("General Admission");
+        generalSales.GetProperty("capacity").GetInt32().Should().Be(10);
+        generalSales.GetProperty("soldCount").GetInt32().Should().Be(2);
+        generalSales.GetProperty("reservedCount").GetInt32().Should().Be(1);
+        generalSales.GetProperty("remainingCount").GetInt32().Should().Be(7);
     }
 
     [Fact]
@@ -212,7 +218,7 @@ public sealed class AudienceResultsTests(IntegrationTestFixture fixture)
             PriceCurrency = "VND",
             Capacity = 10,
             Sold = 2,
-            Reserved = 0,
+            Reserved = 1,
             CreatedAt = Now,
             UpdatedAt = Now,
         };

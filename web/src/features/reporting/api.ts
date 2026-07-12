@@ -1,89 +1,36 @@
 import { apiClient } from '@/lib/api'
+import type { ApiJsonBody, ApiJsonResponse } from '@/lib/api'
 
-export type EventAttendeeResponse = {
-  name: string
-  email: string
-  ticketTypeId: number
-  ticketTypeName: string
-  orderId: number
-  ticketId: number
-  checkedIn: boolean
-  checkedInAt: string | null
-}
-
-export type EventAttendeeListResponse = {
-  attendees: EventAttendeeResponse[]
-}
-
-export type TicketTypeSalesResponse = {
-  ticketTypeId: number
-  ticketTypeName: string
-  soldCount: number
-  revenueAmount: number
-  revenueCurrency: string
-}
-
-export type EventResultsResponse = {
-  eventId: number
-  eventTitle: string
-  totalRevenueAmount: number
-  totalRevenueCurrency: string
-  issuedCount: number
-  checkedInCount: number
-  noShowCount: number
-  checkInRate: number
-  ticketsSoldByType: TicketTypeSalesResponse[]
-}
-
-export type OwnedEventOverviewResponse = {
-  eventId: number
-  title: string
-  status: string
-  startsAt: string | null
-  timeZoneId: string | null
-  soldCount: number
-  totalRevenueAmount: number
-  totalRevenueCurrency: string
-  checkedInCount: number
-  issuedCount: number
-}
-
-export type StaffEventOverviewResponse = {
-  eventId: number
-  title: string
-  status: string
-  startsAt: string | null
-  timeZoneId: string | null
-  checkedInCount: number
-  issuedCount: number
-}
-
-export type OrganizerAudienceOverviewResponse = {
-  ownedEvents: OwnedEventOverviewResponse[]
-  staffEvents: StaffEventOverviewResponse[]
-}
-
-export type SendAttendeeMessageRequest = {
-  subject: string
-  body: string
-}
-
-export type SendAttendeeMessageResponse = {
-  acceptedRecipientCount: number
-}
-
-export type EventReminderSettingsRequest = {
-  enabled: boolean
-  leadTimeMinutes: number
-}
-
-export type EventReminderSettingsResponse = {
-  eventId: number
-  enabled: boolean
-  leadTimeMinutes: number
-  updatedAt: string
-  lastSentAt: string | null
-}
+export type EventAttendeeListResponse = ApiJsonResponse<
+  '/api/events/{eventId}/audience/attendees',
+  'get'
+>
+export type EventAttendeeResponse = EventAttendeeListResponse['attendees'][number]
+export type EventResultsResponse = ApiJsonResponse<'/api/events/{eventId}/results', 'get'>
+export type TicketTypeSalesResponse = EventResultsResponse['ticketsSoldByType'][number]
+export type OrganizerAudienceOverviewResponse = ApiJsonResponse<
+  '/api/organizer/audience/events',
+  'get'
+>
+export type OwnedEventOverviewResponse = OrganizerAudienceOverviewResponse['ownedEvents'][number]
+export type StaffEventOverviewResponse = OrganizerAudienceOverviewResponse['staffEvents'][number]
+export type SendAttendeeMessageRequest = ApiJsonBody<
+  '/api/events/{eventId}/audience/messages',
+  'post'
+>
+export type SendAttendeeMessageResponse = ApiJsonResponse<
+  '/api/events/{eventId}/audience/messages',
+  'post',
+  202
+>
+export type EventReminderSettingsRequest = ApiJsonBody<
+  '/api/events/{eventId}/audience/reminder',
+  'put'
+>
+export type EventReminderSettingsResponse = ApiJsonResponse<
+  '/api/events/{eventId}/audience/reminder',
+  'put'
+>
 
 export function getOrganizerAudienceOverview(signal?: AbortSignal) {
   return apiClient.get<OrganizerAudienceOverviewResponse>('/api/organizer/audience/events', {

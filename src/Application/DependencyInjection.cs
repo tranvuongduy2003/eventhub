@@ -2,6 +2,7 @@ using EventHub.Application.Abstractions.Auth;
 using EventHub.Application.Abstractions.Services;
 using EventHub.Application.Behaviors;
 using EventHub.Application.Options;
+using EventHub.Application.Realtime;
 using EventHub.Application.Services;
 using FluentValidation;
 using MediatR;
@@ -21,7 +22,11 @@ public static partial class DependencyInjection
 
         services.AddScoped<IPendingDomainEventsCollector, PendingDomainEventsCollector>();
         services.AddScoped<IPendingSessionCacheCollector, PendingSessionCacheCollector>();
+        services.AddScoped<
+            IPendingRealtimeSalesInventoryUpdateCollector,
+            PendingRealtimeSalesInventoryUpdateCollector>();
 
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PostCommitRealtimeSalesInventoryBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(DomainEventDispatchBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));

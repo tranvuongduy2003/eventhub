@@ -154,7 +154,10 @@ internal sealed class ReportingEndpoint : IEndpoint
         new(
             sales.TicketTypeId,
             sales.TicketTypeName,
+            sales.Capacity,
             sales.SoldCount,
+            sales.ReservedCount,
+            sales.RemainingCount,
             sales.RevenueAmount,
             sales.RevenueCurrency);
 

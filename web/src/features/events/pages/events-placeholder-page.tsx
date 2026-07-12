@@ -10,6 +10,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { getOrganizerAudienceOverview } from '@/features/reporting/api'
 import { formatPrice } from '@/lib/utils/format-price'
 
+function numeric(value: string | number) {
+  return typeof value === 'number' ? value : Number(value)
+}
+
 export function EventsPlaceholderPage() {
   const eventsQuery = useQuery({
     queryKey: ['organizer-audience-overview'],
@@ -89,7 +93,7 @@ export function EventsPlaceholderPage() {
                   </p>
                   <p className="text-muted-foreground mt-1 text-xs">
                     {event.soldCount} sold .{' '}
-                    {formatPrice(event.totalRevenueAmount, event.totalRevenueCurrency)} .{' '}
+                    {formatPrice(numeric(event.totalRevenueAmount), event.totalRevenueCurrency)} .{' '}
                     {event.checkedInCount}/{event.issuedCount} checked in
                   </p>
                 </div>

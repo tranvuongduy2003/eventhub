@@ -14,6 +14,7 @@ export const env = {
   defaultSymbol:
     typeof defaultSymbol === 'string' && defaultSymbol.length > 0 ? defaultSymbol : 'AAPL',
   simulationHubPath: '/hubs/simulation',
+  eventMonitoringHubPath: '/hubs/events',
 } as const
 
 export function buildApiUrl(path: string): string {
@@ -23,4 +24,17 @@ export function buildApiUrl(path: string): string {
 
 export function buildSimulationHubUrl(): string {
   return `${env.apiUrl}${env.simulationHubPath}`
+}
+
+export function buildEventMonitoringHubUrl(): string {
+  return `${env.apiUrl}${env.eventMonitoringHubPath}`
+}
+
+export function buildEventMonitoringWebSocketUrl(connectionToken?: string): string {
+  const url = new URL(`${env.apiUrl}${env.eventMonitoringHubPath}`)
+  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+  if (connectionToken) {
+    url.searchParams.set('id', connectionToken)
+  }
+  return url.toString()
 }

@@ -69,7 +69,7 @@ internal sealed class ReportingRepository(ApplicationDatabaseContext databaseCon
         var checkedInCount = await tickets
             .CountAsync(ticket => ticket.Status == TicketStatus.CheckedIn.ToString(), cancellationToken);
 
-        var ticketsSoldByType = await (
+        var ticketTypeRevenueByType = await (
             from line in databaseContext.OrderLines.AsNoTracking()
             join order in confirmedOrders on line.OrderId equals order.Id
             join ticketType in databaseContext.TicketTypes.AsNoTracking()
@@ -81,13 +81,32 @@ internal sealed class ReportingRepository(ApplicationDatabaseContext databaseCon
                 line.LineTotalCurrency,
             }
             into sales
-            orderby sales.Key.Name
-            select new TicketTypeSalesResult(
+            select new
+            {
                 sales.Key.TicketTypeId,
-                sales.Key.Name,
-                sales.Sum(item => item.line.Quantity),
-                sales.Sum(item => item.line.LineTotalAmount),
-                sales.Key.LineTotalCurrency))
+                SoldCount = sales.Sum(item => item.line.Quantity),
+                RevenueAmount = sales.Sum(item => item.line.LineTotalAmount),
+                RevenueCurrency = sales.Key.LineTotalCurrency,
+            })
+            .ToListAsync(cancellationToken);
+
+        var revenueByTicketType = ticketTypeRevenueByType.ToDictionary(
+            item => item.TicketTypeId,
+            item => item);
+
+        var ticketsSoldByType = await databaseContext.TicketTypes
+            .AsNoTracking()
+            .Where(ticketType => ticketType.EventId == eventId.Value)
+            .OrderBy(ticketType => ticketType.Name)
+            .Select(ticketType => new
+            {
+                ticketType.Id,
+                ticketType.Name,
+                ticketType.Capacity,
+                ticketType.Sold,
+                ticketType.Reserved,
+                ticketType.PriceCurrency,
+            })
             .ToListAsync(cancellationToken);
 
         return new EventResultsResult(
@@ -99,7 +118,21 @@ internal sealed class ReportingRepository(ApplicationDatabaseContext databaseCon
             checkedInCount,
             issuedCount - checkedInCount,
             issuedCount == 0 ? 0m : decimal.Round((decimal)checkedInCount / issuedCount, 4),
-            ticketsSoldByType);
+            ticketsSoldByType.Select(ticketType =>
+            {
+                var hasRevenue = revenueByTicketType.TryGetValue(ticketType.Id, out var revenue);
+                var remainingCount = Math.Max(0, ticketType.Capacity - ticketType.Sold - ticketType.Reserved);
+
+                return new TicketTypeSalesResult(
+                    ticketType.Id,
+                    ticketType.Name,
+                    ticketType.Capacity,
+                    ticketType.Sold,
+                    ticketType.Reserved,
+                    remainingCount,
+                    hasRevenue ? revenue!.RevenueAmount : 0m,
+                    hasRevenue ? revenue!.RevenueCurrency : ticketType.PriceCurrency);
+            }).ToList());
     }
 
     public async Task<OrganizerAudienceOverviewResult> GetOrganizerOverviewAsync(
