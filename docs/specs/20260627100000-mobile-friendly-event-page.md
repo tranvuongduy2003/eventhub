@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260627100000-mobile-friendly-event-page
 title: Mobile-friendly event page
 slug: mobile-friendly-event-page
-status: draft
+status: implemented
 created_at: 2026-06-27T10:00:00+07:00
 updated_at: 2026-06-27T10:00:00+07:00
 owner: builder
@@ -29,7 +29,7 @@ github_issue: 51
 
 # Feature: Mobile-friendly event page
 
-> Features: F-4.2 | Status: DRAFT | Date: 2026-06-27
+> Features: F-4.2 | status: implemented | Date: 2026-06-27
 > PRD: QG-4 (Mobile-friendly), G-4 (Make buying smooth on mobile), ASM-3 (Most attendees buy on a phone) | DDD: BC-2 (Event Management) | Tech: §7 (API surface)
 
 ## 1. Problem & Solution

@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260621150000-add-event-cover-image
 title: Add an event cover image
 slug: add-event-cover-image
-status: draft
+status: implemented
 created_at: 2026-06-21T15:00:00Z
 updated_at: 2026-06-21T15:00:00Z
 owner: builder
@@ -32,7 +32,7 @@ github_issue: 23
 
 # Feature: Add an event cover image
 
-> Features: F-2.2 | Status: DRAFT | Date: 2026-06-21
+> Features: F-2.2 | status: implemented | Date: 2026-06-21
 > PRD: DEC-3 (MVP scope), QG-1 (simplicity), QG-4 (mobile-friendly)
 > DDD: BC-2 Event Management, AGG-Event, VO-CoverImageRef
 > Tech: §5 (MinIO object storage)

@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260627160000-public-event-listing
 title: Public event listing
 slug: public-event-listing
-status: draft
+status: implemented
 created_at: 2026-06-27T16:00:00Z
 updated_at: 2026-06-27T16:00:00Z
 owner: builder
@@ -35,7 +35,7 @@ github_issue: 55
 
 # Feature: Public event listing
 
-> Features: F-4.4 | Status: DRAFT | Date: 2026-06-27
+> Features: F-4.4 | status: implemented | Date: 2026-06-27
 > PRD: G-4 (smooth mobile purchase), QG-1 (simplicity), QG-4 (mobile-friendly) | DDD: BC-2 AGG-Event, VO-EventStatus, VO-Slug | Tech: §5, §7
 
 ## 1. Problem & Solution

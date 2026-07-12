@@ -158,6 +158,8 @@ internal sealed class ReportingEndpoint : IEndpoint
             sales.SoldCount,
             sales.ReservedCount,
             sales.RemainingCount,
+            sales.IsSoldOut,
+            sales.IsLowStock,
             sales.RevenueAmount,
             sales.RevenueCurrency);
 

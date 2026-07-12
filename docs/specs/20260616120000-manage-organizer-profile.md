@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260616120000-manage-organizer-profile
 title: Manage organizer profile
 slug: manage-organizer-profile
-status: draft
+status: implemented
 created_at: 2026-06-16T12:00:00Z
 updated_at: 2026-06-16T12:30:00Z
 owner: builder
@@ -36,7 +36,7 @@ github_issue: 8
 
 # Feature: Manage organizer profile
 
-> Features: F-1.3 | Status: DRAFT | Date: 2026-06-16
+> Features: F-1.3 | status: implemented | Date: 2026-06-16
 > PRD: DEC-1, QG-1, QG-6 | DDD: BC-1, AGG-User | Tech: §5, §6, §7
 
 ## 1. Problem & Solution

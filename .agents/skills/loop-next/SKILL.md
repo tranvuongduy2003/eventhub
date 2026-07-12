@@ -26,8 +26,21 @@ mid-slice, and declaring "done" while the work is incomplete or drifts from the 
 2. **Read the artifacts.** Load the selected `docs/specs/<...>.md`,
    `.codex/tmp/implementation-plan.md` when present, `.codex/tmp/features.json`, and
    `.codex/tmp/codex-progress.md`.
+   Run an **area coverage audit** before choosing a slice:
+   - Compare `features.json.areaCoverage` with the spec and implementation plan, especially the
+     plan's `Area Coverage Matrix` when present.
+   - If the spec/plan requires `web`, at least one non-done or done feature must include `web/**`
+     files and frontend validation such as `yarn --cwd web build` or a narrower source-backed
+     frontend check.
+   - If the spec/plan requires `e2e`, at least one non-done or done feature must include `e2e/**`
+     files and a Playwright validation command, unless `areaCoverage.excludedAreas` records a
+     source-backed exclusion. A final verification-only feature does not satisfy this requirement.
+   - If a required area is missing from `features.json`, stop and repair the feature contract from
+     the approved plan before implementing more backend work.
    Pick the **first feature with status `pending`** (or resume the one marked `in-progress`). If none
-   remain `pending`/`in-progress`, report that the loop is complete and stop.
+   remain `pending`/`in-progress`, run the area coverage audit one final time. Report the loop
+   complete only if every required area has a completed feature and evidence; otherwise mark the
+   missing area slice `pending` and continue with it.
 3. **Mark it `in-progress`** in `features.json` and `codex-progress.md`.
 4. **Implement the single slice.** Delegate to the medium-reasoning `implementer` subagent (it reads
    the spec, plan, path-scoped rules, and the `backend`/`web`/`e2e` skill for the area it touches).
@@ -44,7 +57,8 @@ mid-slice, and declaring "done" while the work is incomplete or drifts from the 
    feature touches auth, payment/record data, sensitive user data, or external integrations).
    Address must-fix findings.
 7. **Acceptance gate (hard).** Run strong-reasoning `acceptance-verifier` against the selected spec
-   and this slice's acceptance criteria.
+   and this slice's acceptance criteria. Include the area coverage audit result in the verifier input
+   so it can fail closure when frontend/e2e obligations from the spec or plan were not implemented.
    - **PASS** -> continue to step 8.
    - **FAIL** -> go back to step 4, fix the missing/divergent/extra behavior, and re-verify. Do NOT
      mark the feature done while any FAIL remains.

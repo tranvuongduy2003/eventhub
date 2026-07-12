@@ -40,6 +40,14 @@ internal sealed class TicketsEndpoint : IEndpoint
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
+        endpoints.MapPost("/api/orders/{orderId}/tickets/{ticketId}/return", ReturnTicket)
+            .WithName("ReturnTicket")
+            .WithTags("Tickets")
+            .Produces<ReturnTicketResponse>()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+
         endpoints.MapGet("/api/me/tickets", GetMyTickets)
             .WithName("GetMyTickets")
             .WithTags("Tickets")
@@ -59,6 +67,19 @@ internal sealed class TicketsEndpoint : IEndpoint
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        endpoints.MapPost("/api/events/{eventId}/check-ins/sync", BatchCheckIn)
+            .WithName("BatchCheckInTickets")
+            .WithTags("Check-ins")
+            .RequireAuthorization()
+            .RequireCompleteJsonBody<BatchCheckInTicketsRequest>()
+            .Accepts<BatchCheckInTicketsRequest>("application/json")
+            .Produces<BatchCheckInTicketsResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
@@ -139,6 +160,22 @@ internal sealed class TicketsEndpoint : IEndpoint
         return result.ToHttpResult(ticket => Results.Ok(ToResponse(ticket)));
     }
 
+    private static async Task<IResult> ReturnTicket(
+        int orderId,
+        int ticketId,
+        ISender sender)
+    {
+        var result = await sender.Send(new ReturnTicketCommand(orderId, ticketId));
+
+        return result.ToHttpResult(returned => Results.Ok(new ReturnTicketResponse(
+            returned.TicketId,
+            returned.OrderId,
+            returned.EventId,
+            returned.TicketStatus,
+            returned.OrderStatus,
+            returned.PaymentStatus)));
+    }
+
     private static async Task<IResult> GetMyTickets(ISender sender)
     {
         var result = await sender.Send(new GetMyTicketsQuery());
@@ -158,6 +195,30 @@ internal sealed class TicketsEndpoint : IEndpoint
         var result = await sender.Send(new CheckInTicketByCodeCommand(eventId, request.Code));
 
         return result.ToHttpResult(ticket => Results.Ok(ToResponse(ticket)));
+    }
+
+    private static async Task<IResult> BatchCheckIn(
+        int eventId,
+        BatchCheckInTicketsRequest request,
+        ISender sender)
+    {
+        var result = await sender.Send(new BatchCheckInTicketsCommand(
+            eventId,
+            request.Tickets
+                .Select(ticket => new Application.Tickets.Commands.BatchCheckInTicketRequest(
+                    ticket.ClientScanId,
+                    ticket.Code,
+                    ticket.ScannedAt))
+                .ToList()));
+
+        return result.ToHttpResult(batch => Results.Ok(new BatchCheckInTicketsResponse(
+            batch.Results.Select(item => new BatchCheckInTicketResponse(
+                item.ClientScanId,
+                item.Code,
+                item.Accepted,
+                item.Status,
+                item.Reason,
+                item.Ticket is null ? null : ToResponse(item.Ticket))).ToList())));
     }
 
     private static async Task<IResult> SearchCheckInTickets(

@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260616150533-optional-attendee-account
 title: Optional attendee account
 slug: optional-attendee-account
-status: draft
+status: implemented
 created_at: 2026-06-16T15:05:33Z
 updated_at: 2026-06-16T15:05:33Z
 owner: builder
@@ -35,7 +35,7 @@ github_issue: null
 
 # Feature: Optional attendee account
 
-> Features: F-1.4 | Status: DRAFT | Date: 2026-06-16
+> Features: F-1.4 | status: implemented | Date: 2026-06-16
 > PRD: DEC-3, QG-1, QG-6 | DDD: BC-1, AGG-User | Tech: §4, §5, §7
 
 ## 1. Problem & Solution

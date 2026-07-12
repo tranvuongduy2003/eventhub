@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260616020000-sign-in-and-sign-out
 title: Sign in and sign out
 slug: sign-in-and-sign-out
-status: draft
+status: implemented
 created_at: 2026-06-16T02:00:00+07:00
 updated_at: 2026-06-16T02:00:00+07:00
 owner: builder
@@ -39,7 +39,7 @@ github_issue: 6
 
 # Feature: Sign in and sign out
 
-> Features: F-1.2 | Status: DRAFT | Date: 2026-06-16
+> Features: F-1.2 | status: implemented | Date: 2026-06-16
 > PRD: DEC-3 (MVP spine) | DDD: BC-1 · AGG-Session · INV-3 | Tech: §5–7 (session auth, PostgreSQL)
 
 ## 1. Problem & Solution

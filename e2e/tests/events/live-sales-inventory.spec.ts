@@ -76,6 +76,7 @@ test.describe("Live sales inventory", () => {
 
     await expect(ticketTypeRow.getByRole("cell").nth(1)).toHaveText("1");
     await expect(ticketTypeRow.getByRole("cell").nth(2)).toHaveText("1 / 2");
+    await expect(ticketTypeRow.getByText("Low stock")).toBeVisible();
     await expect(organizerPage).toHaveURL(`/organizer/events/${eventId}/results`);
   });
 });

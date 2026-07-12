@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260627100000-scheduled-on-sale-window
 title: Scheduled On-Sale Window
 slug: scheduled-on-sale-window
-status: draft
+status: implemented
 created_at: 2026-06-27T10:00:00Z
 updated_at: 2026-06-27T10:00:00Z
 owner: builder
@@ -34,7 +34,7 @@ github_issue: 47
 
 # Feature: Scheduled On-Sale Window
 
-> Features: F-3.8 | Status: DRAFT | Date: 2026-06-27
+> Features: F-3.8 | status: implemented | Date: 2026-06-27
 > PRD: QG-1 (simplicity), QG-2 (transparency), QG-5 (correctness at small scale)
 > DDD: BC-2 Event Management, AGG-Event, ENT-TicketType, VO-SalesWindow, INV-14
 > Tech: §4 (CQRS pipeline), §6 (persistence, concurrency)

@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260625161104-inventory-and-no-oversell
 title: Inventory and No-Oversell Guarantee
 slug: inventory-and-no-oversell
-status: draft
+status: implemented
 created_at: 2026-06-25T16:11:04Z
 updated_at: 2026-06-25T16:11:04Z
 owner: builder
@@ -40,7 +40,7 @@ github_issue: 40
 
 # Feature: Inventory and No-Oversell Guarantee
 
-> Features: F-3.4 | Status: DRAFT | Date: 2026-06-25
+> Features: F-3.4 | status: implemented | Date: 2026-06-25
 > PRD: QG-5, RSK-5, 3.4 | DDD: INV-10, INV-12, INV-14, AGG-Event | Tech: 4, 6
 
 ## 1. Problem & Solution

@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260620230000-invite-staff-to-event
 title: Invite staff to an event
 slug: invite-staff-to-event
-status: draft
+status: implemented
 created_at: 2026-06-20T23:00:00Z
 updated_at: 2026-06-20T23:00:00Z
 owner: builder
@@ -36,7 +36,7 @@ github_issue: 19
 
 # Feature: Invite staff to an event
 
-> Features: F-1.8 | Status: DRAFT | Date: 2026-06-20
+> Features: F-1.8 | status: implemented | Date: 2026-06-20
 > PRD: DEC-3 (Next scope), QG-1 (simplicity), QG-5 (correct at small scale), QG-6 (responsible with data)
 > DDD: BC-1 (Identity & Access), BC-6 (Notifications), AGG-User, AGG-Event
 > Tech: §4 (CQRS pipeline), §5 (messaging/email), §6 (persistence), §7 (API conventions)

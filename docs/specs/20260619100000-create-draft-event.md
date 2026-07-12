@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260619100000-create-draft-event
 title: Create a draft event
 slug: create-draft-event
-status: draft
+status: implemented
 created_at: 2026-06-19T10:00:00+07:00
 updated_at: 2026-06-20T10:00:00+07:00
 owner: builder
@@ -38,7 +38,7 @@ github_issue: 11
 
 # Feature: Create a draft event
 
-> Features: F-2.1 | Status: DRAFT | Date: 2026-06-19
+> Features: F-2.1 | status: implemented | Date: 2026-06-19
 > PRD: DEC-3 (MVP spine), QG-1 (simplicity) | DDD: BC-2 · AGG-Event · INV-11 | Tech: §5–7 (PostgreSQL, session auth)
 
 ## 1. Problem & Solution

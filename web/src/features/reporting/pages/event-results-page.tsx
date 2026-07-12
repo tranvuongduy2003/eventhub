@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Download, Mail, Save } from 'lucide-react'
+import { AlertTriangle, Download, Mail, Save } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useParams } from 'react-router-dom'
@@ -216,6 +216,7 @@ export function EventResultsPage() {
                 <TableHead>Type</TableHead>
                 <TableHead>Sold</TableHead>
                 <TableHead>Remaining</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Revenue</TableHead>
               </TableRow>
             </TableHeader>
@@ -226,6 +227,18 @@ export function EventResultsPage() {
                   <TableCell>{ticketType.soldCount}</TableCell>
                   <TableCell>
                     {ticketType.remainingCount} / {ticketType.capacity}
+                  </TableCell>
+                  <TableCell>
+                    {ticketType.isSoldOut ? (
+                      <Badge variant="destructive">Sold out</Badge>
+                    ) : ticketType.isLowStock ? (
+                      <Badge variant="secondary">
+                        <AlertTriangle className="mr-1 size-3" aria-hidden />
+                        Low stock
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline">Available</Badge>
+                    )}
                   </TableCell>
                   <TableCell>
                     {formatPrice(numeric(ticketType.revenueAmount), ticketType.revenueCurrency)}

@@ -11,6 +11,10 @@ public interface IPaymentRepository
 
     Task<Payment?> GetLatestByOrderIdAsync(OrderId orderId, CancellationToken cancellationToken = default);
 
+    Task<List<Payment>> GetCapturedByOrderIdsAsync(
+        IReadOnlyCollection<OrderId> orderIds,
+        CancellationToken cancellationToken = default);
+
     Task<Payment?> GetByProviderReferenceAsync(string providerReference, CancellationToken cancellationToken = default);
 
     Task Update(Payment payment, CancellationToken cancellationToken = default);

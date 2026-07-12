@@ -130,6 +130,44 @@ public sealed class Ticket : AggregateRoot<TicketId>
         return replacementTicket;
     }
 
+    public void Void(DateTimeOffset voidedAt)
+    {
+        if (Status is TicketStatus.Void)
+        {
+            return;
+        }
+
+        if (Status is TicketStatus.CheckedIn)
+        {
+            throw new BusinessRuleValidationException(
+                "TICKET_ALREADY_CHECKED_IN",
+                "A checked-in ticket cannot be voided.");
+        }
+
+        Status = TicketStatus.Void;
+        Raise(new TicketVoidedEvent(Id, EventId, OrderId, Code, voidedAt));
+    }
+
+    public void Return(DateTimeOffset returnedAt)
+    {
+        if (Status is TicketStatus.CheckedIn)
+        {
+            throw new BusinessRuleValidationException(
+                "TICKET_ALREADY_CHECKED_IN",
+                "A checked-in ticket cannot be returned.");
+        }
+
+        if (Status is not TicketStatus.Valid)
+        {
+            throw new BusinessRuleValidationException(
+                "TICKET_NOT_VALID_FOR_RETURN",
+                "This ticket is not valid for return.");
+        }
+
+        Status = TicketStatus.Void;
+        Raise(new TicketReturnedEvent(Id, EventId, OrderId, TicketTypeId, Code, returnedAt));
+    }
+
     public static Ticket FromPersistence(
         TicketId id,
         EventId eventId,

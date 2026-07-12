@@ -31,6 +31,8 @@ internal sealed class SignalRRealtimeSalesInventoryNotifier(
                 ticketType.SoldCount,
                 ticketType.ReservedCount,
                 ticketType.RemainingCount,
+                ticketType.IsSoldOut,
+                ticketType.IsLowStock,
                 ticketType.RevenueAmount,
                 ticketType.RevenueCurrency)).ToList(),
             clock.UtcNow);
@@ -62,5 +64,7 @@ internal sealed record TicketTypeSalesInventoryMessage(
     int SoldCount,
     int ReservedCount,
     int RemainingCount,
+    bool IsSoldOut,
+    bool IsLowStock,
     decimal RevenueAmount,
     string RevenueCurrency);

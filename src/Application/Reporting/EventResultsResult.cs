@@ -18,5 +18,7 @@ public sealed record TicketTypeSalesResult(
     int SoldCount,
     int ReservedCount,
     int RemainingCount,
+    bool IsSoldOut,
+    bool IsLowStock,
     decimal RevenueAmount,
     string RevenueCurrency);

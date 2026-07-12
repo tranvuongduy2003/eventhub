@@ -249,7 +249,22 @@ Test-FileContains 'AGENTS.md' @(
 Test-FileContains '.agents/skills/cook/SKILL.md' @(
     'CLEAR_FOR_SUBSET',
     'scope narrowing',
-    'ready subset'
+    'ready subset',
+    'Area Coverage Matrix',
+    'Frontend and e2e coverage are first-class obligations',
+    'A generic final verification slice must not replace planned frontend or Playwright work'
+)
+
+Test-FileContains '.agents/skills/loop-init/SKILL.md' @(
+    'area preservation audit',
+    'areaCoverage',
+    'Do not collapse a planned frontend or e2e slice into a generic final verification slice'
+)
+
+Test-FileContains '.agents/skills/loop-next/SKILL.md' @(
+    'area coverage audit',
+    'A final verification-only feature does not satisfy this requirement',
+    'repair the feature contract'
 )
 
 Test-FileContains '.codex/agents/requirement-analyst.toml' @(
@@ -267,7 +282,15 @@ Test-FileContains '.codex/agents/spec-brainstormer.toml' @(
 Test-FileContains '.codex/agents/implementation-planner.toml' @(
     'CLEAR_FOR_SUBSET',
     'Residual Risks',
-    'deferred feature ids'
+    'deferred feature ids',
+    'Area Coverage Matrix',
+    'Do not let backend slices satisfy web or e2e obligations by implication'
+)
+
+Test-FileContains '.codex/agents/acceptance-verifier.toml' @(
+    'Run an area coverage audit',
+    'A generic final verification slice or backend integration test does not satisfy required',
+    '**Area coverage:**'
 )
 
 foreach ($agent in @(

@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260624160000-define-ticket-type
 title: Define a ticket type
 slug: define-ticket-type
-status: draft
+status: implemented
 created_at: 2026-06-24T16:00:00Z
 updated_at: 2026-06-24T16:00:00Z
 owner: builder
@@ -38,7 +38,7 @@ github_issue: 34
 
 # Feature: Define a ticket type
 
-> Features: F-3.1 | Status: DRAFT | Date: 2026-06-24
+> Features: F-3.1 | status: implemented | Date: 2026-06-24
 > PRD: DEC-1 (no platform fee), DEC-3 (MVP scope), QG-1 (simplicity), QG-2 (transparent pricing), QG-5 (no oversell) | DDD: BC-2 AGG-Event, ENT-TicketType, INV-10, INV-12, INV-13 | Tech: §4, §6, §7
 
 ## 1. Problem & Solution

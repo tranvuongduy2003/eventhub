@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260624142000-multiple-occurrences
 title: Multiple Occurrences / Sessions
 slug: multiple-occurrences
-status: draft
+status: implemented
 created_at: 2026-06-24T14:20:00+07:00
 updated_at: 2026-06-24T14:20:00+07:00
 owner: builder
@@ -33,7 +33,7 @@ github_issue: 1
 
 # Feature: Multiple Occurrences / Sessions
 
-> Features: F-2.7 | Status: DRAFT | Date: 2026-06-24
+> Features: F-2.7 | status: implemented | Date: 2026-06-24
 > PRD: QG-1 (simplicity), QG-5 (correctness) | DDD: BC-2, AGG-Event | Tech: §6
 
 ## 1. Problem & Solution

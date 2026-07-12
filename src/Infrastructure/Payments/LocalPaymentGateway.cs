@@ -17,4 +17,15 @@ public sealed class LocalPaymentGateway : IPaymentGateway
             RedirectUrl: request.SuccessUrl,
             ProviderReference: providerReference));
     }
+
+    public Task<PaymentRefundResult> RefundPaymentAsync(
+        PaymentRefundRequest request,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        return Task.FromResult(new PaymentRefundResult(
+            request.ProviderReference,
+            Applied: true));
+    }
 }

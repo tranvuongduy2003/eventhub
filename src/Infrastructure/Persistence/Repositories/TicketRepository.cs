@@ -63,6 +63,26 @@ internal sealed class TicketRepository(ApplicationDatabaseContext databaseContex
         return records.Select(TicketPersistenceMapper.ToDomain).ToList();
     }
 
+    public async Task<List<Ticket>> GetByOrderIdsAsync(
+        IReadOnlyCollection<OrderId> orderIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (orderIds.Count == 0)
+        {
+            return [];
+        }
+
+        var orderIdValues = orderIds.Select(orderId => orderId.Value).ToArray();
+        var records = await databaseContext.Tickets
+            .AsNoTracking()
+            .Where(ticket => orderIdValues.Contains(ticket.OrderId))
+            .OrderBy(ticket => ticket.OrderId)
+            .ThenBy(ticket => ticket.Id)
+            .ToListAsync(cancellationToken);
+
+        return records.Select(TicketPersistenceMapper.ToDomain).ToList();
+    }
+
     public async Task<List<Ticket>> GetByHolderEmailAsync(
         string normalizedEmail,
         CancellationToken cancellationToken = default)

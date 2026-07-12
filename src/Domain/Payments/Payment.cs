@@ -120,6 +120,32 @@ public sealed class Payment : AggregateRoot<PaymentId>
         return true;
     }
 
+    public bool Refund(DateTimeOffset refundedAt)
+    {
+        if (Status is PaymentStatus.Refunded)
+        {
+            return false;
+        }
+
+        if (Status is not PaymentStatus.Captured)
+        {
+            throw new BusinessRuleValidationException(
+                "PAYMENT_NOT_REFUNDABLE",
+                Status switch
+                {
+                    PaymentStatus.Initiated => "Cannot refund a payment that has not been captured.",
+                    PaymentStatus.Failed => "Cannot refund a failed payment.",
+                    _ => "The payment cannot be refunded in its current status.",
+                });
+        }
+
+        Status = PaymentStatus.Refunded;
+        RefundedAt = refundedAt;
+
+        Raise(new PaymentRefundedEvent(Id, OrderId, ProviderReference.Value, refundedAt));
+        return true;
+    }
+
     public static Payment FromPersistence(
         PaymentId id,
         OrderId orderId,

@@ -175,6 +175,32 @@ public sealed class Order : AggregateRoot<OrderId>
         Raise(new OrderCancelledEvent(Id, cancelledAt));
     }
 
+    public void MarkRefunded(DateTimeOffset refundedAt)
+    {
+        if (Status is OrderStatus.Refunded)
+        {
+            return;
+        }
+
+        if (Status is not OrderStatus.Confirmed)
+        {
+            throw new BusinessRuleValidationException(
+                "ORDER_NOT_REFUNDABLE",
+                Status switch
+                {
+                    OrderStatus.Pending => "Cannot refund a pending order.",
+                    OrderStatus.Expired => "Cannot refund an expired order.",
+                    OrderStatus.Cancelled => "Cannot refund a cancelled order.",
+                    _ => "The order cannot be refunded in its current status.",
+                });
+        }
+
+        Status = OrderStatus.Refunded;
+        CancelledAt = refundedAt;
+
+        Raise(new OrderRefundedEvent(Id, refundedAt));
+    }
+
     public void SetReservationId(ReservationId reservationId)
     {
         ReservationId = reservationId;

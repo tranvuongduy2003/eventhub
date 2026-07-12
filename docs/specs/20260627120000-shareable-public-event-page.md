@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260627120000-shareable-public-event-page
 title: Shareable public event page
 slug: shareable-public-event-page
-status: draft
+status: implemented
 created_at: 2026-06-27T12:00:00Z
 updated_at: 2026-06-27T12:00:00Z
 owner: builder
@@ -38,7 +38,7 @@ github_issue: 49
 
 # Feature: Shareable public event page
 
-> Features: F-4.1 | Status: DRAFT | Date: 2026-06-27
+> Features: F-4.1 | status: implemented | Date: 2026-06-27
 > PRD: DEC-3 (MVP scope), QG-1 (simplicity), QG-2 (transparent pricing), QG-4 (mobile-friendly), QG-5 (correctness) | DDD: BC-2 AGG-Event, INV-14 | Tech: §5, §7
 
 ## 1. Problem & Solution

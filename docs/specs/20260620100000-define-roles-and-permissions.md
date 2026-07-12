@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260620100000-define-roles-and-permissions
 title: Define roles and permissions
 slug: define-roles-and-permissions
-status: draft
+status: implemented
 created_at: 2026-06-20T10:00:00Z
 updated_at: 2026-06-20T10:00:00Z
 owner: builder
@@ -32,7 +32,7 @@ github_issue: 13
 
 # Feature: Define roles and permissions
 
-> Features: F-1.5 | Status: DRAFT | Date: 2026-06-20
+> Features: F-1.5 | status: implemented | Date: 2026-06-20
 > PRD: DEC-3 (MVP scope), QG-1 (simplicity), QG-5 (correct at small scale)
 > DDD: BC-1 (Identity & Access), AGG-User
 > Tech: §4 (CQRS pipeline), §6 (persistence), §7 (API conventions)

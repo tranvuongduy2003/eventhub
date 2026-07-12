@@ -197,6 +197,64 @@ components:
         - page
         - pageSize
       type: object
+    BatchCheckInTicketRequest:
+      properties:
+        clientScanId:
+          type: string
+        code:
+          type: string
+        scannedAt:
+          format: date-time
+          type: string
+      required:
+        - clientScanId
+        - code
+        - scannedAt
+      type: object
+    BatchCheckInTicketResponse:
+      properties:
+        accepted:
+          type: boolean
+        clientScanId:
+          type: string
+        code:
+          type: string
+        reason:
+          type:
+            - "null"
+            - string
+        status:
+          type: string
+        ticket:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/CheckInTicketResponse"
+      required:
+        - clientScanId
+        - code
+        - accepted
+        - status
+        - reason
+        - ticket
+      type: object
+    BatchCheckInTicketsRequest:
+      properties:
+        tickets:
+          items:
+            $ref: "#/components/schemas/BatchCheckInTicketRequest"
+          type: array
+      required:
+        - tickets
+      type: object
+    BatchCheckInTicketsResponse:
+      properties:
+        results:
+          items:
+            $ref: "#/components/schemas/BatchCheckInTicketResponse"
+          type: array
+      required:
+        - results
+      type: object
     CancelEventResponse:
       properties:
         cancelledAt:
@@ -1707,6 +1765,42 @@ components:
       required:
         - accepted
       type: object
+    ReturnTicketResponse:
+      properties:
+        eventId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        orderId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        orderStatus:
+          type: string
+        paymentStatus:
+          type:
+            - "null"
+            - string
+        ticketId:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        ticketStatus:
+          type: string
+      required:
+        - ticketId
+        - orderId
+        - eventId
+        - ticketStatus
+        - orderStatus
+        - paymentStatus
+      type: object
     ScheduleOccurrenceRequest:
       properties:
         address:
@@ -2143,6 +2237,10 @@ components:
           type:
             - integer
             - string
+        isLowStock:
+          type: boolean
+        isSoldOut:
+          type: boolean
         remainingCount:
           format: int32
           pattern: ^-?(?:0|[1-9]\d*)$
@@ -2184,6 +2282,8 @@ components:
         - soldCount
         - reservedCount
         - remainingCount
+        - isSoldOut
+        - isLowStock
         - revenueAmount
         - revenueCurrency
       type: object
@@ -2998,6 +3098,64 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
           description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Check-ins
+  /api/events/{eventId}/check-ins/sync:
+    post:
+      operationId: BatchCheckInTickets
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchCheckInTicketsRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchCheckInTicketsResponse"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Forbidden
         "422":
           content:
             application/problem+json:
@@ -4776,6 +4934,55 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
           description: Bad Request
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Internal Server Error
+      tags:
+        - Tickets
+  /api/orders/{orderId}/tickets/{ticketId}/return:
+    post:
+      operationId: ReturnTicket
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+        - in: path
+          name: ticketId
+          required: true
+          schema:
+            format: int32
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReturnTicketResponse"
+          description: OK
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: Not Found
         "422":
           content:
             application/problem+json:

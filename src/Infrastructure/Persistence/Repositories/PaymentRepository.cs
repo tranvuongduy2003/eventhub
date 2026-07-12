@@ -35,6 +35,28 @@ internal sealed class PaymentRepository(ApplicationDatabaseContext databaseConte
         return record is null ? null : PaymentPersistenceMapper.ToDomain(record);
     }
 
+    public async Task<List<Payment>> GetCapturedByOrderIdsAsync(
+        IReadOnlyCollection<OrderId> orderIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (orderIds.Count == 0)
+        {
+            return [];
+        }
+
+        var orderIdValues = orderIds.Select(orderId => orderId.Value).ToArray();
+        var records = await databaseContext.Payments
+            .AsNoTracking()
+            .Where(payment => orderIdValues.Contains(payment.OrderId)
+                && payment.Status == PaymentStatus.Captured.ToString())
+            .OrderBy(payment => payment.OrderId)
+            .ThenByDescending(payment => payment.CapturedAt)
+            .ThenByDescending(payment => payment.Id)
+            .ToListAsync(cancellationToken);
+
+        return records.Select(PaymentPersistenceMapper.ToDomain).ToList();
+    }
+
     public async Task<Payment?> GetByProviderReferenceAsync(
         string providerReference,
         CancellationToken cancellationToken = default)

@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260625150117-transparent-all-inclusive-pricing
 title: Transparent, All-Inclusive Pricing
 slug: transparent-all-inclusive-pricing
-status: draft
+status: implemented
 created_at: 2026-06-25T15:01:17Z
 updated_at: 2026-06-25T15:01:17Z
 owner: builder
@@ -37,7 +37,7 @@ github_issue: 38
 
 # Feature: Transparent, All-Inclusive Pricing
 
-> Features: F-3.3 | Status: DRAFT | Date: 2026-06-25
+> Features: F-3.3 | status: implemented | Date: 2026-06-25
 > PRD: DEC-1, QG-2, QG-3 | DDD: BC-2, BC-3, VO-Money, INV-25 | Tech: §5, §6
 
 ## 1. Problem & Solution

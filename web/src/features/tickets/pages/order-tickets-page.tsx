@@ -1,5 +1,5 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertCircle, Mail, TicketCheck } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { AlertCircle, Mail, RotateCcw, TicketCheck } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ApiError } from '@/types/api-problem'
 
-import { getOrderTickets, resendTickets } from '../api'
+import { getOrderTickets, resendTickets, returnTicket } from '../api'
 import { TicketCard } from '../components/ticket-card'
 
 export function OrderTicketsPage() {
@@ -20,6 +20,7 @@ export function OrderTicketsPage() {
   const numericOrderId = Number(orderId)
   const isValidOrderId = Number.isInteger(numericOrderId) && numericOrderId > 0
   const [email, setEmail] = useState('')
+  const queryClient = useQueryClient()
 
   const ticketsQuery = useQuery({
     queryKey: ['order-tickets', numericOrderId],
@@ -35,6 +36,17 @@ export function OrderTicketsPage() {
       setEmail('')
     },
     onError: () => toast.error('Ticket email could not be requested.'),
+  })
+
+  const returnMutation = useMutation({
+    mutationFn: (ticketId: number) => returnTicket(numericOrderId, ticketId),
+    onSuccess: async () => {
+      toast.success('Ticket returned to the pool.')
+      await queryClient.invalidateQueries({ queryKey: ['order-tickets', numericOrderId] })
+    },
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.message : 'Ticket could not be returned.')
+    },
   })
 
   function handleResend(event: FormEvent<HTMLFormElement>) {
@@ -90,7 +102,21 @@ export function OrderTicketsPage() {
 
       <div className="flex flex-col gap-4">
         {orderTickets.tickets.map((ticket) => (
-          <TicketCard key={ticket.ticketId} ticket={ticket} />
+          <div key={ticket.ticketId} className="flex flex-col gap-2">
+            <TicketCard ticket={ticket} />
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={ticket.status !== 'valid' || returnMutation.isPending}
+                onClick={() => returnMutation.mutate(ticket.ticketId)}
+              >
+                <RotateCcw className="mr-2 size-4" aria-hidden />
+                Return ticket
+              </Button>
+            </div>
+          </div>
         ))}
       </div>
 

@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260621180000-edit-event-details
 title: Edit event details
 slug: edit-event-details
-status: draft
+status: implemented
 created_at: 2026-06-21T18:00:00+07:00
 updated_at: 2026-06-21T18:00:00+07:00
 owner: builder
@@ -37,7 +37,7 @@ github_issue: 25
 
 # Feature: Edit event details
 
-> Features: F-2.3 | Status: DRAFT | Date: 2026-06-21
+> Features: F-2.3 | status: implemented | Date: 2026-06-21
 > PRD: DEC-3 (MVP spine), QG-1 (simplicity), QG-5 (correctness) | DDD: BC-2 · AGG-Event · INV-12 | Tech: §5–7
 
 ## 1. Problem & Solution

@@ -122,6 +122,9 @@ internal sealed class ReportingRepository(ApplicationDatabaseContext databaseCon
             {
                 var hasRevenue = revenueByTicketType.TryGetValue(ticketType.Id, out var revenue);
                 var remainingCount = Math.Max(0, ticketType.Capacity - ticketType.Sold - ticketType.Reserved);
+                var isSoldOut = remainingCount == 0;
+                var lowStockThreshold = Math.Max(1, Math.Min(3, (int)Math.Ceiling(ticketType.Capacity * 0.2m)));
+                var isLowStock = !isSoldOut && remainingCount <= lowStockThreshold;
 
                 return new TicketTypeSalesResult(
                     ticketType.Id,
@@ -130,6 +133,8 @@ internal sealed class ReportingRepository(ApplicationDatabaseContext databaseCon
                     ticketType.Sold,
                     ticketType.Reserved,
                     remainingCount,
+                    isSoldOut,
+                    isLowStock,
                     hasRevenue ? revenue!.RevenueAmount : 0m,
                     hasRevenue ? revenue!.RevenueCurrency : ticketType.PriceCurrency);
             }).ToList());
