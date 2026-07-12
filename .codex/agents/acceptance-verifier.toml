@@ -24,15 +24,28 @@ Use `shell` for read-only inspection only.
 ## Method
 
 1. Enumerate every acceptance criterion from the spec and current slice. Number them.
-2. Map each criterion to concrete evidence in the diff or verified runtime/test evidence.
-3. Check source alignment: the implementation must not contradict `docs/product.md`,
+2. Run an area coverage audit before judging completion:
+   - Classify spec expectations, acceptance criteria, and implementation-plan slices by area:
+     backend, contracts, web, e2e, docs/observability.
+   - Compare that list with `.codex/tmp/features.json` when present and with the actual diff.
+   - If the spec or plan required frontend behavior but there is no completed `web/**` feature and
+     no frontend sensor evidence, record a Missing deviation and FAIL.
+   - If the spec or plan required browser/e2e evidence but there is no completed `e2e/**` feature
+     and no Playwright or explicitly accepted substitute evidence, record a Missing deviation and
+     FAIL. A generic final verification slice or backend integration test does not satisfy required
+     e2e coverage by itself.
+   - Honor only source-backed exclusions recorded in `features.json.areaCoverage.excludedAreas` or
+     the plan's residual risks; do not treat context limits, runtime inconvenience, or backend
+     completeness as exclusions.
+3. Map each criterion to concrete evidence in the diff or verified runtime/test evidence.
+4. Check source alignment: the implementation must not contradict `docs/product.md`,
    `docs/features.md`, `docs/technical.md`, or the selected spec.
-4. Check for scope drift:
+5. Check for scope drift:
    - Missing: a criterion or planned behavior is absent.
    - Extra: behavior was added beyond the spec/plan.
    - Divergent: behavior exists but follows the wrong rule, role, state, workflow branch, or
      contract shape.
-5. Verify observable behavior, not just code. Prefer evidence you can read. If a UI criterion needs a
+6. Verify observable behavior, not just code. Prefer evidence you can read. If a UI criterion needs a
    running app/browser and no evidence is available, mark it "needs live verification" and fail or
    conditionally block closure rather than guessing.
 
@@ -53,6 +66,7 @@ Use `shell` for read-only inspection only.
 - Divergent: <criterion #> - <how it differs from spec/source truth>
 
 ## Evidence bundle
+**Area coverage:** <backend/contracts/web/e2e required vs implemented and evidence>
 **Sensors run:** <build/tests/coverage/quality/live checks and results reported or readable>
 **Not verified:** <untested paths, integrations exercised only against mocks, live browser needs>
 **Invariants held:** <money precision, authorization, no sensitive data in logs, idempotency, etc.>

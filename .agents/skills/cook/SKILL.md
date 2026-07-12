@@ -122,6 +122,8 @@ Run `implementation-planner` with strong reasoning. It reads the new or selected
 `.codex/tmp/implementation-plan.md` with:
 
 - implementation slices in dependency order;
+- an Area Coverage Matrix that classifies backend, contracts, web, and e2e obligations from the
+  spec and states which slice and sensor proves each required area;
 - intended files/areas and path-scoped `AGENTS.md` files;
 - domain/application/infrastructure/api/contracts/web/e2e impacts;
 - OpenAPI/codegen needs;
@@ -132,6 +134,10 @@ Run `implementation-planner` with strong reasoning. It reads the new or selected
 
 The plan must be detailed and explicit; implementation agents should not need to invent endpoint
 shapes, DTO names, state transitions, or acceptance evidence.
+
+Frontend and e2e coverage are first-class obligations. If the spec or source docs require UI,
+browser, route, cache, cross-page, or live-user workflow behavior, the plan must include dedicated
+web and/or e2e slices instead of treating backend completion or final verification as a substitute.
 
 ## Step 5 - Create the feature branch
 
@@ -150,6 +156,10 @@ Run `$loop-init` using the spec and `.codex/tmp/implementation-plan.md`. It crea
 
 Each feature slice is a contract: allowed files, acceptance criteria, invariants, validation
 commands, risk tier, and convergence criteria.
+
+`features.json` must preserve the plan's area coverage. Required `web` and `e2e` work must remain
+real pending slices until implemented, explicitly blocked, or excluded for a source-backed reason.
+A generic final verification slice must not replace planned frontend or Playwright work.
 
 ## Step 7 - Implement each slice
 

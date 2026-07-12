@@ -34,6 +34,14 @@ Write `.codex/tmp/implementation-plan.md` with:
 ## Architecture Summary
 <domain/application/infrastructure/api/contracts/web/e2e impacts>
 
+## Area Coverage Matrix
+| Area | Required? | Why / Source Criteria | Planned Slice(s) | Verification |
+|------|-----------|-----------------------|------------------|--------------|
+| backend | yes/no | <spec/source reason> | <slice numbers or N/A> | <commands/evidence> |
+| contracts | yes/no | <spec/source reason> | <slice numbers or N/A> | <commands/evidence> |
+| web | yes/no | <spec/source reason> | <slice numbers or N/A> | <commands/evidence> |
+| e2e | yes/no | <spec/source reason> | <slice numbers or N/A> | <commands/evidence or explicit lower-level substitute> |
+
 ## Slices
 ### 1. <slice title>
 - Goal:
@@ -57,6 +65,15 @@ Write `.codex/tmp/implementation-plan.md` with:
 ## Planning rules
 
 - Keep slices small enough for one focused `loop-next` run.
+- Before writing slices, classify every acceptance criterion and spec expectation by area:
+  backend, contracts, web, e2e, docs/observability. Add the `Area Coverage Matrix` to the plan.
+  If the spec says frontend UI, browser behavior, route behavior, cache behavior, or user-visible
+  workflow, `web` is required. If the spec says browser journey, cross-page workflow, live UI
+  evidence, or behavior that lower-level tests cannot observe, `e2e` is required unless the matrix
+  names a concrete lower-level substitute and residual risk.
+- Do not let backend slices satisfy web or e2e obligations by implication. If `web` or `e2e` is
+  required in the matrix, include at least one dedicated slice whose title, intended files/areas,
+  required skills, and validation commands are scoped to that area.
 - If the spec came from a `CLEAR_FOR_SUBSET` clarity verdict, plan only that ready subset. Do not add
   slices for deferred feature ids or unresolved behavior, even when the broader epic mentions them.
   Record deferred work in `Residual Risks` with the prerequisite decisions or dependencies needed
