@@ -2137,6 +2137,24 @@ components:
       type: object
     TicketTypeSalesResponse:
       properties:
+        capacity:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        remainingCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+        reservedCount:
+          format: int32
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
         revenueAmount:
           format: double
           pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
@@ -2162,7 +2180,10 @@ components:
       required:
         - ticketTypeId
         - ticketTypeName
+        - capacity
         - soldCount
+        - reservedCount
+        - remainingCount
         - revenueAmount
         - revenueCurrency
       type: object

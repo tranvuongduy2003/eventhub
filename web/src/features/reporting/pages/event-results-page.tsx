@@ -1,6 +1,6 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Download, Mail, Save } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -25,12 +25,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { formatPrice } from '@/lib/utils/format-price'
 
 import {
+  type EventResultsResponse,
   exportEventAttendees,
   getEventAttendees,
   getEventResults,
   sendAttendeeMessage,
   setEventReminder,
 } from '../api'
+import { applySalesInventoryUpdate, subscribeToEventSalesInventory } from '../realtime'
 
 function formatDate(value: string | null) {
   if (!value) return 'Not checked in'
@@ -47,6 +49,10 @@ function downloadCsv(filename: string, csv: string) {
   URL.revokeObjectURL(url)
 }
 
+function numeric(value: string | number) {
+  return typeof value === 'number' ? value : Number(value)
+}
+
 export function EventResultsPage() {
   const { eventId } = useParams<{ eventId: string }>()
   const eventIdNum = eventId ? Number(eventId) : NaN
@@ -54,9 +60,11 @@ export function EventResultsPage() {
   const [body, setBody] = useState('')
   const [reminderEnabled, setReminderEnabled] = useState(false)
   const [leadTimeMinutes, setLeadTimeMinutes] = useState(1440)
+  const queryClient = useQueryClient()
+  const resultsQueryKey = useMemo(() => ['event-results', eventIdNum] as const, [eventIdNum])
 
   const resultsQuery = useQuery({
-    queryKey: ['event-results', eventIdNum],
+    queryKey: resultsQueryKey,
     queryFn: ({ signal }) => getEventResults(eventIdNum, signal),
     enabled: !isNaN(eventIdNum),
   })
@@ -93,9 +101,26 @@ export function EventResultsPage() {
   const attendees = attendeesQuery.data?.attendees ?? []
   const results = resultsQuery.data
   const checkInPercent = useMemo(
-    () => Math.round((results?.checkInRate ?? 0) * 100),
+    () => Math.round(numeric(results?.checkInRate ?? 0) * 100),
     [results?.checkInRate],
   )
+
+  useEffect(() => {
+    if (isNaN(eventIdNum) || results?.eventId !== eventIdNum) return
+
+    const subscription = subscribeToEventSalesInventory(eventIdNum, {
+      onReconnect: async () => {
+        await queryClient.invalidateQueries({ queryKey: resultsQueryKey })
+      },
+      onUpdate: (message) => {
+        queryClient.setQueryData<EventResultsResponse>(resultsQueryKey, (current) =>
+          applySalesInventoryUpdate(current, message),
+        )
+      },
+    })
+
+    return () => subscription.close()
+  }, [eventIdNum, queryClient, results?.eventId, resultsQueryKey])
 
   if (isNaN(eventIdNum)) {
     return (
@@ -163,7 +188,7 @@ export function EventResultsPage() {
             <CardTitle className="text-sm">Revenue</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">
-            {formatPrice(results.totalRevenueAmount, results.totalRevenueCurrency)}
+            {formatPrice(numeric(results.totalRevenueAmount), results.totalRevenueCurrency)}
           </CardContent>
         </Card>
         <Card>
@@ -190,6 +215,7 @@ export function EventResultsPage() {
               <TableRow>
                 <TableHead>Type</TableHead>
                 <TableHead>Sold</TableHead>
+                <TableHead>Remaining</TableHead>
                 <TableHead>Revenue</TableHead>
               </TableRow>
             </TableHeader>
@@ -199,7 +225,10 @@ export function EventResultsPage() {
                   <TableCell>{ticketType.ticketTypeName}</TableCell>
                   <TableCell>{ticketType.soldCount}</TableCell>
                   <TableCell>
-                    {formatPrice(ticketType.revenueAmount, ticketType.revenueCurrency)}
+                    {ticketType.remainingCount} / {ticketType.capacity}
+                  </TableCell>
+                  <TableCell>
+                    {formatPrice(numeric(ticketType.revenueAmount), ticketType.revenueCurrency)}
                   </TableCell>
                 </TableRow>
               ))}

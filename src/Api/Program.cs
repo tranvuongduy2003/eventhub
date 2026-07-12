@@ -32,7 +32,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.MapEndpoints(EventHub.Api.AssemblyReference.Assembly);
-app.MapHub<EventMonitoringHub>("/hubs/events");
+app.MapHub<EventMonitoringHub>("/hubs/events")
+    .RequireAuthorization();
 
 app.Run();
 

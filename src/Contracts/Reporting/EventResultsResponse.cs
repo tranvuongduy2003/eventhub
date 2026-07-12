@@ -14,6 +14,9 @@ public sealed record EventResultsResponse(
 public sealed record TicketTypeSalesResponse(
     int TicketTypeId,
     string TicketTypeName,
+    int Capacity,
     int SoldCount,
+    int ReservedCount,
+    int RemainingCount,
     decimal RevenueAmount,
     string RevenueCurrency);
