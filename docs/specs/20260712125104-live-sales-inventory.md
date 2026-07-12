@@ -3,7 +3,7 @@ doc_schema: eventhub-doc-v1
 doc_kind: implementation_spec
 doc_id: spec-20260712125104-live-sales-inventory
 title: Live Sales and Inventory
-status: proposed
+status: implemented
 last_updated: 2026-07-12
 owner: builder
 language: en

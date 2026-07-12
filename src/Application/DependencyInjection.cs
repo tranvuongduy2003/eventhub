@@ -25,6 +25,9 @@ public static partial class DependencyInjection
         services.AddScoped<
             IPendingRealtimeSalesInventoryUpdateCollector,
             PendingRealtimeSalesInventoryUpdateCollector>();
+        services.AddScoped<
+            IPendingRealtimeCheckInUpdateCollector,
+            PendingRealtimeCheckInUpdateCollector>();
 
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PostCommitRealtimeSalesInventoryBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(DomainEventDispatchBehavior<,>));

@@ -80,7 +80,7 @@ public sealed class CheckInTicketByIdCommandHandler(
     }
 }
 
-file static class CheckInTicketCommandHandlerCore
+internal static class CheckInTicketCommandHandlerCore
 {
     public static async Task<Result<CheckInTicketResult>> CheckInAsync(
         Ticket ticket,

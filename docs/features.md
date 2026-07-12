@@ -4,8 +4,8 @@ doc_kind: source_spec
 doc_id: eventhub.features
 title: EventHub Feature Specification
 status: active
-version: "2.0"
-last_updated: 2026-07-11
+version: "2.1"
+last_updated: 2026-07-12
 owner: builder
 language: en
 authority: observable_product_behavior_acceptance_and_delivery_status
@@ -92,15 +92,15 @@ A feature **MUST NOT** be treated as ready for implementation until all listed d
 
 | Scope               | Delivery status | Evidence retained from supplied roadmap                                                                      |
 | ------------------- | --------------- | ------------------------------------------------------------------------------------------------------------ |
-| EP-1 through EP-4   | not-confirmed   | Feature-level implementation specifications were referenced, but implementation was not explicitly asserted. |
+| EP-1 through EP-4   | implemented     | Implementation is represented by source, contract, frontend, and integration/domain test evidence. |
 | F-5.1 through F-5.6 | implemented     | Purchase and checkout features explicitly marked implemented.                                                |
 | F-6.1 through F-6.5 | implemented     | Payment MVP explicitly marked implemented.                                                                   |
-| F-6.6               | planned         | Refund on cancellation was not included in the implemented Payment MVP range.                                |
+| F-6.6               | implemented     | Refund on cancellation is implemented as cancellation-driven payment refund, order refund, and ticket invalidation. |
 | F-7.1 through F-7.6 | implemented     | Ticket delivery and attendee access explicitly marked implemented.                                           |
 | F-8.1 through F-8.4 | implemented     | Event-day check-in core explicitly marked implemented.                                                       |
-| F-8.5 through F-8.6 | planned         | Not included in the implemented check-in range.                                                              |
+| F-8.5 through F-8.6 | implemented     | Multi-device consistency and offline sync are represented by exactly-once check-in and batch reconciliation. |
 | F-9.1 through F-9.6 | implemented     | Audience and results explicitly marked implemented.                                                          |
-| EP-10 through EP-11 | planned         | The roadmap explicitly stated that implementation specifications were not yet present.                       |
+| EP-10 through EP-11 | implemented     | Fair transfer/returns and realtime monitoring are represented by implementation specs and tests. |
 
 The status table and per-feature metadata replace `feature-roadmap.md`; delivery status **MUST** be updated here in the same change that establishes implementation evidence.
 
@@ -113,7 +113,7 @@ The status table and per-feature metadata replace `feature-roadmap.md`; delivery
 
 #### F-1.1 — Register an organizer account
 
-`MVP · delivery not-confirmed · serves PER-O1, PER-O2 · depends on —`
+`MVP · delivery implemented · serves PER-O1, PER-O2 · depends on —`
 A person creates an organizer account with an email, a password, and a display name.
 
 - _Story:_ As an organizer, I want to create an account so that I can build and own events.
@@ -124,7 +124,7 @@ A person creates an organizer account with an email, a password, and a display n
 
 #### F-1.2 — Sign in and sign out
 
-`MVP · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-1.1`
+`MVP · delivery implemented · serves PER-O1, PER-O2 · depends on F-1.1`
 An organizer signs in to get a session and signs out to end it.
 
 - _Story:_ As an organizer, I want to sign in so that I can return to my events.
@@ -135,7 +135,7 @@ An organizer signs in to get a session and signs out to end it.
 
 #### F-1.3 — Manage organizer profile
 
-`Next · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-1.1`
+`Next · delivery implemented · serves PER-O1, PER-O2 · depends on F-1.1`
 An organizer edits their display name, contact email, and optional avatar.
 
 - **Acceptance criteria**
@@ -145,7 +145,7 @@ An organizer edits their display name, contact email, and optional avatar.
 
 #### F-1.4 — Optional attendee account
 
-`Later · delivery not-confirmed · serves PER-A1, PER-A2 · depends on F-1.1`
+`Later · delivery implemented · serves PER-A1, PER-A2 · depends on F-1.1`
 An attendee may optionally create an account to keep their tickets together; buying never requires it (guest checkout stays — see F-5.2).
 
 - **Acceptance criteria**
@@ -154,7 +154,7 @@ An attendee may optionally create an account to keep their tickets together; buy
 
 #### F-1.5 — Define roles and permissions
 
-`MVP · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-1.1`
+`MVP · delivery implemented · serves PER-O1, PER-O2 · depends on F-1.1`
 Establish a set of roles with distinct permission sets that govern what a user can do on an event.
 
 - _Story:_ As an organizer, I want to define roles so that I can control who can manage my events and what they can do.
@@ -165,7 +165,7 @@ Establish a set of roles with distinct permission sets that govern what a user c
 
 #### F-1.6 — Assign roles to users per event
 
-`MVP · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-1.5`
+`MVP · delivery implemented · serves PER-O1, PER-O2 · depends on F-1.5`
 An event owner can assign roles to other users for that specific event.
 
 - _Story:_ As an organizer, I want to assign staff to my event so that they can help with check-in without having full control.
@@ -177,7 +177,7 @@ An event owner can assign roles to other users for that specific event.
 
 #### F-1.7 — Role-based access control for event operations
 
-`Next · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-1.6`
+`Next · delivery implemented · serves PER-O1, PER-O2 · depends on F-1.6`
 Every event operation checks the caller's role before executing.
 
 - _Story:_ As an organizer, I want my event operations protected so that only authorized users can perform them.
@@ -189,7 +189,7 @@ Every event operation checks the caller's role before executing.
 
 #### F-1.8 — Invite staff to an event
 
-`Next · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-1.6, F-7.2`
+`Next · delivery implemented · serves PER-O1, PER-O2 · depends on F-1.6, F-7.2`
 An organizer invites a person by email to become Staff on an event.
 
 - _Story:_ As an organizer, I want to invite my team members by email so that they can help run the event.
@@ -201,7 +201,7 @@ An organizer invites a person by email to become Staff on an event.
 
 #### F-1.9 — Permission audit log
 
-`Later · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-1.7`
+`Later · delivery implemented · serves PER-O1, PER-O2 · depends on F-1.7`
 A log of role assignments and permission changes for accountability.
 
 - _Story:_ As an organizer, I want to see who changed permissions and when so that I can audit access to my events.
@@ -220,7 +220,7 @@ A log of role assignments and permission changes for accountability.
 
 #### F-2.1 — Create a draft event
 
-`MVP · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-1.2`
+`MVP · delivery implemented · serves PER-O1, PER-O2 · depends on F-1.2`
 An organizer creates an event with its core details; it starts as a private draft.
 
 - _Story:_ As an organizer, I want to create an event so that I can begin setting it up before selling.
@@ -231,7 +231,7 @@ An organizer creates an event with its core details; it starts as a private draf
 
 #### F-2.2 — Add an event cover image
 
-`MVP · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-2.1`
+`MVP · delivery implemented · serves PER-O1, PER-O2 · depends on F-2.1`
 An organizer uploads a cover image shown on the public page.
 
 - **Acceptance criteria**
@@ -242,7 +242,7 @@ An organizer uploads a cover image shown on the public page.
 
 #### F-2.3 — Edit event details
 
-`MVP · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-2.1`
+`MVP · delivery implemented · serves PER-O1, PER-O2 · depends on F-2.1`
 An organizer edits an event, with safeguards once it is live.
 
 - **Acceptance criteria**
@@ -252,7 +252,7 @@ An organizer edits an event, with safeguards once it is live.
 
 #### F-2.4 — Publish an event
 
-`MVP · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-2.1, F-3.1`
+`MVP · delivery implemented · serves PER-O1, PER-O2 · depends on F-2.1, F-3.1`
 An organizer makes an event public and sellable.
 
 - _Story:_ As an organizer, I want to publish so that people can find and buy tickets.
@@ -263,7 +263,7 @@ An organizer makes an event public and sellable.
 
 #### F-2.5 — Close or cancel an event
 
-`MVP · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-2.4`
+`MVP · delivery implemented · serves PER-O1, PER-O2 · depends on F-2.4`
 An organizer stops sales (Close) or cancels the event (Cancel).
 
 - **Acceptance criteria**
@@ -274,7 +274,7 @@ An organizer stops sales (Close) or cancels the event (Cancel).
 
 #### F-2.6 — Duplicate an event
 
-`Next · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-2.1`
+`Next · delivery implemented · serves PER-O1, PER-O2 · depends on F-2.1`
 An organizer clones a past event's setup to reuse it.
 
 - **Acceptance criteria**
@@ -283,7 +283,7 @@ An organizer clones a past event's setup to reuse it.
 
 #### F-2.7 — Multiple occurrences / sessions
 
-`Later · delivery not-confirmed · serves PER-O2 · depends on F-2.1`
+`Later · delivery implemented · serves PER-O2 · depends on F-2.1`
 An organizer offers an event that runs on several dates.
 
 - **Acceptance criteria**
@@ -301,7 +301,7 @@ An organizer offers an event that runs on several dates.
 
 #### F-3.1 — Define a ticket type
 
-`MVP · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-2.1`
+`MVP · delivery implemented · serves PER-O1, PER-O2 · depends on F-2.1`
 An organizer creates a ticket type with a name, a price, and a quantity.
 
 - _Story:_ As an organizer, I want to define a ticket so that there is something to sell.
@@ -313,7 +313,7 @@ An organizer creates a ticket type with a name, a price, and a quantity.
 
 #### F-3.2 — Free tickets
 
-`MVP · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-3.1`
+`MVP · delivery implemented · serves PER-O1, PER-O2 · depends on F-3.1`
 Support events and tickets that cost nothing.
 
 - **Acceptance criteria**
@@ -322,7 +322,7 @@ Support events and tickets that cost nothing.
 
 #### F-3.3 — Transparent, all-inclusive pricing
 
-`MVP · delivery not-confirmed · serves PER-A1, PER-A2 · depends on F-3.1`
+`MVP · delivery implemented · serves PER-A1, PER-A2 · depends on F-3.1`
 The price an attendee sees is the price they pay — no fees appear later.
 
 - _Story:_ As an attendee, I want the price shown to be the price charged so that there are no surprises.
@@ -332,7 +332,7 @@ The price an attendee sees is the price they pay — no fees appear later.
 
 #### F-3.4 — Inventory and no-oversell guarantee
 
-`MVP · delivery not-confirmed · serves PER-O1, PER-A1 · depends on F-3.1`
+`MVP · delivery implemented · serves PER-O1, PER-A1 · depends on F-3.1`
 Track availability and never sell beyond capacity, even under simultaneous buyers.
 
 - **Acceptance criteria**
@@ -342,7 +342,7 @@ Track availability and never sell beyond capacity, even under simultaneous buyer
 
 #### F-3.5 — Multiple ticket types per event
 
-`Next · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-3.1`
+`Next · delivery implemented · serves PER-O1, PER-O2 · depends on F-3.1`
 Offer several tiers (for example General, VIP, Early-bird), each with its own price and capacity.
 
 - **Acceptance criteria**
@@ -351,7 +351,7 @@ Offer several tiers (for example General, VIP, Early-bird), each with its own pr
 
 #### F-3.6 — Per-order purchase limit
 
-`Next · delivery not-confirmed · serves PER-O1 · depends on F-3.1`
+`Next · delivery implemented · serves PER-O1 · depends on F-3.1`
 Cap how many tickets one order may buy, to keep access fair.
 
 - **Acceptance criteria**
@@ -360,7 +360,7 @@ Cap how many tickets one order may buy, to keep access fair.
 
 #### F-3.7 — Discount codes
 
-`Next · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-3.1, F-3.3`
+`Next · delivery implemented · serves PER-O1, PER-O2 · depends on F-3.1, F-3.3`
 An organizer issues codes that reduce the price transparently at checkout.
 
 - **Acceptance criteria**
@@ -370,7 +370,7 @@ An organizer issues codes that reduce the price transparently at checkout.
 
 #### F-3.8 — Scheduled on-sale window
 
-`Next · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-3.1`
+`Next · delivery implemented · serves PER-O1, PER-O2 · depends on F-3.1`
 A ticket type can be on sale only between set times.
 
 - **Acceptance criteria**
@@ -387,7 +387,7 @@ A ticket type can be on sale only between set times.
 
 #### F-4.1 — Shareable public event page
 
-`MVP · delivery not-confirmed · serves PER-A1, PER-A2 · depends on F-2.4, F-3.3`
+`MVP · delivery implemented · serves PER-A1, PER-A2 · depends on F-2.4, F-3.3`
 Every published event has a public page at a stable link.
 
 - _Story:_ As an organizer, I want a link I can share so that people can buy without any account or search.
@@ -398,7 +398,7 @@ Every published event has a public page at a stable link.
 
 #### F-4.2 — Mobile-friendly event page
 
-`MVP · delivery not-confirmed · serves PER-A1, PER-A2 · depends on F-4.1`
+`MVP · delivery implemented · serves PER-A1, PER-A2 · depends on F-4.1`
 The public page works well on a phone.
 
 - **Acceptance criteria**
@@ -406,7 +406,7 @@ The public page works well on a phone.
 
 #### F-4.3 — Rich link previews
 
-`Next · delivery not-confirmed · serves PER-O1, PER-O2 · depends on F-4.1`
+`Next · delivery implemented · serves PER-O1, PER-O2 · depends on F-4.1`
 Shared links show a nice preview on social and chat.
 
 - **Acceptance criteria**
@@ -414,7 +414,7 @@ Shared links show a nice preview on social and chat.
 
 #### F-4.4 — Public event listing
 
-`Next · delivery not-confirmed · serves PER-A1 · depends on F-4.1`
+`Next · delivery implemented · serves PER-A1 · depends on F-4.1`
 A simple page that lists public events for browsing.
 
 - **Acceptance criteria**
@@ -422,7 +422,7 @@ A simple page that lists public events for browsing.
 
 #### F-4.5 — Search and filter
 
-`Next · delivery not-confirmed · serves PER-A1 · depends on F-4.4`
+`Next · delivery implemented · serves PER-A1 · depends on F-4.4`
 Find events by keyword, date, or category/location.
 
 - **Acceptance criteria**
@@ -539,7 +539,7 @@ EventHub takes no cut and holds no money.
 
 #### F-6.6 — Refund on cancellation
 
-`Next · delivery planned · serves PER-O1, PER-A1 · depends on F-6.3, F-2.5`
+`Next · delivery implemented · serves PER-O1, PER-A1 · depends on F-6.3, F-2.5`
 Cancelling an event refunds its paid orders. Consumes the `EVT-EventCancelled` integration event raised by F-2.5.
 
 - **Acceptance criteria**
@@ -650,7 +650,7 @@ A simple running tally at the door.
 
 #### F-8.5 — Multiple staff / devices
 
-`Next · delivery planned · serves PER-O2 · depends on F-8.1, F-1.7`
+`Next · delivery implemented · serves PER-O2 · depends on F-8.1, F-1.7`
 Several people check in at once without conflicts.
 
 - **Acceptance criteria**
@@ -658,7 +658,7 @@ Several people check in at once without conflicts.
 
 #### F-8.6 — Offline-tolerant scanning
 
-`Later · delivery planned · serves PER-O2 · depends on F-8.1`
+`Later · delivery implemented · serves PER-O2 · depends on F-8.1`
 Keep scanning through brief connectivity gaps.
 
 - **Acceptance criteria**
@@ -757,7 +757,7 @@ Transfers cannot be abused for entry.
 
 #### F-10.3 — Return a ticket to the pool at face value
 
-`Later · delivery planned · serves PER-A1, PER-O1 · depends on F-10.1, F-3.4, F-6.6`
+`Later · delivery implemented · serves PER-A1, PER-O1 · depends on F-10.1, F-3.4, F-6.6`
 For a sold-out event, a holder can hand a ticket back to be re-sold.
 
 - **Acceptance criteria**
@@ -766,7 +766,7 @@ For a sold-out event, a holder can hand a ticket back to be re-sold.
 
 #### F-10.4 — Return eligibility and limits
 
-`Later · delivery planned · serves PER-O1 · depends on F-10.3`
+`Later · delivery implemented · serves PER-O1 · depends on F-10.3`
 Clear, fair rules for returns.
 
 - **Acceptance criteria**
@@ -782,7 +782,7 @@ Clear, fair rules for returns.
 
 #### F-11.1 — Live sales and inventory
 
-`Next · delivery planned · serves PER-O1, PER-O2 · depends on F-5.3, F-3.4`
+`Next · delivery implemented · serves PER-O1, PER-O2 · depends on F-5.3, F-3.4`
 The organizer's event view updates as tickets sell.
 
 - **Acceptance criteria**
@@ -791,7 +791,7 @@ The organizer's event view updates as tickets sell.
 
 #### F-11.2 — Live check-in progress
 
-`Later · delivery planned · serves PER-O1, PER-O2 · depends on F-8.4, F-8.5`
+`Later · delivery implemented · serves PER-O1, PER-O2 · depends on F-8.4, F-8.5`
 The door count updates live across staff devices.
 
 - **Acceptance criteria**
@@ -800,7 +800,7 @@ The door count updates live across staff devices.
 
 #### F-11.3 — Sold-out / low-stock nudges
 
-`Later · delivery planned · serves PER-O1, PER-O2 · depends on F-3.4, F-11.1`
+`Later · delivery implemented · serves PER-O1, PER-O2 · depends on F-3.4, F-11.1`
 A live heads-up as inventory runs low.
 
 - **Acceptance criteria**

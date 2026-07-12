@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260627170000-search-and-filter
 title: Search and filter
 slug: search-and-filter
-status: draft
+status: implemented
 created_at: 2026-06-27T17:00:00Z
 updated_at: 2026-06-27T17:00:00Z
 owner: builder
@@ -36,7 +36,7 @@ github_issue: 57
 
 # Feature: Search and filter
 
-> Features: F-4.5 | Status: DRAFT | Date: 2026-06-27
+> Features: F-4.5 | status: implemented | Date: 2026-06-27
 > PRD: G-4 (smooth mobile purchase), QG-1 (simplicity), QG-4 (mobile-friendly) | DDD: BC-2 AGG-Event, VO-EventSchedule, VO-EventLocation | Tech: §5, §6, §7
 
 ## 1. Problem & Solution

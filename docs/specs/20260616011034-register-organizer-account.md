@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260616011034-register-organizer-account
 title: Register an organizer account
 slug: register-organizer-account
-status: draft
+status: implemented
 created_at: 2026-06-16T01:10:34+07:00
 updated_at: 2026-06-16T01:20:00+07:00
 owner: builder
@@ -39,7 +39,7 @@ github_issue: 1
 
 # Feature: Register an organizer account
 
-> Features: F-1.1 | Status: DRAFT | Date: 2026-06-16
+> Features: F-1.1 | status: implemented | Date: 2026-06-16
 > PRD: DEC-3 (MVP spine), DEC-4 (self-service) | DDD: BC-1 · AGG-User · INV-1, INV-2 | Tech: §5–7 (session auth, PostgreSQL)
 
 ## 1. Problem & Solution

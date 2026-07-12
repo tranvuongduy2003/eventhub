@@ -45,6 +45,21 @@ internal sealed class OrderRepository(ApplicationDatabaseContext databaseContext
         return records.Select(OrderPersistenceMapper.ToDomain).ToList();
     }
 
+    public async Task<List<Order>> GetConfirmedByEventIdAsync(
+        Domain.Events.EventId eventId,
+        CancellationToken cancellationToken = default)
+    {
+        var records = await databaseContext.Orders
+            .AsNoTracking()
+            .Include(order => order.Lines)
+            .Where(order => order.EventId == eventId.Value
+                && order.Status == OrderStatus.Confirmed.ToString())
+            .OrderBy(order => order.Id)
+            .ToListAsync(cancellationToken);
+
+        return records.Select(OrderPersistenceMapper.ToDomain).ToList();
+    }
+
     public async Task Update(Order domain, CancellationToken cancellationToken = default)
     {
         var record = OrderPersistenceMapper.ToRecord(domain);

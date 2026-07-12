@@ -4,7 +4,7 @@ doc_kind: index
 doc_id: eventhub.specs.index
 title: EventHub Implementation Specs Index
 status: active
-last_updated: 2026-07-11
+last_updated: 2026-07-12
 owner: builder
 language: en
 applies_to: docs/specs/

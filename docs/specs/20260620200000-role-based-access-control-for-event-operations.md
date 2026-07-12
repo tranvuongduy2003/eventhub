@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260620200000-role-based-access-control-for-event-operations
 title: Role-based access control for event operations
 slug: role-based-access-control-for-event-operations
-status: draft
+status: implemented
 created_at: 2026-06-20T20:00:00+07:00
 updated_at: 2026-06-20T20:00:00+07:00
 owner: builder
@@ -34,7 +34,7 @@ github_issue: 17
 
 # Feature: Role-based access control for event operations
 
-> Features: F-1.7 | Status: DRAFT | Date: 2026-06-20
+> Features: F-1.7 | status: implemented | Date: 2026-06-20
 > PRD: DEC-3, QG-1, QG-5 | DDD: BC-1, BC-2, AGG-Event | Tech: §4, §7
 
 ## 1. Problem & Solution

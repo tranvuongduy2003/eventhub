@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260622143000-close-cancel-event
 title: Close or Cancel an Event
 slug: close-cancel-event
-status: draft
+status: implemented
 created_at: 2026-06-22T14:30:00Z
 updated_at: 2026-06-22T14:30:00Z
 owner: builder
@@ -35,7 +35,7 @@ github_issue: 29
 
 # Feature: Close or Cancel an Event
 
-> Features: F-2.5 | Status: DRAFT | Date: 2026-06-22
+> Features: F-2.5 | status: implemented | Date: 2026-06-22
 > PRD: DEC-1 (no platform fee), QG-1 (simplicity) | DDD: BC-2 AGG-Event lifecycle | Tech: §4–6
 
 ## 1. Problem & Solution

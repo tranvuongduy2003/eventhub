@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260626000000-multiple-ticket-types-per-event
 title: Multiple ticket types per event
 slug: multiple-ticket-types-per-event
-status: draft
+status: implemented
 created_at: 2026-06-26T00:00:00Z
 updated_at: 2026-06-26T00:00:00Z
 owner: builder
@@ -42,7 +42,7 @@ github_issue: 2
 
 # Feature: Multiple ticket types per event
 
-> Features: F-3.5 | Status: DRAFT | Date: 2026-06-26
+> Features: F-3.5 | status: implemented | Date: 2026-06-26
 > PRD: DEC-1 (no platform fee), QG-1 (simplicity), QG-2 (transparent pricing), QG-5 (correct at small scale)
 > DDD: BC-2 Event Management, AGG-Event, ENT-TicketType, INV-10 (no-oversell)
 

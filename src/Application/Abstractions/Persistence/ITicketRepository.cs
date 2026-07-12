@@ -21,6 +21,10 @@ public interface ITicketRepository
 
     Task<List<Ticket>> GetByOrderIdAsync(OrderId orderId, CancellationToken cancellationToken = default);
 
+    Task<List<Ticket>> GetByOrderIdsAsync(
+        IReadOnlyCollection<OrderId> orderIds,
+        CancellationToken cancellationToken = default);
+
     Task<List<Ticket>> GetByHolderEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default);
 
     Task<List<Ticket>> SearchForCheckInAsync(

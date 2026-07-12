@@ -148,6 +148,31 @@ public sealed class CheckInTests(IntegrationTestFixture fixture)
     }
 
     [Fact]
+    public async Task BatchCheckIn_OfflineSync_AcceptsFirstScanAndRejectsDuplicate()
+    {
+        await using var factory = CreateFactory();
+        var staffClient = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true });
+        var staffId = await RegisterUserAsync(staffClient, "checkin-batch");
+        var data = await SeedDoorDataAsync(factory, staffId, staffId, EventRole.Staff, OrderStatus.Confirmed);
+
+        using var response = await staffClient.PostAsJsonAsync(
+            $"/api/events/{data.EventId}/check-ins/sync",
+            new BatchCheckInTicketsRequest(
+            [
+                new BatchCheckInTicketRequest("scan-1", data.Code, Now.AddMinutes(-2)),
+                new BatchCheckInTicketRequest("scan-2", data.Code, Now.AddMinutes(-1)),
+            ]));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<BatchCheckInTicketsResponse>();
+        body.Should().NotBeNull();
+        body!.Results.Should().HaveCount(2);
+        body.Results[0].Accepted.Should().BeTrue();
+        body.Results[1].Accepted.Should().BeFalse();
+        body.Results[1].Reason.Should().Contain("already checked in");
+    }
+
+    [Fact]
     public async Task SearchAndManualCheckIn_ByBuyerEmail_ChecksInMatchingTicket()
     {
         await using var factory = CreateFactory();

@@ -12,5 +12,9 @@ public interface IOrderRepository
         DateTimeOffset expiresBefore,
         CancellationToken cancellationToken = default);
 
+    Task<List<Order>> GetConfirmedByEventIdAsync(
+        EventHub.Domain.Events.EventId eventId,
+        CancellationToken cancellationToken = default);
+
     Task Update(Order domain, CancellationToken cancellationToken = default);
 }

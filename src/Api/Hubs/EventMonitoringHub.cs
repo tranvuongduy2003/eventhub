@@ -15,6 +15,7 @@ public sealed class EventMonitoringHub(
     : Hub
 {
     private const string SalesInventoryEventsItemKey = "EventMonitoringHub.SalesInventoryEvents";
+    private const string CheckInEventsItemKey = "EventMonitoringHub.CheckInEvents";
 
     public async Task JoinEventSalesInventory(int eventId)
     {
@@ -44,43 +45,85 @@ public sealed class EventMonitoringHub(
             eventId);
     }
 
+    public async Task JoinEventCheckIn(int eventId)
+    {
+        await EnsureCheckInPermissionAsync(eventId, Context.ConnectionAborted);
+
+        await Groups.AddToGroupAsync(
+            Context.ConnectionId,
+            EventMonitoringGroups.CheckIn(eventId),
+            Context.ConnectionAborted);
+
+        GetJoinedCheckInEvents().Add(eventId);
+        logger.LogInformation(
+            "Realtime check-in join accepted for event {EventId}",
+            eventId);
+    }
+
+    public async Task LeaveEventCheckIn(int eventId)
+    {
+        await Groups.RemoveFromGroupAsync(
+            Context.ConnectionId,
+            EventMonitoringGroups.CheckIn(eventId),
+            Context.ConnectionAborted);
+
+        GetJoinedCheckInEvents().Remove(eventId);
+        logger.LogInformation(
+            "Realtime check-in leave completed for event {EventId}",
+            eventId);
+    }
+
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         var joinedEventsCount = GetJoinedSalesInventoryEvents().Count;
+        var joinedCheckInEventsCount = GetJoinedCheckInEvents().Count;
         logger.LogInformation(
-            "Realtime sales inventory connection disconnected; cleaned up {JoinedEventsCount} joined event groups",
-            joinedEventsCount);
+            "Realtime connection disconnected; cleaned up {JoinedEventsCount} sales groups and {JoinedCheckInEventsCount} check-in groups",
+            joinedEventsCount,
+            joinedCheckInEventsCount);
 
         return base.OnDisconnectedAsync(exception);
     }
 
+    private async Task EnsureCheckInPermissionAsync(int eventIdValue, CancellationToken cancellationToken)
+    {
+        await EnsurePermissionAsync(eventIdValue, Permission.CheckIn, "check-in");
+    }
+
     private async Task EnsureReportingPermissionAsync(int eventIdValue, CancellationToken cancellationToken)
+    {
+        await EnsurePermissionAsync(eventIdValue, Permission.Reporting, "sales inventory");
+    }
+
+    private async Task EnsurePermissionAsync(int eventIdValue, Permission permission, string area)
     {
         if (GetCurrentUserId() is not { } userId)
         {
             logger.LogWarning(
-                "Realtime sales inventory join refused for event {EventId}: unauthenticated connection",
+                "Realtime {Area} join refused for event {EventId}: unauthenticated connection",
+                area,
                 eventIdValue);
 
             throw new HubException("You must be logged in.");
         }
 
         var eventId = DomainEventId.From(eventIdValue);
-        var role = await permissionCache.GetRoleAsync(eventId, userId, cancellationToken);
+        var role = await permissionCache.GetRoleAsync(eventId, userId, Context.ConnectionAborted);
 
         if (role is null)
         {
-            var eventAggregate = await eventRepository.GetByIdAsync(eventId, cancellationToken);
+            var eventAggregate = await eventRepository.GetByIdAsync(eventId, Context.ConnectionAborted);
             if (eventAggregate?.OrganizerId == userId)
             {
                 role = EventRole.Owner;
             }
         }
 
-        if (role is null || !EventRolePermissions.GetPermissions(role.Value).Contains(Permission.Reporting))
+        if (role is null || !EventRolePermissions.GetPermissions(role.Value).Contains(permission))
         {
             logger.LogWarning(
-                "Realtime sales inventory join refused for event {EventId}: reporting permission missing",
+                "Realtime {Area} join refused for event {EventId}: permission missing",
+                area,
                 eventIdValue);
 
             throw new HubException("You do not have the required permissions to monitor this event.");
@@ -101,6 +144,20 @@ public sealed class EventMonitoringHub(
         return joinedEvents;
     }
 
+    private HashSet<int> GetJoinedCheckInEvents()
+    {
+        if (Context.Items.TryGetValue(CheckInEventsItemKey, out var value) &&
+            value is HashSet<int> joinedEvents)
+        {
+            return joinedEvents;
+        }
+
+        joinedEvents = [];
+        Context.Items[CheckInEventsItemKey] = joinedEvents;
+
+        return joinedEvents;
+    }
+
     private UserId? GetCurrentUserId()
     {
         var userIdValue = Context.User?.FindFirstValue(SessionAuthenticationDefaults.UserIdClaimType);
@@ -114,4 +171,6 @@ public sealed class EventMonitoringHub(
 internal static class EventMonitoringGroups
 {
     public static string SalesInventory(int eventId) => $"event:{eventId}:sales";
+
+    public static string CheckIn(int eventId) => $"event:{eventId}:check-in";
 }

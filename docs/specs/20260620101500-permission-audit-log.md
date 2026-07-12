@@ -32,7 +32,7 @@ github_issue: 21
 
 # Feature: Permission Audit Log
 
-> Features: F-1.9 | Status: DRAFT | Date: 2026-06-20
+> Features: F-1.9 | status: implemented | Date: 2026-06-20
 > PRD: G-5 (organizer clarity and ownership), QG-1 (simplicity), QG-5 (correctness)
 > DDD: BC-1 (Identity & Access), BC-7 (Reporting & Audience)
 > Tech: §4 (CQRS pipeline), §6 (persistence), §7 (API conventions)

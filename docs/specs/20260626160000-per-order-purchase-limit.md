@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260626160000-per-order-purchase-limit
 title: Per-order purchase limit
 slug: per-order-purchase-limit
-status: draft
+status: implemented
 created_at: 2026-06-26T16:00:00Z
 updated_at: 2026-06-26T16:00:00Z
 owner: builder
@@ -37,7 +37,7 @@ github_issue: 43
 
 # Feature: Per-order purchase limit
 
-> Features: F-3.6 | Status: DRAFT | Date: 2026-06-26
+> Features: F-3.6 | status: implemented | Date: 2026-06-26
 > PRD: QG-1 (simplicity), QG-3 (fairness), QG-5 (correct at small scale)
 > DDD: BC-2 Event Management, BC-3 Sales, AGG-Event, AGG-Order, ENT-TicketType, INV-24
 

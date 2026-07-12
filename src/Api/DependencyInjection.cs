@@ -27,6 +27,7 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserAccessor, CurrentUserAccessor>();
         services.AddScoped<IRealtimeSalesInventoryNotifier, SignalRRealtimeSalesInventoryNotifier>();
+        services.AddScoped<IRealtimeCheckInNotifier, SignalRRealtimeCheckInNotifier>();
 
         services.AddAuthentication(SessionAuthenticationDefaults.Scheme)
             .AddScheme<AuthenticationSchemeOptions, SessionAuthenticationHandler>(

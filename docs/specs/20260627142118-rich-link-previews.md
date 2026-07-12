@@ -4,7 +4,7 @@ doc_kind: implementation_spec
 doc_id: spec-20260627142118-rich-link-previews
 title: Rich link previews
 slug: rich-link-previews
-status: draft
+status: implemented
 created_at: 2026-06-27T14:21:18Z
 updated_at: 2026-06-27T14:21:18Z
 owner: builder
@@ -34,7 +34,7 @@ github_issue: 53
 
 # Feature: Rich link previews
 
-> Features: F-4.3 | Status: DRAFT | Date: 2026-06-27
+> Features: F-4.3 | status: implemented | Date: 2026-06-27
 > PRD: QG-1 (simplicity), QG-2 (transparency), QG-4 (mobile-friendly) | DDD: BC-2 AGG-Event, VO-Slug, VO-CoverImageRef | Tech: §5, §7
 
 ## 1. Problem & Solution
