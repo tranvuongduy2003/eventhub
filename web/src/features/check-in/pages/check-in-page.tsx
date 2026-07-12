@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ClipboardCheck, RefreshCw, Search, Signal, TicketCheck } from 'lucide-react'
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useReducer, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
@@ -70,13 +70,10 @@ export function CheckInPage() {
   const [eventIdInput, setEventIdInput] = useState(searchParams.get('eventId') ?? '')
   const [code, setCode] = useState('')
   const [manualQuery, setManualQuery] = useState('')
-  const [queuedScans, setQueuedScans] = useState<QueuedScan[]>([])
+  const [, refreshQueuedScans] = useReducer((version: number) => version + 1, 0)
   const queryClient = useQueryClient()
   const countsQueryKey = useMemo(() => ['check-in-counts', eventId] as const, [eventId])
-
-  useEffect(() => {
-    setQueuedScans(eventId ? readQueuedScans(eventId) : [])
-  }, [eventId])
+  const queuedScans = eventId ? readQueuedScans(eventId) : []
 
   const countsQuery = useQuery({
     queryKey: countsQueryKey,
@@ -119,7 +116,7 @@ export function CheckInPage() {
     onSuccess: async (response) => {
       const rejected = response.results.filter((result) => !result.accepted).length
       writeQueuedScans(eventId!, [])
-      setQueuedScans([])
+      refreshQueuedScans()
       await queryClient.invalidateQueries({ queryKey: countsQueryKey })
       toast.success(
         rejected === 0
@@ -173,7 +170,7 @@ export function CheckInPage() {
       },
     ]
     writeQueuedScans(eventId, nextQueue)
-    setQueuedScans(nextQueue)
+    refreshQueuedScans()
     setCode('')
     toast.success('Scan queued for sync.')
   }
@@ -197,7 +194,10 @@ export function CheckInPage() {
           <CardTitle className="text-base">Event</CardTitle>
         </CardHeader>
         <CardContent>
-          <form className="flex flex-col gap-3 sm:flex-row sm:items-end" onSubmit={handleEventSubmit}>
+          <form
+            className="flex flex-col gap-3 sm:flex-row sm:items-end"
+            onSubmit={handleEventSubmit}
+          >
             <Field className="max-w-xs">
               <FieldLabel htmlFor="check-in-event-id">Event ID</FieldLabel>
               <Input
@@ -266,7 +266,10 @@ export function CheckInPage() {
                     />
                   </Field>
                   <div className="flex flex-wrap gap-2">
-                    <Button type="submit" disabled={scanMutation.isPending || code.trim().length === 0}>
+                    <Button
+                      type="submit"
+                      disabled={scanMutation.isPending || code.trim().length === 0}
+                    >
                       <TicketCheck className="mr-2 size-4" aria-hidden />
                       Check in
                     </Button>
@@ -354,7 +357,9 @@ export function CheckInPage() {
                         <TableCell>
                           <div className="flex flex-col">
                             <span>{ticket.holderName}</span>
-                            <span className="text-muted-foreground text-xs">{ticket.holderEmail}</span>
+                            <span className="text-muted-foreground text-xs">
+                              {ticket.holderEmail}
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -371,9 +376,7 @@ export function CheckInPage() {
                           <Button
                             type="button"
                             size="sm"
-                            disabled={
-                              ticket.status === 'checkedin' || manualMutation.isPending
-                            }
+                            disabled={ticket.status === 'checkedin' || manualMutation.isPending}
                             onClick={() => manualMutation.mutate(ticket.ticketId)}
                           >
                             Check in
