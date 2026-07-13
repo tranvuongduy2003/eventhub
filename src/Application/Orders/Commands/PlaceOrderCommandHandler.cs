@@ -21,6 +21,8 @@ public sealed class PlaceOrderCommandHandler(
 {
     private const int HoldDurationMinutes = 15;
 
+    private sealed record NormalizedOrderLine(TicketTypeId TicketTypeId, int Quantity);
+
     public override async Task<Result<PlaceOrderResult>> Handle(
         PlaceOrderCommand command,
         CancellationToken cancellationToken)
@@ -38,9 +40,14 @@ public sealed class PlaceOrderCommandHandler(
             return OrderErrors.EventNotPublished;
         }
 
+        var normalizedLines = command.Lines
+            .GroupBy(line => TicketTypeId.From(line.TicketTypeId))
+            .Select(group => new NormalizedOrderLine(group.Key, group.Sum(line => line.Quantity)))
+            .ToList();
+
         // Validate all ticket types exist on the event
         var ticketTypeLookup = eventAggregate.TicketTypes.ToDictionary(t => t.Id);
-        var requestedTicketTypeIds = command.Lines.Select(l => TicketTypeId.From(l.TicketTypeId)).ToList();
+        var requestedTicketTypeIds = normalizedLines.Select(line => line.TicketTypeId);
 
         foreach (var ticketTypeId in requestedTicketTypeIds)
         {
@@ -51,24 +58,20 @@ public sealed class PlaceOrderCommandHandler(
         }
 
         // Check availability (capacity - sold - reserved >= requested quantity)
-        var quantityByType = command.Lines
-            .GroupBy(l => l.TicketTypeId)
-            .ToDictionary(g => TicketTypeId.From(g.Key), g => g.Sum(l => l.Quantity));
-
-        foreach (var (ticketTypeId, requestedQty) in quantityByType)
+        foreach (var line in normalizedLines)
         {
-            var ticketType = ticketTypeLookup[ticketTypeId];
+            var ticketType = ticketTypeLookup[line.TicketTypeId];
             var available = ticketType.Capacity.Value - ticketType.Sold - ticketType.Reserved;
-            if (requestedQty > available)
+            if (line.Quantity > available)
             {
                 return OrderErrors.InsufficientAvailability;
             }
         }
 
         // INV-24: per-order purchase limit
-        foreach (var line in command.Lines)
+        foreach (var line in normalizedLines)
         {
-            var ticketType = ticketTypeLookup[TicketTypeId.From(line.TicketTypeId)];
+            var ticketType = ticketTypeLookup[line.TicketTypeId];
             if (ticketType.MaxPerOrder.HasValue && line.Quantity > ticketType.MaxPerOrder.Value)
             {
                 return OrderErrors.MaxPerOrderExceeded(
@@ -83,9 +86,9 @@ public sealed class PlaceOrderCommandHandler(
             var now = clock.UtcNow;
 
             // Snapshot prices (INV-25) and build order lines
-            var orderLines = command.Lines.Select(line =>
+            var orderLines = normalizedLines.Select(line =>
             {
-                var ticketType = ticketTypeLookup[TicketTypeId.From(line.TicketTypeId)];
+                var ticketType = ticketTypeLookup[line.TicketTypeId];
                 return OrderLine.Create(
                     ticketType.Id,
                     line.Quantity,
@@ -153,17 +156,17 @@ public sealed class PlaceOrderCommandHandler(
                 discountAmount: discountAmount,
                 id: orderId);
 
-            // Reserve inventory for each ticket type line
+            // Reserve inventory for each requested ticket type.
             var reservations = new List<Reservation>();
 
-            foreach (var line in quantityByType)
+            foreach (var line in normalizedLines)
             {
                 try
                 {
                     var reservationId = await reservationIdGenerator.NextIdAsync(cancellationToken);
                     var reservation = eventAggregate.Reserve(
-                        line.Key,
-                        line.Value,
+                        line.TicketTypeId,
+                        line.Quantity,
                         order.Id,
                         expiresAt,
                         now,

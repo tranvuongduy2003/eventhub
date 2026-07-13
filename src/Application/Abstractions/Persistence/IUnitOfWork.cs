@@ -8,6 +8,8 @@ public interface IUnitOfWork
 
     Task<IUnitOfWorkTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
 
+    void ClearTrackedChanges();
+
     bool IsConcurrencyConflict(Exception exception);
 
     bool TryMapPersistenceException(Exception exception, out Error? error);

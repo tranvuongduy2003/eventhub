@@ -27,7 +27,7 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<OrderRecord>
         builder.Property(o => o.ConfirmedAt).HasColumnName("confirmed_at");
         builder.Property(o => o.ExpiresAt).HasColumnName("expires_at");
         builder.Property(o => o.CancelledAt).HasColumnName("cancelled_at");
-        builder.Property(o => o.RowVersion).HasColumnName("row_version").IsRowVersion().HasDefaultValue(1L);
+        builder.Property(o => o.RowVersion).AsRowVersion();
 
         builder.HasIndex(o => o.EventId).HasDatabaseName("ix_orders_event_id");
 

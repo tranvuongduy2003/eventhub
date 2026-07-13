@@ -3,6 +3,7 @@ using EventHub.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -45,7 +46,9 @@ public sealed class IntegrationTestWebApplicationFactory : WebApplicationFactory
             services.RemoveAll<IConnectionMultiplexer>();
             services.RemoveAll<IObjectStorage>();
 
-            void ConfigureApplicationDatabaseContext(DbContextOptionsBuilder contextOptions)
+            void ConfigureApplicationDatabaseContext(
+                IServiceProvider serviceProvider,
+                DbContextOptionsBuilder contextOptions)
             {
                 contextOptions.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                 contextOptions.UseNpgsql(
@@ -53,6 +56,7 @@ public sealed class IntegrationTestWebApplicationFactory : WebApplicationFactory
                     npgsql => npgsql.MigrationsHistoryTable(
                         "__ef_migrations_history",
                         ApplicationDatabaseContext.SchemaName));
+                contextOptions.AddInterceptors(serviceProvider.GetServices<IInterceptor>());
             }
 
             services.AddDbContext<ApplicationDatabaseContext>(ConfigureApplicationDatabaseContext);

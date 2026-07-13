@@ -6,6 +6,7 @@ using EventHub.Contracts.Orders;
 using EventHub.Contracts.Payments;
 using EventHub.Contracts.Users;
 using EventHub.Domain.Events;
+using EventHub.Domain.Orders;
 using EventHub.Infrastructure.Persistence;
 using EventHub.Infrastructure.Persistence.Entities;
 using EventHub.Testing.Common.Fixtures;
@@ -104,6 +105,131 @@ public sealed class PaymentTests(IntegrationTestFixture fixture)
         ticketType.Reserved.Should().Be(0);
         ticketType.Sold.Should().Be(2);
         (await databaseContext.Reservations.CountAsync(reservation => reservation.OrderId == order.OrderId)).Should().Be(0);
+        (await databaseContext.Tickets.CountAsync(ticket => ticket.OrderId == order.OrderId)).Should().Be(2);
+    }
+
+    [Fact]
+    public async Task ConfirmPayment_MultiTicketOrder_ConfirmsEveryReservationAndIsIdempotent()
+    {
+        var clock = new TestClock { UtcNow = Start };
+        await using var factory = CreateFactory(clock);
+        await ClearPaymentDataAsync(factory);
+        var guestClient = factory.CreateClient();
+        var organizerClient = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true });
+
+        var data = await SeedPublishedEventWithTwoTicketTypesAsync(
+            factory,
+            organizerClient,
+            firstCapacity: 3,
+            firstPriceAmount: 50m,
+            secondCapacity: 4,
+            secondPriceAmount: 75m);
+        var order = await PlaceOrderAsync(
+            guestClient,
+            data.EventId,
+            [
+                new PlaceOrderLineRequest(data.FirstTicketTypeId, 2),
+                new PlaceOrderLineRequest(data.SecondTicketTypeId, 1),
+            ]);
+        var payment = await StartPaymentAsync(guestClient, order.OrderId);
+
+        using var firstResponse = await guestClient.PostAsJsonAsync(
+            "/api/payments/provider-notifications/succeeded",
+            new PaymentProviderNotificationRequest(payment.ProviderReference));
+        using var secondResponse = await guestClient.PostAsJsonAsync(
+            "/api/payments/provider-notifications/succeeded",
+            new PaymentProviderNotificationRequest(payment.ProviderReference));
+
+        firstResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        secondResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var first = await firstResponse.Content.ReadFromJsonAsync<PaymentProviderNotificationResponse>();
+        var second = await secondResponse.Content.ReadFromJsonAsync<PaymentProviderNotificationResponse>();
+        first.Should().NotBeNull();
+        second.Should().NotBeNull();
+        first!.Applied.Should().BeTrue();
+        second!.Applied.Should().BeFalse();
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
+        var storedOrder = await databaseContext.Orders.SingleAsync(storedOrder => storedOrder.Id == order.OrderId);
+        var firstTicketType = await databaseContext.TicketTypes
+            .SingleAsync(ticketType => ticketType.Id == data.FirstTicketTypeId);
+        var secondTicketType = await databaseContext.TicketTypes
+            .SingleAsync(ticketType => ticketType.Id == data.SecondTicketTypeId);
+
+        storedOrder.Status.Should().Be("Confirmed");
+        storedOrder.ReservationId.Should().BeNull();
+        firstTicketType.Reserved.Should().Be(0);
+        firstTicketType.Sold.Should().Be(2);
+        secondTicketType.Reserved.Should().Be(0);
+        secondTicketType.Sold.Should().Be(1);
+        (await databaseContext.Reservations.CountAsync(reservation => reservation.OrderId == order.OrderId)).Should().Be(0);
+        (await databaseContext.Tickets.CountAsync(ticket => ticket.OrderId == order.OrderId)).Should().Be(3);
+    }
+
+    [Fact]
+    public async Task DispatchOrderConfirmedEvent_WithResidualMultiTicketReservations_CommitsEveryReservation()
+    {
+        var clock = new TestClock { UtcNow = Start };
+        await using var factory = CreateFactory(clock);
+        await ClearPaymentDataAsync(factory);
+        var guestClient = factory.CreateClient();
+        var organizerClient = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true });
+
+        var data = await SeedPublishedEventWithTwoTicketTypesAsync(
+            factory,
+            organizerClient,
+            firstCapacity: 3,
+            firstPriceAmount: 50m,
+            secondCapacity: 4,
+            secondPriceAmount: 75m);
+        var order = await PlaceOrderAsync(
+            guestClient,
+            data.EventId,
+            [
+                new PlaceOrderLineRequest(data.FirstTicketTypeId, 2),
+                new PlaceOrderLineRequest(data.SecondTicketTypeId, 1),
+            ]);
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
+            var storedOrder = await databaseContext.Orders.SingleAsync(storedOrder => storedOrder.Id == order.OrderId);
+            storedOrder.Status = "Confirmed";
+            storedOrder.ConfirmedAt = Start;
+            await databaseContext.SaveChangesAsync();
+        }
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IDomainEventDispatcher>();
+            await dispatcher.DispatchAsync(
+            [
+                new OrderConfirmedEvent(
+                    OrderId.From(order.OrderId),
+                    EventId.From(data.EventId),
+                    Start),
+            ]);
+        }
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
+            var storedOrder = await databaseContext.Orders.SingleAsync(storedOrder => storedOrder.Id == order.OrderId);
+            var firstTicketType = await databaseContext.TicketTypes
+                .SingleAsync(ticketType => ticketType.Id == data.FirstTicketTypeId);
+            var secondTicketType = await databaseContext.TicketTypes
+                .SingleAsync(ticketType => ticketType.Id == data.SecondTicketTypeId);
+
+            storedOrder.ReservationId.Should().BeNull();
+            firstTicketType.Reserved.Should().Be(0);
+            firstTicketType.Sold.Should().Be(2);
+            secondTicketType.Reserved.Should().Be(0);
+            secondTicketType.Sold.Should().Be(1);
+            (await databaseContext.Reservations.CountAsync(reservation => reservation.OrderId == order.OrderId)).Should().Be(0);
+            (await databaseContext.Tickets.CountAsync(ticket => ticket.OrderId == order.OrderId)).Should().Be(3);
+        }
     }
 
     [Fact]
@@ -196,11 +322,20 @@ public sealed class PaymentTests(IntegrationTestFixture fixture)
         int eventId,
         int ticketTypeId,
         int quantity)
+        => await PlaceOrderAsync(
+            guestClient,
+            eventId,
+            [new PlaceOrderLineRequest(ticketTypeId, quantity)]);
+
+    private static async Task<PlaceOrderResponse> PlaceOrderAsync(
+        HttpClient guestClient,
+        int eventId,
+        IReadOnlyList<PlaceOrderLineRequest> lines)
     {
         var request = new PlaceOrderRequest(
             "Jane Attendee",
             "jane@example.com",
-            [new PlaceOrderLineRequest(ticketTypeId, quantity)]);
+            lines.ToList());
 
         using var response = await guestClient.PostAsJsonAsync($"/api/events/{eventId}/orders", request);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -273,6 +408,71 @@ public sealed class PaymentTests(IntegrationTestFixture fixture)
         return new EventData(eventRecord.Id, ticketTypeRecord.Id);
     }
 
+    private static async Task<EventDataWithTwoTicketTypes> SeedPublishedEventWithTwoTicketTypesAsync(
+        IntegrationTestWebApplicationFactory factory,
+        HttpClient organizerClient,
+        int firstCapacity,
+        decimal firstPriceAmount,
+        int secondCapacity,
+        decimal secondPriceAmount)
+    {
+        var organizerId = await RegisterOrganizerAsync(factory, organizerClient);
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
+
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        var eventRecord = new EventRecord
+        {
+            Title = $"Payment Event {suffix}",
+            OrganizerId = organizerId,
+            ScheduleStartsAt = new DateTimeOffset(2026, 7, 15, 14, 0, 0, TimeSpan.Zero),
+            ScheduleEndsAt = new DateTimeOffset(2026, 7, 15, 16, 0, 0, TimeSpan.Zero),
+            ScheduleTimeZoneId = "UTC",
+            LocationPhysicalAddress = "123 Payment Ave",
+            LocationIsOnline = false,
+            Status = EventStatus.Published,
+            Slug = $"payment-{suffix}",
+            CreatedAt = Start,
+            UpdatedAt = Start,
+        };
+
+        databaseContext.Events.Add(eventRecord);
+        await databaseContext.SaveChangesAsync();
+
+        var firstTicketType = new TicketTypeRecord
+        {
+            EventId = eventRecord.Id,
+            Name = "General Admission",
+            PriceAmount = firstPriceAmount,
+            PriceCurrency = "VND",
+            Capacity = firstCapacity,
+            MaxPerOrder = 4,
+            Sold = 0,
+            Reserved = 0,
+            CreatedAt = Start,
+            UpdatedAt = Start,
+        };
+        var secondTicketType = new TicketTypeRecord
+        {
+            EventId = eventRecord.Id,
+            Name = "VIP",
+            PriceAmount = secondPriceAmount,
+            PriceCurrency = "VND",
+            Capacity = secondCapacity,
+            MaxPerOrder = 4,
+            Sold = 0,
+            Reserved = 0,
+            CreatedAt = Start,
+            UpdatedAt = Start,
+        };
+
+        databaseContext.TicketTypes.AddRange(firstTicketType, secondTicketType);
+        await databaseContext.SaveChangesAsync();
+
+        return new EventDataWithTwoTicketTypes(eventRecord.Id, firstTicketType.Id, secondTicketType.Id);
+    }
+
     private static async Task<Guid> RegisterOrganizerAsync(
         IntegrationTestWebApplicationFactory factory,
         HttpClient organizerClient)
@@ -294,4 +494,9 @@ public sealed class PaymentTests(IntegrationTestFixture fixture)
     }
 
     private sealed record EventData(int EventId, int TicketTypeId);
+
+    private sealed record EventDataWithTwoTicketTypes(
+        int EventId,
+        int FirstTicketTypeId,
+        int SecondTicketTypeId);
 }

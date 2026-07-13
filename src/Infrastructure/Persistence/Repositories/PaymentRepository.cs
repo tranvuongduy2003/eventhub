@@ -71,7 +71,8 @@ internal sealed class PaymentRepository(ApplicationDatabaseContext databaseConte
     public Task Update(Payment payment, CancellationToken cancellationToken = default)
     {
         var record = PaymentPersistenceMapper.ToRecord(payment);
-        databaseContext.Payments.Update(record);
+        var paymentEntry = databaseContext.Payments.Update(record);
+        paymentEntry.Property(paymentRecord => paymentRecord.RowVersion).CurrentValue++;
         return Task.CompletedTask;
     }
 }

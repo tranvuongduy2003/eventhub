@@ -200,7 +200,8 @@ internal sealed class EventRepository(ApplicationDatabaseContext databaseContext
     public async Task Update(Event domain, CancellationToken cancellationToken = default)
     {
         var record = EventPersistenceMapper.ToRecord(domain);
-        databaseContext.Events.Update(record);
+        var eventEntry = databaseContext.Events.Update(record);
+        eventEntry.Property(eventRecord => eventRecord.RowVersion).CurrentValue++;
 
         // Sync occurrences with the domain aggregate
         var eventIdValue = domain.Id.Value;
@@ -259,6 +260,9 @@ internal sealed class EventRepository(ApplicationDatabaseContext databaseContext
                 existing.PriceAmount = ticketType.Price.Amount;
                 existing.PriceCurrency = ticketType.Price.Currency;
                 existing.Capacity = ticketType.Capacity.Value;
+                existing.MaxPerOrder = ticketType.MaxPerOrder;
+                existing.SalesWindowStart = ticketType.SalesWindow?.Start;
+                existing.SalesWindowEnd = ticketType.SalesWindow?.End;
                 existing.Sold = ticketType.Sold;
                 existing.Reserved = ticketType.Reserved;
                 existing.UpdatedAt = ticketType.UpdatedAt;

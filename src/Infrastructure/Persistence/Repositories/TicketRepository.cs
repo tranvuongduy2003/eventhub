@@ -136,8 +136,7 @@ internal sealed class TicketRepository(ApplicationDatabaseContext databaseContex
 
     public Task UpdateAsync(Ticket ticket, CancellationToken cancellationToken = default)
     {
-        var record = TicketPersistenceMapper.ToRecord(ticket);
-        databaseContext.Tickets.Update(record);
+        QueueUpdate(ticket);
         return Task.CompletedTask;
     }
 
@@ -145,8 +144,18 @@ internal sealed class TicketRepository(ApplicationDatabaseContext databaseContex
         IReadOnlyCollection<Ticket> tickets,
         CancellationToken cancellationToken = default)
     {
-        var records = tickets.Select(TicketPersistenceMapper.ToRecord).ToList();
-        databaseContext.Tickets.UpdateRange(records);
+        foreach (var ticket in tickets)
+        {
+            QueueUpdate(ticket);
+        }
+
         return Task.CompletedTask;
+    }
+
+    private void QueueUpdate(Ticket ticket)
+    {
+        var record = TicketPersistenceMapper.ToRecord(ticket);
+        var ticketEntry = databaseContext.Tickets.Update(record);
+        ticketEntry.Property(ticketRecord => ticketRecord.RowVersion).CurrentValue++;
     }
 }

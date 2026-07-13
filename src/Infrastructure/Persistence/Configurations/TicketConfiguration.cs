@@ -23,7 +23,7 @@ internal sealed class TicketConfiguration : IEntityTypeConfiguration<TicketRecor
         builder.Property(ticket => ticket.IssuedAt).HasColumnName("issued_at").IsRequired();
         builder.Property(ticket => ticket.CheckedInAt).HasColumnName("checked_in_at");
         builder.Property(ticket => ticket.LastDeliveredAt).HasColumnName("last_delivered_at");
-        builder.Property(ticket => ticket.RowVersion).HasColumnName("row_version").IsRowVersion().HasDefaultValue(1L);
+        builder.Property(ticket => ticket.RowVersion).AsRowVersion();
 
         builder.HasIndex(ticket => ticket.Code)
             .IsUnique()

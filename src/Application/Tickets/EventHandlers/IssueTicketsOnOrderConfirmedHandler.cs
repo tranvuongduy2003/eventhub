@@ -3,8 +3,10 @@ using EventHub.Application.Abstractions.Messaging;
 using EventHub.Application.Abstractions.Persistence;
 using EventHub.Application.Abstractions.Services;
 using EventHub.Application.Abstractions.Tickets;
+using EventHub.Application.Orders.Commands;
 using EventHub.Domain.Orders;
 using EventHub.Domain.Tickets;
+using MediatR;
 
 namespace EventHub.Application.Tickets.EventHandlers;
 
@@ -15,11 +17,24 @@ internal sealed class IssueTicketsOnOrderConfirmedHandler(
     ITicketCodeGenerator ticketCodeGenerator,
     IEmailSender emailSender,
     IUnitOfWork unitOfWork,
-    IClock clock)
+    IClock clock,
+    ISender sender)
     : IDomainEventHandler<OrderConfirmedEvent>
 {
     public async Task Handle(OrderConfirmedEvent domainEvent, CancellationToken cancellationToken)
     {
+        var reconciliation = await sender.Send(
+            new ReconcileOrderReservationsCommand(
+                domainEvent.OrderId,
+                OrderReservationTransition.Commit),
+            cancellationToken);
+
+        if (reconciliation.IsFailure)
+        {
+            throw new InvalidOperationException(
+                reconciliation.Error?.Message ?? "Could not commit order reservations before issuing tickets.");
+        }
+
         var existingTickets = await ticketRepository.GetByOrderIdAsync(domainEvent.OrderId, cancellationToken);
         if (existingTickets.Count > 0)
         {

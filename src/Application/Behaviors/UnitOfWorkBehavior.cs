@@ -1,7 +1,9 @@
 using EventHub.Application.Abstractions.Messaging;
 using EventHub.Application.Abstractions.Persistence;
+using EventHub.Application.Abstractions.Services;
 using EventHub.Application.Common;
 using EventHub.Application.Options;
+using EventHub.Application.Realtime;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -10,6 +12,9 @@ namespace EventHub.Application.Behaviors;
 
 public sealed class UnitOfWorkBehavior<TRequest, TResponse>(
     IUnitOfWork unitOfWork,
+    IPendingDomainEventsCollector pendingDomainEventsCollector,
+    IPendingRealtimeSalesInventoryUpdateCollector pendingRealtimeSalesInventoryUpdateCollector,
+    IPendingRealtimeCheckInUpdateCollector pendingRealtimeCheckInUpdateCollector,
     IOptions<ConcurrencyOptions> concurrencyOptions,
     ILogger<UnitOfWorkBehavior<TRequest, TResponse>> logger)
     : IPipelineBehavior<TRequest, TResponse>
@@ -49,6 +54,11 @@ public sealed class UnitOfWorkBehavior<TRequest, TResponse>(
             catch (Exception ex) when (unitOfWork.IsConcurrencyConflict(ex) && attempt < maxAttempts)
             {
                 await transaction.RollbackAsync(cancellationToken);
+                unitOfWork.ClearTrackedChanges();
+                pendingDomainEventsCollector.Drain();
+                pendingRealtimeSalesInventoryUpdateCollector.Drain();
+                pendingRealtimeCheckInUpdateCollector.Drain();
+
                 var backoff = delayMs * attempt + Random.Shared.Next(0, delayMs);
                 logger.LogWarning(
                     ex,

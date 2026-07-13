@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Net;
 using System.Net.Http.Json;
 using EventHub.Api.Common;
@@ -13,6 +14,7 @@ using EventHub.Testing.Common.Fixtures;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -148,6 +150,48 @@ public sealed class CheckInTests(IntegrationTestFixture fixture)
     }
 
     [Fact]
+    public async Task CheckInByCode_ConcurrentStaffRequests_AcceptsExactlyOneTicket()
+    {
+        var ticketReadBarrier = new TicketReadBarrierInterceptor();
+        await using var factory = CreateFactory(ticketReadBarrier);
+        var organizerClient = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true });
+        var firstStaffClient = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true });
+        var secondStaffClient = factory.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true });
+        var organizerId = await RegisterUserAsync(organizerClient, "checkin-concurrent-organizer");
+        var firstStaffId = await RegisterUserAsync(firstStaffClient, "checkin-concurrent-first");
+        var secondStaffId = await RegisterUserAsync(secondStaffClient, "checkin-concurrent-second");
+        var data = await SeedDoorDataAsync(
+            factory,
+            organizerId,
+            firstStaffId,
+            EventRole.Staff,
+            OrderStatus.Confirmed);
+        await GrantStaffRoleAsync(factory, data.EventId, secondStaffId);
+
+        var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var firstScan = ScanAfterStartAsync(firstStaffClient, data, start.Task);
+        var secondScan = ScanAfterStartAsync(secondStaffClient, data, start.Task);
+
+        start.SetResult();
+        var attempts = await Task.WhenAll(firstScan, secondScan);
+
+        attempts.Count(attempt => attempt.StatusCode == HttpStatusCode.OK).Should().Be(1);
+        attempts.Count(attempt => attempt.StatusCode == HttpStatusCode.UnprocessableEntity).Should().Be(1);
+        attempts.Single(attempt => attempt.StatusCode == HttpStatusCode.UnprocessableEntity)
+            .Problem!
+            .Code
+            .Should()
+            .Be("TICKET_ALREADY_CHECKED_IN");
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
+        var ticket = await databaseContext.Tickets.SingleAsync(ticket => ticket.Id == data.TicketId);
+        ticket.Status.Should().Be("CheckedIn");
+        ticket.CheckedInAt.Should().Be(Now);
+        ticket.RowVersion.Should().Be(2);
+    }
+
+    [Fact]
     public async Task BatchCheckIn_OfflineSync_AcceptsFirstScanAndRejectsDuplicate()
     {
         await using var factory = CreateFactory();
@@ -223,11 +267,17 @@ public sealed class CheckInTests(IntegrationTestFixture fixture)
         unauthorizedResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    private IntegrationTestWebApplicationFactory CreateFactory() =>
+    private IntegrationTestWebApplicationFactory CreateFactory(IInterceptor? interceptor = null) =>
         fixture.CreateFactory(services =>
         {
             services.RemoveAll<IClock>();
             services.AddSingleton<IClock>(new TestClock { UtcNow = Now });
+
+            if (interceptor is not null)
+            {
+                services.AddSingleton<IInterceptor>(interceptor);
+            }
+
             services.RemoveAll<IHostedService>();
         });
 
@@ -244,6 +294,40 @@ public sealed class CheckInTests(IntegrationTestFixture fixture)
         var body = await response.Content.ReadFromJsonAsync<UserRegistrationResponse>();
         body.Should().NotBeNull();
         return body!.UserId;
+    }
+
+    private static async Task GrantStaffRoleAsync(
+        IntegrationTestWebApplicationFactory factory,
+        int eventId,
+        Guid staffId)
+    {
+        await using var scope = factory.Services.CreateAsyncScope();
+        var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
+        databaseContext.EventUserRoles.Add(new EventUserRoleRecord
+        {
+            EventId = eventId,
+            UserId = staffId,
+            Role = EventRole.Staff,
+            CreatedAt = Now,
+        });
+        await databaseContext.SaveChangesAsync();
+    }
+
+    private static async Task<CheckInAttempt> ScanAfterStartAsync(
+        HttpClient client,
+        DoorData data,
+        Task start)
+    {
+        await start;
+
+        using var response = await client.PostAsJsonAsync(
+            $"/api/events/{data.EventId}/check-ins/scan",
+            new CheckInTicketRequest(data.Code));
+        var problem = response.StatusCode == HttpStatusCode.UnprocessableEntity
+            ? await response.Content.ReadFromJsonAsync<ApiProblemDetails>()
+            : null;
+
+        return new CheckInAttempt(response.StatusCode, problem);
     }
 
     private static async Task<DoorData> SeedDoorDataAsync(
@@ -366,4 +450,40 @@ public sealed class CheckInTests(IntegrationTestFixture fixture)
     private static string NewCode() => $"tk_{Guid.NewGuid():N}";
 
     private sealed record DoorData(int EventId, int TicketId, string Code);
+
+    private sealed record CheckInAttempt(HttpStatusCode StatusCode, ApiProblemDetails? Problem);
+
+    private sealed class TicketReadBarrierInterceptor : DbCommandInterceptor
+    {
+        private readonly TaskCompletionSource bothReadsCompleted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int ticketCodeReadCount;
+
+        public override async ValueTask<DbDataReader> ReaderExecutedAsync(
+            DbCommand command,
+            CommandExecutedEventData eventData,
+            DbDataReader result,
+            CancellationToken cancellationToken = default)
+        {
+            if (IsTicketCodeLookup(command.CommandText))
+            {
+                var readNumber = Interlocked.Increment(ref ticketCodeReadCount);
+                if (readNumber <= 2)
+                {
+                    if (readNumber == 2)
+                    {
+                        bothReadsCompleted.SetResult();
+                    }
+
+                    await bothReadsCompleted.Task.WaitAsync(cancellationToken);
+                }
+            }
+
+            return result;
+        }
+
+        private static bool IsTicketCodeLookup(string commandText) =>
+            commandText.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase)
+            && commandText.Contains("tickets", StringComparison.OrdinalIgnoreCase)
+            && commandText.Contains("code", StringComparison.OrdinalIgnoreCase);
+    }
 }

@@ -20,6 +20,8 @@ internal sealed class UnitOfWork(ApplicationDatabaseContext databaseContext) : I
         return new UnitOfWorkTransaction(transaction);
     }
 
+    public void ClearTrackedChanges() => databaseContext.ChangeTracker.Clear();
+
     public bool IsConcurrencyConflict(Exception exception) =>
         exception is DbUpdateConcurrencyException;
 

@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using EventHub.Api.IntegrationTests.Integration;
 using EventHub.Contracts.Events;
+using EventHub.Contracts.Orders;
 using EventHub.Contracts.Users;
 using EventHub.Domain.Events;
 using EventHub.Infrastructure.Persistence;
@@ -145,6 +146,130 @@ public sealed class MaxPerOrderTests(IntegrationTestFixture fixture)
     }
 
     [Fact]
+    public async Task EditTicketType_PublishedEvent_PersistsConfigurationAndEnforcesItAcrossRequests()
+    {
+        var userId = await RegisterOrganizerAsync();
+        var eventId = await SeedDraftEventAsync(userId);
+        var ticketTypeId = await SeedTicketTypeAsync(eventId);
+        var salesWindowStart = DateTimeOffset.UtcNow.AddHours(1);
+        salesWindowStart = salesWindowStart.AddTicks(-(salesWindowStart.Ticks % TimeSpan.TicksPerSecond));
+        var salesWindowEnd = salesWindowStart.AddDays(7);
+        string slug;
+
+        using (var publishResponse = await _client.PostAsync($"/api/events/{eventId}/publish", null))
+        {
+            publishResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var publishedEvent = await publishResponse.Content.ReadFromJsonAsync<PublishEventResponse>(JsonOptions);
+            publishedEvent.Should().NotBeNull();
+            slug = publishedEvent!.Slug;
+        }
+
+        var configureLimitRequest = new EditTicketTypeRequest(
+            "General Admission",
+            50m,
+            "VND",
+            100,
+            4,
+            null,
+            null);
+
+        using (var configureLimitResponse = await _client.PutAsJsonAsync(
+                   $"/api/events/{eventId}/ticket-types/{ticketTypeId}",
+                   configureLimitRequest))
+        {
+            configureLimitResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+
+        await AssertTicketTypeConfigurationAsync(
+            eventId,
+            ticketTypeId,
+            expectedMaxPerOrder: 4,
+            expectedSalesWindowStart: null,
+            expectedSalesWindowEnd: null);
+
+        using (var guestClient = fixture.Factory.CreateClient())
+        using (var limitResponse = await guestClient.PostAsJsonAsync(
+                   $"/api/events/{slug}/checkout/start",
+                   new StartCheckoutRequest([new StartCheckoutLineRequest(ticketTypeId, 5)])))
+        {
+            limitResponse.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+
+            var limitProblem = JsonSerializer.Deserialize<JsonElement>(
+                await limitResponse.Content.ReadAsStringAsync(),
+                JsonOptions);
+            limitProblem.GetProperty("code").GetString().Should().Be("ORDER_MAX_PER_ORDER_EXCEEDED");
+        }
+
+        var configureSalesWindowRequest = new EditTicketTypeRequest(
+            "General Admission",
+            50m,
+            "VND",
+            100,
+            4,
+            salesWindowStart,
+            salesWindowEnd);
+
+        using (var configureSalesWindowResponse = await _client.PutAsJsonAsync(
+                   $"/api/events/{eventId}/ticket-types/{ticketTypeId}",
+                   configureSalesWindowRequest))
+        {
+            configureSalesWindowResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+
+        await AssertTicketTypeConfigurationAsync(
+            eventId,
+            ticketTypeId,
+            expectedMaxPerOrder: 4,
+            expectedSalesWindowStart: salesWindowStart,
+            expectedSalesWindowEnd: salesWindowEnd);
+
+        using (var guestClient = fixture.Factory.CreateClient())
+        using (var salesWindowResponse = await guestClient.PostAsJsonAsync(
+                   $"/api/events/{slug}/checkout/start",
+                   new StartCheckoutRequest([new StartCheckoutLineRequest(ticketTypeId, 1)])))
+        {
+            salesWindowResponse.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+
+            var salesWindowProblem = JsonSerializer.Deserialize<JsonElement>(
+                await salesWindowResponse.Content.ReadAsStringAsync(),
+                JsonOptions);
+            salesWindowProblem.GetProperty("code").GetString().Should().Be("CHECKOUT_TICKET_TYPE_NOT_YET_ON_SALE");
+        }
+
+        var clearRequest = new EditTicketTypeRequest(
+            "General Admission",
+            50m,
+            "VND",
+            100,
+            null,
+            null,
+            null);
+
+        using (var clearResponse = await _client.PutAsJsonAsync(
+                   $"/api/events/{eventId}/ticket-types/{ticketTypeId}",
+                   clearRequest))
+        {
+            clearResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+
+        await AssertTicketTypeConfigurationAsync(
+            eventId,
+            ticketTypeId,
+            expectedMaxPerOrder: null,
+            expectedSalesWindowStart: null,
+            expectedSalesWindowEnd: null);
+
+        using (var guestClient = fixture.Factory.CreateClient())
+        using (var clearedConfigurationResponse = await guestClient.PostAsJsonAsync(
+                   $"/api/events/{slug}/checkout/start",
+                   new StartCheckoutRequest([new StartCheckoutLineRequest(ticketTypeId, 5)])))
+        {
+            clearedConfigurationResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+    }
+
+    [Fact]
     public async Task EditTicketType_PublishedEvent_NameChange_Returns422()
     {
         var userId = await RegisterOrganizerAsync();
@@ -161,6 +286,26 @@ public sealed class MaxPerOrderTests(IntegrationTestFixture fixture)
             $"/api/events/{eventId}/ticket-types/{ticketTypeId}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+    }
+
+    private async Task AssertTicketTypeConfigurationAsync(
+        int eventId,
+        int ticketTypeId,
+        int? expectedMaxPerOrder,
+        DateTimeOffset? expectedSalesWindowStart,
+        DateTimeOffset? expectedSalesWindowEnd)
+    {
+        using var response = await _client.GetAsync($"/api/events/{eventId}/ticket-types");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var ticketTypes = await response.Content.ReadFromJsonAsync<List<TicketTypeResponse>>(JsonOptions);
+        ticketTypes.Should().NotBeNull();
+
+        var ticketType = ticketTypes!.Single(ticketType => ticketType.TicketTypeId == ticketTypeId);
+        ticketType.MaxPerOrder.Should().Be(expectedMaxPerOrder);
+        ticketType.SalesWindowStart.Should().Be(expectedSalesWindowStart);
+        ticketType.SalesWindowEnd.Should().Be(expectedSalesWindowEnd);
     }
 
     private async Task<Guid> RegisterOrganizerAsync(string? suffix = null)

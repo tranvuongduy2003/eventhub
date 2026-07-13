@@ -23,4 +23,12 @@ public static class PaymentErrors
     public static readonly Error PaymentAmountMismatch = Error.Validation(
         "PAYMENT_AMOUNT_MISMATCH",
         "The payment amount does not match the order total.");
+
+    public static readonly Error OrderReservationNotFound = Error.Validation(
+        "ORDER_RESERVATION_NOT_FOUND",
+        "The order no longer has an active inventory hold.");
+
+    public static readonly Error OrderEventNotFound = Error.NotFound(
+        "ORDER_EVENT_NOT_FOUND",
+        "The event for this order was not found.");
 }
