@@ -56,7 +56,7 @@ Out of scope:
 ## Acceptance Criteria
 
 - GIVEN an event with captured paid orders, WHEN the owner cancels the event, THEN captured payments are refunded, affected orders are marked refunded, and issued tickets are voided.
-- GIVEN an authenticated check-in client replays a queued scan for the same event and client scan identifier, WHEN its canonical code and scan instant match the original request, THEN the server returns the durable original result without admitting twice; a changed payload is rejected and cannot overwrite that result.
+- GIVEN an authenticated check-in client replays a queued scan for the same event and client scan identifier, WHEN its validated code and scan instant match the original request, THEN the server returns the durable original result without admitting twice; a changed payload is rejected and cannot overwrite that result.
 - GIVEN duplicate scans arrive from multiple devices or queued offline batches under different client scan identifiers, WHEN the server reconciles them, THEN only one scan admits the ticket and every later identifier receives a durable rejected result with a stable reason.
 - GIVEN a sold-out ticket type before event start, WHEN the holder returns a valid ticket, THEN the ticket is voided, the order is marked refunded, and one unit returns to availability.
 - GIVEN a ticket type is not sold out or event start has passed, WHEN a return is requested, THEN the return is refused with a clear reason.
@@ -85,7 +85,7 @@ In scope for this repair only:
 
 - Preserve the existing `POST /api/events/{eventId}/check-ins/sync` route and batch limit of 100.
 - Treat `(EventId, ClientScanId)` as the durable identity of one queued scan operation.
-- Persist the canonical request identity and the first committed result, whether that result is an
+- Persist a fingerprint of the canonical request identity and the first committed result, whether that result is an
   acceptance or a business-rule rejection.
 - Replay the stored result only when the incoming canonical code and scan instant match the stored
   identity; reject a changed payload without mutating a ticket or replacing the stored result.
@@ -112,10 +112,12 @@ For each syntactically valid queued item, derive its replay identity before tick
   not silently accepted.
 - The canonical code is the existing `TicketCode` value after its normal trim and validation. It is
   case-preserving; this repair must not introduce a different code comparison rule from ticket
-  lookup or code uniqueness.
-- The canonical scan instant is `ScannedAt` normalized to UTC and compared as an instant, not as
-  the serialized offset text. For example, two offset representations of the same instant are the
-  same replay payload.
+  lookup or code uniqueness. Persist only its deterministic lowercase SHA-256 hexadecimal
+  fingerprint (64 characters); a replay record must never retain a second raw ticket-code copy.
+- The canonical scan instant is `ScannedAt` normalized to UTC and PostgreSQL's microsecond storage
+  precision before comparison, not as the serialized offset text. For example, two offset
+  representations of the same instant are the same replay payload, and a retry cannot mismatch
+  merely because its source carries sub-microsecond ticks.
 
 The first committed operation stores its canonical identity and result. A later request with the
 same event, identifier, canonical code, and canonical instant returns that stored result without
@@ -143,7 +145,7 @@ ticket's lifecycle state. Its minimum durable data is:
 | Data | Purpose |
 | --- | --- |
 | `EventId`, `ClientScanId` | Composite replay key with a database unique constraint. |
-| Canonical code, canonical `ScannedAtUtc` | Immutable payload identity used to decide replay versus mismatch. |
+| SHA-256 fingerprint of canonical code, canonical `ScannedAtUtc` | Immutable payload identity used to decide replay versus mismatch without retaining a raw ticket code. |
 | `Accepted`, response status, stable reason when rejected | Durable result for accepted and rejected operations. |
 | Optional `TicketId` and server `CheckedInAt` | Reconstruct the original accepted response without using client time or storing a second ticket lifecycle. |
 | Resolution timestamp / normal persistence metadata | Operational traceability; it must contain no credentials or raw request logging. |
@@ -153,6 +155,11 @@ may be used independently in two events and must create/return two independent r
 and any ticket state mutation must commit in the same PostgreSQL unit-of-work transaction. A
 response must never claim a newly resolved accepted or rejected operation whose replay record did
 not commit.
+
+The model snapshot also retains the application-managed `ValueGeneratedOnAdd` row-version metadata
+for `DiscountCode`, `Order`, `Payment`, and `Ticket`. That metadata has no schema operation; the
+generated replay migration's `Up` contains only the replay table, indexes, and reviewed foreign
+keys.
 
 The record may reference a ticket only for a result that safely exposes the existing authorized
 check-in projection. It must not persist a second copy of holder data merely for replay. Existing
@@ -212,12 +219,14 @@ the original admission result.
 ### Testing and verification strategy
 
 - Replay an accepted item in a second HTTP request with the same event, identifier, trimmed/canonical
-  code, and equal UTC scan instant; assert one checked-in ticket, one replay row, an unchanged
+  code, and equal UTC scan instant; assert one checked-in ticket, one replay row containing only a
+  code fingerprint, an unchanged
   server check-in time, and no duplicate event-side effect.
 - Repeat an item using the same identifier with a changed code, then with a changed scan instant;
   assert a rejected mismatch each time, the original replay row remains intact, and neither changed
   payload can mutate a ticket.
-- Submit equal scan instants expressed with different offsets and verify they replay the same result.
+- Submit equal scan instants expressed with different offsets, including an instant with sub-microsecond
+  ticks, and verify they replay the same result.
 - Reuse an identifier in two independently authorized events and verify both operations remain
   independent, including separate replay rows and ticket outcomes.
 - Concurrently submit two distinct identifiers for the same valid ticket through separate clients;

@@ -83,6 +83,7 @@ public static class DependencyInjection
         services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<IPaymentIdGenerator, PostgresPaymentIdGenerator>();
         services.AddScoped<ITicketRepository, TicketRepository>();
+        services.AddScoped<ICheckInReplayRepository, CheckInReplayRepository>();
         services.AddScoped<IReportingRepository, ReportingRepository>();
         services.AddSingleton<ITicketCodeGenerator, RandomTicketCodeGenerator>();
         services.AddScoped<IReservationIdGenerator, PostgresReservationIdGenerator>();
