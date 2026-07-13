@@ -134,7 +134,8 @@ and must not mutate admission state.
 `ScannedAt` is client-provided evidence for replay identity only. The first successful admission
 continues to call `Ticket.CheckIn` with `IClock.UtcNow`; its `CheckedInAt` and the accepted replay
 response therefore record the server's authoritative processing time, never a delayed or forged
-client timestamp.
+client timestamp. The server time is normalized only to PostgreSQL microsecond precision before
+check-in persistence so the first response and a later replay return the same persisted instant.
 
 ### Data and transaction boundary
 
@@ -177,7 +178,8 @@ the original admission result.
   request remains independently authorized for its route event.
 - **Same ticket, different identifiers:** process each as a distinct operation. Exactly one may
   accept; the later operation is stored as a rejection such as the existing already-checked-in
-  outcome, and its own replay returns that rejection.
+  outcome, including the first server check-in time required by F-8.2, and its own replay returns
+  that rejection.
 - **Duplicate identifiers within one submitted batch:** apply the same replay/mismatch rules as
   separate requests, preserving input order in the returned results and creating at most one record
   for the key.

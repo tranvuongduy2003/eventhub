@@ -99,7 +99,7 @@ internal static class CheckInTicketCommandHandlerCore
 
         try
         {
-            ticket.CheckIn(eventId, clock.UtcNow);
+            ticket.CheckIn(eventId, PostgresTimestampPrecision.NormalizeUtc(clock.UtcNow));
         }
         catch (BusinessRuleValidationException exception)
         {
