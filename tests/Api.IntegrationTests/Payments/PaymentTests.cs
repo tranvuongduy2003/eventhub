@@ -195,10 +195,17 @@ public sealed class PaymentTests(IntegrationTestFixture fixture)
         await using (var scope = factory.Services.CreateAsyncScope())
         {
             var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
-            var storedOrder = await databaseContext.Orders.SingleAsync(storedOrder => storedOrder.Id == order.OrderId);
+            var storedOrder = await databaseContext.Orders
+                .AsTracking()
+                .SingleAsync(storedOrder => storedOrder.Id == order.OrderId);
             storedOrder.Status = "Confirmed";
             storedOrder.ConfirmedAt = Start;
             await databaseContext.SaveChangesAsync();
+
+            var persistedOrder = await databaseContext.Orders
+                .AsNoTracking()
+                .SingleAsync(orderRecord => orderRecord.Id == order.OrderId);
+            persistedOrder.Status.Should().Be("Confirmed");
         }
 
         await using (var scope = factory.Services.CreateAsyncScope())

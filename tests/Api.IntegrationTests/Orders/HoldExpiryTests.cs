@@ -183,10 +183,17 @@ public sealed class HoldExpiryTests(IntegrationTestFixture fixture)
         await using (var scope = factory.Services.CreateAsyncScope())
         {
             var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
-            var storedOrder = await databaseContext.Orders.SingleAsync(storedOrder => storedOrder.Id == orderId);
+            var storedOrder = await databaseContext.Orders
+                .AsTracking()
+                .SingleAsync(storedOrder => storedOrder.Id == orderId);
             storedOrder.Status = "Expired";
             storedOrder.ExpiresAt = Start.AddMinutes(16);
             await databaseContext.SaveChangesAsync();
+
+            var persistedOrder = await databaseContext.Orders
+                .AsNoTracking()
+                .SingleAsync(order => order.Id == orderId);
+            persistedOrder.Status.Should().Be("Expired");
         }
 
         await using (var scope = factory.Services.CreateAsyncScope())
