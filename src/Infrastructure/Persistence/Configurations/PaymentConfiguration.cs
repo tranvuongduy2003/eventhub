@@ -22,7 +22,7 @@ internal sealed class PaymentConfiguration : IEntityTypeConfiguration<PaymentRec
         builder.Property(payment => payment.CapturedAt).HasColumnName("captured_at");
         builder.Property(payment => payment.FailedAt).HasColumnName("failed_at");
         builder.Property(payment => payment.RefundedAt).HasColumnName("refunded_at");
-        builder.Property(payment => payment.RowVersion).HasColumnName("row_version").IsRowVersion().HasDefaultValue(1L);
+        builder.Property(payment => payment.RowVersion).AsRowVersion();
 
         builder.HasIndex(payment => payment.OrderId).HasDatabaseName("ix_payments_order_id");
         builder.HasIndex(payment => payment.ProviderReference)

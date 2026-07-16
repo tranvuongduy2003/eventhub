@@ -55,7 +55,8 @@ internal sealed class DiscountCodeRepository(ApplicationDatabaseContext database
     public async Task Update(DiscountCode domain, CancellationToken cancellationToken = default)
     {
         var record = DiscountCodePersistenceMapper.ToRecord(domain);
-        databaseContext.DiscountCodes.Update(record);
+        var discountCodeEntry = databaseContext.DiscountCodes.Update(record);
+        discountCodeEntry.Property(discountCodeRecord => discountCodeRecord.RowVersion).CurrentValue++;
     }
 
     public async Task Delete(DiscountCode domain, CancellationToken cancellationToken = default)

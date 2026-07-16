@@ -2,7 +2,6 @@ using EventHub.Application.Abstractions.Messaging;
 using EventHub.Application.Abstractions.Persistence;
 using EventHub.Application.Abstractions.Services;
 using EventHub.Application.Common;
-using EventHub.Domain.Exceptions;
 
 namespace EventHub.Application.Orders.Commands;
 
@@ -23,48 +22,49 @@ public sealed class ProcessExpiredOrderHoldsCommandHandler(
         var expiredOrderCount = 0;
         var releasedReservationCount = 0;
 
-        foreach (var order in expiredOrders)
+        foreach (var ordersByEvent in expiredOrders.GroupBy(order => order.EventId))
         {
-            try
+            var eventAggregate = await eventRepository.GetByIdAsync(ordersByEvent.Key, cancellationToken);
+            if (eventAggregate is null)
             {
-                var eventAggregate = await eventRepository.GetByIdAsync(order.EventId, cancellationToken);
-                if (eventAggregate is null)
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                var reservations = eventAggregate.Reservations
-                    .Where(reservation => reservation.OrderId == order.Id)
-                    .Select(reservation => reservation.Id)
-                    .ToList();
+            var eventChanged = false;
+
+            foreach (var order in ordersByEvent)
+            {
+                var reservationIds = OrderReservationSet.GetLiveReservationIds(eventAggregate, order.Id);
 
                 order.Expire(now);
 
-                foreach (var reservationId in reservations)
+                foreach (var reservationId in reservationIds)
                 {
                     eventAggregate.ReleaseReservation(reservationId, now);
                     releasedReservationCount++;
                 }
 
                 order.ClearReservationId();
-
                 await orderRepository.Update(order, cancellationToken);
-                await eventRepository.Update(eventAggregate, cancellationToken);
 
                 pendingDomainEventsCollector.AddRange(order.DomainEvents);
                 order.ClearDomainEvents();
-                pendingDomainEventsCollector.AddRange(eventAggregate.DomainEvents);
-                eventAggregate.ClearDomainEvents();
 
                 expiredOrderCount++;
+                eventChanged = true;
             }
-            catch (BusinessRuleValidationException)
+
+            if (!eventChanged)
             {
                 continue;
             }
+
+            await eventRepository.Update(eventAggregate, cancellationToken);
+
+            pendingDomainEventsCollector.AddRange(eventAggregate.DomainEvents);
+            eventAggregate.ClearDomainEvents();
         }
 
         return new ProcessExpiredOrderHoldsResult(expiredOrderCount, releasedReservationCount);
     }
 }
-

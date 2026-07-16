@@ -2,7 +2,9 @@ using EventHub.Application.Abstractions.Messaging;
 using EventHub.Application.Abstractions.Persistence;
 using EventHub.Application.Abstractions.Services;
 using EventHub.Application.Common;
+using EventHub.Application.Orders;
 using EventHub.Domain.Exceptions;
+using EventHub.Domain.Orders;
 using EventHub.Domain.Payments;
 
 namespace EventHub.Application.Payments.Commands;
@@ -53,22 +55,31 @@ public sealed class ConfirmPaymentCommandHandler(
         try
         {
             var now = clock.UtcNow;
+            var eventAggregate = await eventRepository.GetByIdAsync(order.EventId, cancellationToken);
+            if (eventAggregate is null)
+            {
+                return PaymentErrors.OrderEventNotFound;
+            }
+
+            var reservationIds = OrderReservationSet.GetLiveReservationIds(eventAggregate, order.Id);
+            if (order.Status is OrderStatus.Pending && reservationIds.Count == 0)
+            {
+                return PaymentErrors.OrderReservationNotFound;
+            }
+
             var applied = payment.Capture(now);
             order.MarkConfirmed(payment.Id.Value, now);
 
-            if (order.ReservationId is not null)
+            foreach (var reservationId in reservationIds)
             {
-                var eventAggregate = await eventRepository.GetByIdAsync(order.EventId, cancellationToken);
-                if (eventAggregate is not null)
-                {
-                    eventAggregate.CommitReservation(order.ReservationId.Value, now);
-                    order.ClearReservationId();
-                    await eventRepository.Update(eventAggregate, cancellationToken);
-
-                    pendingDomainEventsCollector.AddRange(eventAggregate.DomainEvents);
-                    eventAggregate.ClearDomainEvents();
-                }
+                eventAggregate.CommitReservation(reservationId, now);
             }
+
+            order.ClearReservationId();
+            await eventRepository.Update(eventAggregate, cancellationToken);
+
+            pendingDomainEventsCollector.AddRange(eventAggregate.DomainEvents);
+            eventAggregate.ClearDomainEvents();
 
             await paymentRepository.Update(payment, cancellationToken);
             await orderRepository.Update(order, cancellationToken);

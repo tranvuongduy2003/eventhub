@@ -63,6 +63,7 @@ internal sealed class OrderRepository(ApplicationDatabaseContext databaseContext
     public async Task Update(Order domain, CancellationToken cancellationToken = default)
     {
         var record = OrderPersistenceMapper.ToRecord(domain);
-        databaseContext.Orders.Update(record);
+        var orderEntry = databaseContext.Orders.Update(record);
+        orderEntry.Property(orderRecord => orderRecord.RowVersion).CurrentValue++;
     }
 }

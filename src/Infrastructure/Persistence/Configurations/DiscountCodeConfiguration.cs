@@ -24,7 +24,7 @@ internal sealed class DiscountCodeConfiguration : IEntityTypeConfiguration<Disco
         builder.Property(dc => dc.CreatedAt).HasColumnName("created_at").IsRequired();
         builder.Property(dc => dc.UpdatedAt).HasColumnName("updated_at");
         builder.Property(dc => dc.DeletedAt).HasColumnName("deleted_at");
-        builder.Property(dc => dc.RowVersion).HasColumnName("row_version").IsRowVersion().HasDefaultValue(1L);
+        builder.Property(dc => dc.RowVersion).AsRowVersion();
 
         // Unique index on (event_id, code) — case-insensitive via normalized storage
         builder.HasIndex(dc => new { dc.EventId, dc.Code })
